@@ -11,13 +11,14 @@
    ========================================================= */
 
 const firebaseConfig = {
-  apiKey:            "PASTE_YOURS",
-  authDomain:        "PASTE_YOURS.firebaseapp.com",
-  databaseURL:       "PASTE_YOURS",
-  projectId:         "PASTE_YOURS",
-  storageBucket:     "PASTE_YOURS.firebasestorage.app",
-  messagingSenderId: "PASTE_YOURS",
-  appId:             "PASTE_YOURS"
+  apiKey: "AIzaSyC0R6_zrxWPh_2Fc5gdQQMOhS49lJhCg4I",
+  authDomain: "jarvis-portal-fbdd9.firebaseapp.com",
+  databaseURL: "https://jarvis-portal-fbdd9-default-rtdb.firebaseio.com",
+  projectId: "jarvis-portal-fbdd9",
+  storageBucket: "jarvis-portal-fbdd9.firebasestorage.app",
+  messagingSenderId: "755013736889",
+  appId: "1:755013736889:web:36b53575b35d1846717e68",
+  measurementId: "G-37K0PNP7FZ"
 };
 
 /* -----------------------------------------------------------
