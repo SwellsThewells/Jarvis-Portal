@@ -1,0 +1,3480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>iMessage — Jarvis Portal</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow: hidden; }
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #c5bfb4; }
+        
+        .linen-bg { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,0,0,0.03) 1px, rgba(0,0,0,0.03) 2px), repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(0,0,0,0.03) 1px, rgba(0,0,0,0.03) 2px), linear-gradient(180deg, #c5bfb4 0%, #b8b2a7 100%); z-index: -1; }
+        
+        .app-container { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #e8e4df; display: flex; flex-direction: column; }
+        
+        .nav-bar { 
+            background: linear-gradient(180deg, #b0d4f1 0%, #89b9de 50%, #5c9ec9 50%, #7ab4db 100%); 
+            border-bottom: 1px solid #2c5b85; 
+            padding: 8px 10px; 
+            height: 44px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            position: relative; 
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.5); 
+        }
+        .nav-bar h1 { font-size: 20px; font-weight: 700; color: #fff; text-shadow: 0 -1px 0 rgba(0,0,0,0.4); position: absolute; left: 50%; transform: translateX(-50%); }
+        .ios6-btn { 
+            background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 50%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.1) 100%); 
+            border: 1px solid rgba(0,0,0,0.3); 
+            border-radius: 5px; 
+            padding: 5px 10px; 
+            color: #fff; 
+            font-size: 13px; 
+            font-weight: 500; 
+            cursor: pointer; 
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.3); 
+            text-shadow: 0 -1px 0 rgba(0,0,0,0.3); 
+        }
+        .status-indicator { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #fff; text-shadow: 0 -1px 0 rgba(0,0,0,0.3); }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #ff3b30; box-shadow: inset 0 1px 2px rgba(0,0,0,0.3); }
+        .status-dot.online { background: linear-gradient(180deg, #7ed321, #5ba015); }
+        
+        .login-required { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; }
+        .login-required h2 { font-size: 24px; color: #333; margin-bottom: 10px; }
+        .login-required p { font-size: 16px; color: #666; }
+        .portal-link { margin-top: 22px; display: inline-block; padding: 11px 22px; background: #007aff; color: #fff; text-decoration: none; border-radius: 8px; font-size: 15px; font-weight: 500; }
+        .portal-link:active { opacity: .7; }
+        
+        .contacts-screen { flex: 1; display: none; flex-direction: column; overflow: hidden; }
+        .search-bar { padding: 8px 10px; background: linear-gradient(180deg, #d4d4d4 0%, #c8c8c8 100%); border-bottom: 1px solid #a0a0a0; }
+        .search-input { width: 100%; padding: 8px 12px; border: 1px solid #a0a0a5; border-radius: 8px; font-size: 14px; background: linear-gradient(180deg, #e8e8e8 0%, #fff 10%); box-shadow: inset 0 1px 2px rgba(0,0,0,0.1); }
+        .search-input:focus { outline: none; border-color: #5c9ec9; }
+        .online-section { padding: 10px 15px; background: linear-gradient(180deg, #f0f0f0 0%, #e5e5e5 100%); border-bottom: 1px solid #c8c7cc; }
+        .online-section-title { font-size: 13px; font-weight: 600; color: #8e8e93; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px; }
+        .online-users-scroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 5px; }
+        .online-user { display: flex; flex-direction: column; align-items: center; cursor: pointer; min-width: 60px; position: relative; }
+        .online-user-avatar-wrap { position: relative; margin-bottom: 4px; }
+        .online-user-avatar { width: 44px; height: 44px; border-radius: 22px; background: linear-gradient(180deg, #c8c8ce 0%, #a8a8ae 100%); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 600; color: #fff; border: 2px solid #fff; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .online-user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .online-user-status { position: absolute; bottom: 0; right: 0; width: 12px; height: 12px; border-radius: 6px; border: 2px solid #fff; background: linear-gradient(180deg, #8e8e93 0%, #636366 100%); }
+        .online-user-status.online { background: linear-gradient(180deg, #4cd964 0%, #2ecc40 100%); }
+        .online-user-name { font-size: 11px; color: #333; text-align: center; max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .contacts-list { flex: 1; overflow-y: auto; }
+        .contact-item { display: flex; align-items: center; padding: 12px 15px; background: linear-gradient(180deg, #fff 0%, #f5f5f5 100%); border-bottom: 1px solid #c8c7cc; cursor: pointer; }
+        .contact-item:active { background: linear-gradient(180deg, #d9d9d9 0%, #ccc 100%); }
+        .contact-avatar { width: 50px; height: 50px; border-radius: 25px; background: linear-gradient(180deg, #c8c8ce 0%, #a8a8ae 100%); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 600; color: #fff; margin-right: 12px; overflow: hidden; box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 1px 3px rgba(0,0,0,0.15); }
+        .contact-avatar.online { background: linear-gradient(180deg, #7ed321 0%, #5ba015 100%); }
+        .contact-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .contact-info { flex: 1; min-width: 0; }
+        .contact-name { font-size: 17px; font-weight: 600; color: #000; }
+        .contact-preview { font-size: 13px; color: #8e8e93; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .contact-time { font-size: 13px; color: #8e8e93; margin-left: 8px; }
+        .contact-arrow { color: #c7c7cc; font-size: 20px; margin-left: 8px; }
+        .unread-badge { background: linear-gradient(180deg, #ff3b30 0%, #c42b22 100%); color: #fff; font-size: 12px; font-weight: 700; padding: 2px 7px; border-radius: 10px; margin-left: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #8e8e93; padding: 40px; }
+        .empty-state-text { font-size: 17px; text-align: center; }
+        
+        .chat-screen { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: none; flex-direction: column; background: #ccc; }
+        
+        @keyframes dylanSpin { 0% { transform: perspective(1000px) rotateY(0deg); } 100% { transform: perspective(1000px) rotateY(1800deg); } }
+        .chat-screen.spinning { animation: dylanSpin 5s ease-in-out; }
+        
+        .messages-area { flex: 1; overflow-y: scroll; padding: 10px; background: linear-gradient(180deg, #d9d9d9 0%, #c5c5c5 100%); }
+        
+        .message { display: flex; margin-bottom: 8px; }
+        .message.sent { justify-content: flex-end; }
+        .message.received { justify-content: flex-start; }
+        .bubble { max-width: 75%; padding: 8px 12px; border-radius: 18px; font-size: 16px; line-height: 1.4; word-wrap: break-word; }
+        .bubble.has-media { padding: 4px; background: transparent !important; border: none !important; box-shadow: none !important; }
+        .bubble img { max-width: 200px; max-height: 200px; border-radius: 14px; display: block; }
+        .bubble.has-map { padding: 0; overflow: hidden; }
+        .map-card { width: 220px; cursor: pointer; }
+        .map-card iframe { width: 220px; height: 150px; border: 0; display: block; pointer-events: none; background: #e8e8e8; }
+        .map-caption { padding: 8px 11px; font-size: 13px; background: rgba(0,0,0,0.04); }
+        .map-caption b { display: block; font-size: 14px; margin-bottom: 2px; }
+        .map-caption span { color: #8e8e93; font-size: 11px; }
+        .message.sent .bubble { cursor: pointer; -webkit-touch-callout: none; }
+        .message.pressing .bubble { transform: scale(0.94); transition: transform .18s ease; }
+        .message.removing { opacity: 0; transform: scale(.9); transition: opacity .18s ease, transform .18s ease; }
+        .msg-deleted { font-style: italic; color: #8e8e93; font-size: 13px; }
+
+        /* group: who said it */
+        .message.named { flex-direction: column; align-items: flex-start; }
+        .msg-sender { font-size: 11px; color: #8e8e93; margin: 0 0 2px 11px; }
+
+        .contact-avatar.group { background: linear-gradient(180deg,#5ac8fa 0%, #007aff 100%); }
+        /* The h1 is position:absolute and centred, so it paints over static
+           siblings. This needs its own stacking position to stay visible,
+           and white — #007aff on the blue bar was invisible. */
+        .nav-right { display: flex; align-items: center; gap: 9px; margin-left: auto; position: relative; z-index: 2; }
+        .nav-new {
+            display: flex; align-items: center; gap: 4px;
+            background: rgba(255,255,255,0.22);
+            border: 1px solid rgba(255,255,255,0.55);
+            border-radius: 6px;
+            color: #fff; font-size: 12px; font-weight: 600; font-family: inherit;
+            padding: 5px 9px; cursor: pointer;
+            text-shadow: 0 -1px 0 rgba(0,0,0,0.35);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.4);
+            white-space: nowrap;
+        }
+        .nav-new:active { background: rgba(255,255,255,0.4); }
+
+        /* new group sheet */
+        .group-modal { position: fixed; inset: 0; background: #fff; display: none; flex-direction: column; z-index: 3100; }
+        .group-modal.show { display: flex; }
+        .group-header { display: flex; align-items: center; padding: 12px 14px; border-bottom: 0.5px solid #d1d1d6; background: #f7f7f7; }
+        .group-header-title { font-size: 16px; font-weight: 600; }
+        .group-cancel { background: none; border: none; color: #007aff; font-size: 16px; font-family: inherit; cursor: pointer; }
+        .group-create { margin-left: auto; background: none; border: none; color: #007aff; font-size: 16px; font-weight: 600; font-family: inherit; cursor: pointer; }
+        .group-create:disabled { color: #c7c7cc; }
+        .group-body { flex: 1; overflow-y: auto; padding: 14px; }
+        .group-name-input { width: 100%; padding: 12px; border: 1px solid #d1d1d6; border-radius: 10px; font-size: 16px; font-family: inherit; margin-bottom: 16px; }
+        .group-pick { display: flex; align-items: center; gap: 11px; padding: 11px 4px; border-bottom: 0.5px solid #eee; cursor: pointer; }
+        .group-pick-avatar { width: 40px; height: 40px; border-radius: 20px; background: linear-gradient(180deg,#7ed321,#5ba015); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; overflow: hidden; flex: none; }
+        .group-pick-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .group-pick-name { flex: 1; font-size: 16px; }
+        .group-tick { width: 24px; height: 24px; border-radius: 12px; border: 1.5px solid #c7c7cc; flex: none; }
+        .group-pick.on .group-tick { background: #007aff; border-color: #007aff; position: relative; }
+        .group-pick.on .group-tick::after { content: '✓'; color: #fff; font-size: 15px; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+
+        /* Delete confirmation sheet */
+        .del-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: none; align-items: flex-end; justify-content: center; z-index: 3200; }
+        .del-modal.show { display: flex; }
+        .del-sheet { width: 100%; max-width: 420px; padding: 10px 10px calc(10px + env(safe-area-inset-bottom)); }
+        .del-group { background: rgba(250,250,250,0.94); backdrop-filter: blur(20px); border-radius: 13px; overflow: hidden; margin-bottom: 8px; }
+        .del-label { padding: 13px; text-align: center; font-size: 13px; color: #8e8e93; border-bottom: 0.5px solid #d1d1d6; }
+        .del-act { width: 100%; padding: 17px; border: none; background: none; font-family: inherit; font-size: 20px; color: #ff3b30; cursor: pointer; }
+        .del-act:active { background: rgba(0,0,0,0.06); }
+        .del-cancel { width: 100%; padding: 17px; border: none; border-radius: 13px; background: #fff; font-family: inherit; font-size: 20px; font-weight: 600; color: #007aff; cursor: pointer; }
+        .message.sent .bubble { background: linear-gradient(180deg, #95ec5d 0%, #7fe033 50%, #68d029 50%, #7ad93a 100%); color: #000; border-radius: 18px 18px 4px 18px; border: 1px solid #4fa91a; box-shadow: 0 1px 2px rgba(0,0,0,0.15); }
+        .message.received .bubble { background: linear-gradient(180deg, #fff 0%, #f5f5f5 50%, #e8e8e8 50%, #f0f0f0 100%); color: #000; border-radius: 18px 18px 18px 4px; border: 1px solid #c8c8cc; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        
+        .typing-indicator { display: none; padding: 0 10px 10px 10px; background: #c5c5c5; }
+        .typing-indicator.show { display: block; }
+        .typing-bubble { display: inline-block; background: linear-gradient(180deg, #fff 0%, #e8e8e8 100%); padding: 10px 14px; border-radius: 18px; border: 1px solid #c8c8cc; }
+        .typing-dots { display: flex; gap: 4px; }
+        .typing-dots span { width: 8px; height: 8px; background: #8e8e93; border-radius: 50%; animation: typingDot 1.4s infinite; }
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typingDot { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-4px); opacity: 1; } }
+        
+        /* iOS 6 Style App Drawer */
+        .app-drawer { 
+            display: none; 
+            background: linear-gradient(180deg, #d0d0d0 0%, #b8b8b8 100%); 
+            border-top: 1px solid #888; 
+            padding: 15px 10px; 
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 -2px 6px rgba(0,0,0,0.15);
+        }
+        .app-drawer.show { display: block; }
+        .app-drawer-scroll { display: flex; gap: 20px; overflow-x: auto; padding: 5px; justify-content: center; }
+        .app-icon { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            cursor: pointer; 
+            min-width: 60px;
+        }
+        .app-icon:active .app-icon-btn { transform: scale(0.95); }
+        .app-icon-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 6px;
+            border: 1px solid rgba(0,0,0,0.25);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 3px 6px rgba(0,0,0,0.25);
+            transition: transform 0.1s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Photos Icon - Camera style */
+        .app-icon-btn.photos { 
+            background: linear-gradient(180deg, #8e8e93 0%, #636366 100%); 
+        }
+        .app-icon-btn.photos::before {
+            content: '';
+            width: 32px;
+            height: 24px;
+            background: linear-gradient(180deg, #333 0%, #1a1a1a 100%);
+            border-radius: 4px;
+            border: 2px solid #222;
+        }
+        .app-icon-btn.photos::after {
+            content: '';
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: linear-gradient(180deg, #555 0%, #333 100%);
+            border-radius: 50%;
+            border: 2px solid #222;
+        }
+        
+        /* GIF Icon */
+        .app-icon-btn.gif { 
+            background: linear-gradient(180deg, #5856d6 0%, #3634a3 100%); 
+            color: #fff; 
+            font-size: 18px; 
+            font-weight: 800; 
+            text-shadow: 0 -1px 0 rgba(0,0,0,0.3);
+        }
+        
+        /* Location Icon - Pin style */
+        .app-icon-btn.location { 
+            background: linear-gradient(180deg, #4cd964 0%, #2ecc71 100%); 
+        }
+        .app-icon-btn.location::before {
+            content: '';
+            width: 20px;
+            height: 26px;
+            background: linear-gradient(180deg, #ff3b30 0%, #c0392b 100%);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            border: 2px solid #a33 ;
+            position: relative;
+        }
+        .app-icon-btn.location::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #fff;
+            border-radius: 50%;
+            top: 18px;
+        }
+        
+        /* Music Icon - Note style */
+        .app-icon-btn.music { 
+            background: linear-gradient(180deg, #fc3158 0%, #d11c4e 100%); 
+        }
+        .app-icon-btn.music::before {
+            content: '';
+            width: 8px;
+            height: 22px;
+            background: #fff;
+            border-radius: 2px;
+            position: relative;
+            left: 6px;
+        }
+        .app-icon-btn.music::after {
+            content: '';
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: #fff;
+            border-radius: 50%;
+            bottom: 14px;
+            left: 14px;
+        }
+        
+        .app-icon-label { font-size: 11px; color: #333; text-align: center; font-weight: 500; }
+        
+        /* iOS 6 Input Area */
+        .input-area { 
+            flex-shrink: 0; 
+            background: linear-gradient(180deg, #d0d0d0 0%, #bbb 100%); 
+            border-top: 1px solid #888; 
+            padding: 8px 10px; 
+            display: flex; 
+            align-items: flex-end; 
+            gap: 8px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
+        }
+        .plus-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 16px;
+            background: linear-gradient(180deg, #7a7a7e 0%, #5a5a5e 100%);
+            border: 1px solid #3a3a3e;
+            color: #fff;
+            font-size: 26px;
+            font-weight: 300;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), 0 1px 2px rgba(0,0,0,0.3);
+            flex-shrink: 0;
+            line-height: 1;
+            padding-bottom: 3px;
+        }
+        .plus-btn:active { background: linear-gradient(180deg, #5a5a5e 0%, #3a3a3e 100%); }
+        .plus-btn.active { 
+            background: linear-gradient(180deg, #5856d6 0%, #3634a3 100%); 
+            border-color: #2c2a8c; 
+            transform: rotate(45deg);
+        }
+        
+        .input-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: flex-end;
+            background: #fff;
+            border: 1px solid #a0a0a5;
+            border-radius: 18px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .message-input { 
+            flex: 1; 
+            padding: 8px 12px; 
+            border: none;
+            font-size: 16px; 
+            font-family: inherit; 
+            resize: none; 
+            max-height: 100px; 
+            min-height: 34px; 
+            background: transparent;
+            line-height: 1.3;
+        }
+        .message-input:focus { outline: none; }
+        .send-btn { 
+            width: 60px; 
+            height: 32px; 
+            border: 1px solid #2a5f8f; 
+            border-radius: 5px; 
+            background: linear-gradient(180deg, #7eb4e2 0%, #5a9fd4 50%, #3d8ac7 50%, #5096ce 100%); 
+            color: #fff; 
+            font-size: 14px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            flex-shrink: 0; 
+            text-shadow: 0 -1px 0 rgba(0,0,0,0.3);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        /* GIF Modal - iOS 6 Style */
+        .gif-modal { 
+            position: absolute; 
+            bottom: 0; 
+            left: 0; 
+            right: 0; 
+            height: 60%; 
+            background: linear-gradient(180deg, #e8e8e8 0%, #d8d8d8 100%); 
+            border-top: 1px solid #888; 
+            display: none; 
+            flex-direction: column; 
+            z-index: 100; 
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.2);
+        }
+        .gif-modal.show { display: flex; }
+        .gif-header { 
+            padding: 10px 12px; 
+            background: linear-gradient(180deg, #b0d4f1 0%, #89b9de 50%, #5c9ec9 50%, #7ab4db 100%);
+            border-bottom: 1px solid #2c5b85; 
+            display: flex; 
+            gap: 10px; 
+            align-items: center;
+        }
+        .gif-header-title {
+            color: #fff;
+            font-weight: 600;
+            font-size: 17px;
+            text-shadow: 0 -1px 0 rgba(0,0,0,0.3);
+        }
+        .gif-search { 
+            flex: 1; 
+            padding: 8px 12px; 
+            border: 1px solid #a0a0a5; 
+            border-radius: 8px; 
+            font-size: 14px; 
+            background: #fff;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .gif-search:focus { outline: none; border-color: #5c9ec9; }
+        .gif-close { 
+            padding: 5px 12px;
+            border: 1px solid rgba(0,0,0,0.3);
+            background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 50%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.1) 100%);
+            color: #fff; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 14px; 
+            font-weight: 500;
+            text-shadow: 0 -1px 0 rgba(0,0,0,0.3);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
+        }
+        .gif-grid { flex: 1; overflow-y: auto; padding: 10px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+
+        /* ---- Music browser ---- */
+        .music-modal { position: fixed; inset: 0; background: #fff; display: none; flex-direction: column; z-index: 3100; }
+        .music-modal.show { display: flex; }
+        .music-header { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 0.5px solid #d1d1d6; background: #f7f7f7; }
+        .music-header-title { font-size: 16px; font-weight: 600; color: #000; }
+        .music-close { margin-left: auto; background: none; border: none; color: #007aff; font-size: 16px; font-family: inherit; cursor: pointer; }
+        .music-body { flex: 1; overflow-y: auto; padding: 14px; }
+        .music-input { width: 100%; padding: 12px; border: 1px solid #d1d1d6; border-radius: 10px; font-size: 15px; font-family: inherit; margin-bottom: 10px; }
+        .music-row { display: flex; gap: 8px; margin-bottom: 16px; }
+        .music-btn { flex: 1; padding: 12px; border: none; border-radius: 10px; background: #ff5500; color: #fff; font-size: 15px; font-family: inherit; cursor: pointer; }
+        .music-btn.alt { background: #e5e5ea; color: #000; }
+        .music-btn:disabled { opacity: .5; }
+        .music-note { font-size: 12px; color: #8e8e93; line-height: 1.5; margin-bottom: 16px; }
+        .music-section { font-size: 12px; font-weight: 600; color: #8e8e93; text-transform: uppercase; letter-spacing: .04em; margin: 18px 0 8px; }
+        .music-card { display: flex; gap: 11px; align-items: center; padding: 10px; border: 1px solid #e5e5ea; border-radius: 11px; margin-bottom: 8px; cursor: pointer; }
+        .music-card:active { background: #f2f2f7; }
+        .music-art { width: 52px; height: 52px; border-radius: 7px; background: linear-gradient(135deg,#ff8800,#ff5500); flex: none; object-fit: cover; }
+        .music-meta { min-width: 0; flex: 1; }
+        .music-title { font-size: 15px; color: #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .music-artist { font-size: 13px; color: #8e8e93; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* ---- Music message bubble ---- */
+        .bubble.has-track { padding: 0; overflow: hidden; width: 240px; }
+        .track-card iframe { width: 240px; height: 120px; border: 0; display: block; }
+        .track-cap { padding: 8px 11px; background: rgba(0,0,0,0.04); }
+        .track-cap b { display: block; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .track-cap span { font-size: 11px; color: #8e8e93; }
+        .gif-item { cursor: pointer; border-radius: 8px; overflow: hidden; aspect-ratio: 1; background: #ccc; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+        .gif-item img { width: 100%; height: 100%; object-fit: cover; }
+        .gif-item:active { opacity: 0.7; transform: scale(0.98); }
+        .gif-loading { text-align: center; padding: 40px; color: #666; font-size: 14px; }
+        .tenor-credit { text-align: center; padding: 8px; font-size: 11px; color: #666; background: linear-gradient(180deg, #d0d0d0 0%, #c0c0c0 100%); border-top: 1px solid #a0a0a0; }
+        
+        /* GamePigeon Icon */
+        .app-icon-btn.gamepigeon { 
+            background: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Cdefs%3E%3ClinearGradient id="gpbg2" x1="0%25" y1="0%25" x2="100%25" y2="100%25"%3E%3Cstop offset="0%25" style="stop-color:%234a90d9"/%3E%3Cstop offset="100%25" style="stop-color:%23357abd"/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill="url(%23gpbg2)" width="100" height="100" rx="20"/%3E%3Ccircle cx="30" cy="35" r="12" fill="white"/%3E%3Ccircle cx="70" cy="35" r="12" fill="%23e74c3c"/%3E%3Crect x="25" y="55" width="50" height="10" rx="5" fill="white" opacity="0.9"/%3E%3Ccircle cx="50" cy="78" r="12" fill="%232ecc71"/%3E%3Cpath d="M45 75 L50 70 L55 75 L55 83 L45 83 Z" fill="white"/%3E%3C/svg%3E') center/cover no-repeat;
+            padding: 0;
+            overflow: hidden;
+        }
+        .app-icon-btn.gamepigeon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 11px;
+        }
+        
+        /* GamePigeon Modal - Authentic Style */
+        .gamepigeon-modal {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80%;
+            background: #1c1c1e;
+            border-radius: 12px 12px 0 0;
+            display: none;
+            flex-direction: column;
+            z-index: 100;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+        }
+        .gamepigeon-modal.show { display: flex; }
+        .gp-grabber {
+            width: 36px;
+            height: 5px;
+            background: #5a5a5e;
+            border-radius: 3px;
+            margin: 8px auto 4px;
+            cursor: pointer;
+            padding: 8px 40px;
+            background-clip: content-box;
+        }
+        .gp-header {
+            padding: 6px 15px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .gp-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Cdefs%3E%3ClinearGradient id="gpbg" x1="0%25" y1="0%25" x2="100%25" y2="100%25"%3E%3Cstop offset="0%25" style="stop-color:%234a90d9"/%3E%3Cstop offset="100%25" style="stop-color:%23357abd"/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill="url(%23gpbg)" width="100" height="100"/%3E%3Ccircle cx="30" cy="35" r="12" fill="white"/%3E%3Ccircle cx="70" cy="35" r="12" fill="%23e74c3c"/%3E%3Crect x="25" y="55" width="50" height="10" rx="5" fill="white" opacity="0.9"/%3E%3Ccircle cx="50" cy="78" r="12" fill="%232ecc71"/%3E%3Cpath d="M45 75 L50 70 L55 75 L55 83 L45 83 Z" fill="white"/%3E%3C/svg%3E') center/cover no-repeat;
+        }
+        .gp-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .gp-header-tabs {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .gp-header-tab {
+            background: none;
+            border: none;
+            color: #8e8e93;
+            font-size: 22px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 0;
+        }
+        .gp-header-tab.active {
+            color: #fff;
+        }
+        .gp-header-divider {
+            color: #48484a;
+            font-size: 22px;
+            font-weight: 300;
+        }
+        .gp-games-grid {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 10px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .gp-game {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+        }
+        .gp-game:active .gp-game-img { transform: scale(0.95); opacity: 0.8; }
+        .gp-game-locked { opacity: 0.5; }
+        .gp-game-img {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 14px;
+            margin-bottom: 5px;
+            transition: transform 0.1s, opacity 0.1s;
+            object-fit: cover;
+            background: #2c2c2e;
+        }
+        .gp-game-badge {
+            position: absolute;
+            top: 3px;
+            right: 3px;
+            background: rgba(0,0,0,0.55);
+            border-radius: 10px;
+            padding: 2px 6px;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        .gp-game-badge-crown {
+            font-size: 11px;
+        }
+        .gp-game-badge-num {
+            color: #fff;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .gp-game-name {
+            font-size: 10px;
+            color: #fff;
+            text-align: center;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        
+        /* 8 Ball Game Screen - Vertical Table */
+        .eightball-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #1a1a1a;
+            display: none;
+            flex-direction: column;
+            z-index: 200;
+        }
+        .eightball-screen.show { display: flex; }
+        .eb-header {
+            padding: 8px 12px;
+            background: linear-gradient(180deg, #b0d4f1 0%, #89b9de 50%, #5c9ec9 50%, #7ab4db 100%);
+            border-bottom: 1px solid #2c5b85;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.4);
+        }
+        .eb-back, .eb-send {
+            background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 50%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.1) 100%);
+            border: 1px solid rgba(0,0,0,0.3);
+            border-radius: 5px;
+            padding: 5px 12px;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            text-shadow: 0 -1px 0 rgba(0,0,0,0.3);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
+        }
+        .eb-send {
+            background: linear-gradient(180deg, #7ed321 0%, #5ba015 50%, #4a8a12 50%, #5ba015 100%);
+            border-color: #3d7a0a;
+        }
+        .eb-title {
+            color: #fff;
+            font-weight: 700;
+            font-size: 18px;
+            text-shadow: 0 -1px 0 rgba(0,0,0,0.4);
+        }
+        .eb-game-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+        .eb-players-row {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 300px;
+            margin-bottom: 8px;
+            background: #2a2a2a;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+        .eb-player {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .eb-player-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 15px;
+            background: #444;
+            border: 2px solid #555;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .eb-player-avatar.active { border-color: #4cd964; box-shadow: 0 0 8px rgba(76,217,100,0.4); }
+        .eb-player-name {
+            color: #fff;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .eb-player-balls {
+            display: flex;
+            gap: 3px;
+            margin-top: 3px;
+        }
+        .eb-ball-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 5px;
+        }
+        .eb-ball-dot.solid { background: #ffc107; }
+        .eb-ball-dot.stripe { background: linear-gradient(90deg, #f44336 30%, #fff 30%, #fff 70%, #f44336 70%); }
+        .eb-ball-dot.done { opacity: 0.3; }
+        .eb-table-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        #poolCanvas {
+            display: block;
+            touch-action: none;
+            max-height: calc(100vh - 200px);
+            max-width: 100%;
+        }
+        .eb-msg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.85);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .eb-msg.show { opacity: 1; }
+        .eb-hint {
+            color: #666;
+            font-size: 12px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .eb-game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.92);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+        .eb-game-over.show { display: flex; }
+        .eb-go-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        .eb-go-title.win { color: #4cd964; }
+        .eb-go-title.lose { color: #ff3b30; }
+        .eb-go-btn {
+            background: linear-gradient(180deg, #4cd964 0%, #3cb850 50%, #32a646 50%, #3cb850 100%);
+            color: #fff;
+            border: 1px solid #2a8c3c;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-shadow: 0 -1px 0 rgba(0,0,0,0.3);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(76, 217, 100, 0.7); }
+            50% { transform: scale(1.05); box-shadow: 0 0 0 8px rgba(76, 217, 100, 0); }
+        }
+        
+        /* Game Message Bubble */
+        .bubble.game-invite {
+            padding: 0;
+            overflow: hidden;
+            background: transparent !important;
+            border: none !important;
+            max-width: 220px;
+            border-radius: 20px;
+        }
+        .game-invite-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 200px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .game-invite-preview {
+            width: 200px;
+            height: 140px;
+            overflow: hidden;
+            position: relative;
+            background: #1a5c36;
+        }
+        .game-invite-table {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 140"%3E%3Crect fill="%231a5c36" width="200" height="140"/%3E%3Crect fill="%235d3a1a" x="8" y="6" width="184" height="128" rx="6"/%3E%3Crect fill="%230d5c36" x="16" y="14" width="168" height="112" rx="4"/%3E%3Ccircle cx="20" cy="18" r="10" fill="%23111"/%3E%3Ccircle cx="100" cy="18" r="10" fill="%23111"/%3E%3Ccircle cx="180" cy="18" r="10" fill="%23111"/%3E%3Ccircle cx="20" cy="122" r="10" fill="%23111"/%3E%3Ccircle cx="100" cy="122" r="10" fill="%23111"/%3E%3Ccircle cx="180" cy="122" r="10" fill="%23111"/%3E%3Ccircle cx="55" cy="70" r="6" fill="white" stroke="%23ccc" stroke-width="1"/%3E%3Ccircle cx="130" cy="50" r="6" fill="%23f1c40f"/%3E%3Ccircle cx="142" cy="58" r="6" fill="%231565C0"/%3E%3Ccircle cx="136" cy="70" r="6" fill="%23111"/%3E%3Ctext x="134" y="74" font-size="8" fill="white" text-anchor="middle"%3E8%3C/text%3E%3Ccircle cx="148" cy="50" r="6" fill="%23D32F2F"/%3E%3Ccircle cx="154" cy="62" r="6" fill="%237B1FA2"/%3E%3C/svg%3E') center/cover no-repeat;
+        }
+        .game-invite-logo {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            z-index: 2;
+            background: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Cdefs%3E%3ClinearGradient id="gpbg3" x1="0%25" y1="0%25" x2="100%25" y2="100%25"%3E%3Cstop offset="0%25" style="stop-color:%234a90d9"/%3E%3Cstop offset="100%25" style="stop-color:%23357abd"/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill="url(%23gpbg3)" width="100" height="100" rx="18"/%3E%3Ccircle cx="30" cy="35" r="12" fill="white"/%3E%3Ccircle cx="70" cy="35" r="12" fill="%23e74c3c"/%3E%3Crect x="25" y="55" width="50" height="10" rx="5" fill="white" opacity="0.9"/%3E%3Ccircle cx="50" cy="78" r="12" fill="%232ecc71"/%3E%3C/svg%3E') center/cover no-repeat;
+        }
+        .game-invite-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+        }
+        .game-invite-icon.play-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(140, 200, 60, 0.95);
+            border-radius: 50%;
+            border: 3px solid rgba(180, 220, 100, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .game-invite-icon.play-icon::after {
+            content: '';
+            width: 0;
+            height: 0;
+            border-left: 20px solid #fff;
+            border-top: 12px solid transparent;
+            border-bottom: 12px solid transparent;
+            margin-left: 4px;
+        }
+        .game-invite-icon.crown-icon {
+            width: 90px;
+            height: 75px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 90"><defs><filter id="crownShadow"><feDropShadow dx="2" dy="2" stdDeviation="2" flood-opacity="0.4"/></filter></defs><g filter="url(%23crownShadow)"><path d="M60 20 C62 20 64 18 66 12 C68 18 76 22 86 22 L92 50 L96 72 Q60 62 24 72 L28 50 L34 22 C44 22 52 18 54 12 C56 18 58 20 60 20 Z" fill="%23f4d03f" stroke="%23fff" stroke-width="4"/><path d="M60 20 C62 20 64 18 66 12 C68 18 76 22 86 22 L92 50 L96 72 Q60 62 24 72 L28 50 L34 22 C44 22 52 18 54 12 C56 18 58 20 60 20 Z" fill="%23f4d03f" stroke="%23333" stroke-width="2"/><circle cx="34" cy="14" r="7" fill="%23f4d03f" stroke="%23fff" stroke-width="3"/><circle cx="34" cy="14" r="7" fill="%23f4d03f" stroke="%23333" stroke-width="1.5"/><circle cx="60" cy="8" r="7" fill="%23f4d03f" stroke="%23fff" stroke-width="3"/><circle cx="60" cy="8" r="7" fill="%23f4d03f" stroke="%23333" stroke-width="1.5"/><circle cx="86" cy="14" r="7" fill="%23f4d03f" stroke="%23fff" stroke-width="3"/><circle cx="86" cy="14" r="7" fill="%23f4d03f" stroke="%23333" stroke-width="1.5"/><ellipse cx="45" cy="52" rx="5" ry="6" fill="%23a08030"/><ellipse cx="60" cy="56" rx="5" ry="6" fill="%23a08030"/><ellipse cx="75" cy="52" rx="5" ry="6" fill="%23a08030"/></g></svg>') center/contain no-repeat;
+        }
+        .game-invite-icon.lose-icon {
+            width: 75px;
+            height: 75px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><filter id="xShadow"><feDropShadow dx="2" dy="2" stdDeviation="2" flood-opacity="0.4"/></filter></defs><g filter="url(%23xShadow)"><path d="M25 20 L38 33 L50 20 L62 33 L75 20 L80 25 L67 38 L80 50 L75 55 L62 42 L50 55 L38 42 L25 55 L20 50 L33 38 L20 25 Z" fill="%23e74c3c" stroke="%23fff" stroke-width="5" stroke-linejoin="round"/><path d="M25 20 L38 33 L50 20 L62 33 L75 20 L80 25 L67 38 L80 50 L75 55 L62 42 L50 55 L38 42 L25 55 L20 50 L33 38 L20 25 Z" fill="%23e74c3c" stroke="%23333" stroke-width="2" stroke-linejoin="round"/></g></svg>') center/contain no-repeat;
+        }
+        .game-invite-bar {
+            width: 100%;
+            background: #333;
+            padding: 10px 0;
+            text-align: center;
+        }
+        .game-invite-title {
+            font-weight: 700;
+            font-size: 14px;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .game-invite-subtitle {
+            display: none;
+        }
+        
+        /* Image Preview */
+        .image-preview { 
+            position: absolute; 
+            bottom: 60px; 
+            left: 10px; 
+            padding: 8px; 
+            background: linear-gradient(180deg, #fff 0%, #e8e8e8 100%); 
+            border: 1px solid #a0a0a0; 
+            border-radius: 12px; 
+            display: none; 
+            box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+        }
+        .image-preview.show { display: block; }
+        .preview-container { position: relative; display: inline-block; }
+        .preview-img { max-width: 120px; max-height: 120px; border-radius: 8px; display: block; }
+        .preview-remove { 
+            position: absolute; 
+            top: -10px; 
+            right: -10px; 
+            width: 24px; 
+            height: 24px; 
+            background: linear-gradient(180deg, #ff3b30 0%, #c42b22 100%); 
+            color: #fff; 
+            border: 2px solid #fff; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-size: 14px; 
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .user-mini-avatar { width: 28px; height: 28px; border-radius: 14px; background: linear-gradient(180deg, #7ed321 0%, #5ba015 100%); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #fff; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        .user-mini-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .user-mini-avatar { cursor: pointer; }
+        .user-mini-avatar:active { opacity: .6; }
+
+        /* ---- Profile sheet ---- */
+        .profile-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: none; align-items: flex-end; justify-content: center; z-index: 3000; }
+        .profile-modal.show { display: flex; }
+        .profile-sheet { width: 100%; max-width: 420px; background: #f7f7f7; border-radius: 14px 14px 0 0; padding: 22px 20px calc(22px + env(safe-area-inset-bottom)); animation: sheetUp .25s ease; }
+        @keyframes sheetUp { from { transform: translateY(100%); } to { transform: none; } }
+        .profile-big { width: 92px; height: 92px; border-radius: 46px; margin: 0 auto 14px; background: linear-gradient(180deg, #7ed321 0%, #5ba015 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 34px; font-weight: 600; overflow: hidden; }
+        .profile-big img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-name { text-align: center; font-size: 19px; font-weight: 600; color: #000; margin-bottom: 4px; }
+        .profile-hint { text-align: center; font-size: 12px; color: #8e8e93; margin-bottom: 20px; }
+        .profile-btn { display: block; width: 100%; padding: 14px; margin-bottom: 9px; border: none; border-radius: 11px; font-size: 16px; font-family: inherit; cursor: pointer; background: #007aff; color: #fff; }
+        .profile-btn.secondary { background: #e5e5ea; color: #ff3b30; }
+        .profile-btn.plain { background: #e5e5ea; color: #000; }
+        .profile-btn:disabled { opacity: .5; }
+        
+        .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, #e8e4df 0%, #d4cfc8 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
+        .loading-overlay.hidden { display: none; }
+        .loading-spinner { width: 40px; height: 40px; border: 3px solid rgba(0,0,0,0.1); border-top-color: #5c9ec9; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { margin-top: 20px; font-size: 16px; color: #666; }
+        .hidden { display: none !important; }
+        
+        /* NOT display:none — iOS Safari refuses to open the picker for a
+           hidden input. Kept in the layout but invisible instead. */
+        input[type="file"] { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; border: 0; padding: 0; margin: -1px; clip: rect(0 0 0 0); }
+    </style>
+</head>
+<body>
+    <div class="linen-bg"></div>
+    <div class="loading-overlay" id="loadingOverlay"><div class="loading-spinner"></div><div class="loading-text">Connecting...</div></div>
+    
+    <div class="app-container">
+        <div id="loginRequired" class="login-required hidden">
+            <h2>Sign In Required</h2>
+            <p>Sign in to Jarvis Portal to use iMessage.</p>
+            <a class="portal-link" href="index.html">Go to Jarvis Portal</a>
+        </div>
+
+        <div id="contactsScreen" class="contacts-screen">
+            <div class="nav-bar">
+                <div class="status-indicator"><div id="connectionStatus" class="status-dot"></div><span id="connectionText">Offline</span></div>
+                <h1>Messages</h1>
+                <div class="nav-right">
+                    <button class="nav-new" id="newGroupBtn" title="New group">+ Group</button>
+                    <div id="userAvatar" class="user-mini-avatar"></div>
+                </div>
+            </div>
+            <div class="search-bar"><input type="text" class="search-input" id="searchInput" placeholder="Search"></div>
+            <div class="online-section">
+                <div class="online-section-title">Users</div>
+                <div id="onlineUsers" class="online-users-scroll"><span style="color: #8e8e93; font-size: 13px;">No one online</span></div>
+            </div>
+            <div id="contactsList" class="contacts-list"></div>
+        </div>
+
+        <!-- New group -->
+        <div id="groupModal" class="group-modal">
+            <div class="group-header">
+                <button class="group-cancel" id="groupCancel">Cancel</button>
+                <span class="group-header-title" style="margin-left:12px">New group</span>
+                <button class="group-create" id="groupCreate" disabled>Create</button>
+            </div>
+            <div class="group-body">
+                <input type="text" class="group-name-input" id="groupNameInput" placeholder="Group name" maxlength="40">
+                <div class="music-note" id="groupHint">Type a name and pick at least one person.</div>
+                <div id="groupPickList"></div>
+            </div>
+        </div>
+
+        <!-- Music browser -->
+        <div id="musicModal" class="music-modal">
+            <div class="music-header">
+                <span class="music-header-title">Music</span>
+                <button class="music-close" id="musicClose">Done</button>
+            </div>
+            <div class="music-body">
+                <input type="text" class="music-input" id="musicInput" placeholder="Paste a SoundCloud link, or type to search">
+                <div class="music-row">
+                    <button class="music-btn" id="musicLoad">Load link</button>
+                    <button class="music-btn alt" id="musicBrowse">Search on SoundCloud</button>
+                </div>
+                <p class="music-note">SoundCloud closed public API signups, so searching happens on their site. Find a track, copy its link, paste it here.</p>
+                <div id="musicResult"></div>
+                <div id="musicRecentWrap"></div>
+            </div>
+        </div>
+
+        <!-- Delete message sheet -->
+        <div class="del-modal" id="delModal">
+            <div class="del-sheet">
+                <div class="del-group">
+                    <div class="del-label" id="delLabel">Delete this message?</div>
+                    <button class="del-act" id="delConfirm">Delete</button>
+                </div>
+                <button class="del-cancel" id="delCancel">Cancel</button>
+            </div>
+        </div>
+
+        <!-- Profile sheet -->
+        <div class="profile-modal" id="profileModal">
+            <div class="profile-sheet">
+                <div class="profile-big" id="profileBig"></div>
+                <div class="profile-name" id="profileName"></div>
+                <div class="profile-hint" id="profileHint">Tap change to pick a new photo</div>
+                <input type="file" id="avatarInput" accept="image/*">
+                <button class="profile-btn" id="avatarChange">Change photo</button>
+                <button class="profile-btn secondary" id="avatarRemove">Remove photo</button>
+                <button class="profile-btn plain" id="profileClose">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="chatScreen" class="chat-screen">
+        <div class="nav-bar">
+            <button id="backBtn" class="ios6-btn">Back</button>
+            <h1 id="chatTitle">Chat</h1>
+            <div class="status-indicator"><div id="chatUserStatus" class="status-dot"></div></div>
+        </div>
+        <div id="messagesArea" class="messages-area"></div>
+        <div id="typingIndicator" class="typing-indicator"><div class="typing-bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div></div>
+        
+        <!-- GIF Modal -->
+        <div id="gifModal" class="gif-modal">
+            <div class="gif-header">
+                <span class="gif-header-title">GIFs</span>
+                <input type="text" class="gif-search" id="gifSearch" placeholder="Search GIFs...">
+                <button class="gif-close" id="gifClose">Done</button>
+            </div>
+            <div id="gifGrid" class="gif-grid"></div>
+            <div class="tenor-credit">Powered by Giphy</div>
+        </div>
+        
+        <!-- Image Preview -->
+        <div id="imagePreview" class="image-preview">
+            <div class="preview-container">
+                <img id="previewImg" class="preview-img" src="">
+                <button class="preview-remove" id="previewRemove">x</button>
+            </div>
+        </div>
+        
+        <!-- App Drawer -->
+        <div id="appDrawer" class="app-drawer">
+            <div class="app-drawer-scroll">
+                <div class="app-icon" id="appPhotos">
+                    <div class="app-icon-btn photos"></div>
+                    <span class="app-icon-label">Photos</span>
+                </div>
+                <div class="app-icon" id="appGif">
+                    <div class="app-icon-btn gif">GIF</div>
+                    <span class="app-icon-label">GIFs</span>
+                </div>
+                <div class="app-icon" id="appGamePigeon">
+                    <div class="app-icon-btn gamepigeon"></div>
+                    <span class="app-icon-label">GamePigeon</span>
+                </div>
+                <div class="app-icon" id="appLocation">
+                    <div class="app-icon-btn location"></div>
+                    <span class="app-icon-label">Location</span>
+                </div>
+                <div class="app-icon" id="appMusic">
+                    <div class="app-icon-btn music"></div>
+                    <span class="app-icon-label">Music</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- GamePigeon Menu -->
+        <div id="gamePigeonModal" class="gamepigeon-modal">
+            <div class="gp-grabber"></div>
+            <div class="gp-header">
+                <div class="gp-logo"></div>
+                <div class="gp-header-tabs">
+                    <button class="gp-header-tab active">Games</button>
+                    <span class="gp-header-divider">|</span>
+                    <button class="gp-header-tab">Settings</button>
+                    <span class="gp-header-divider">|</span>
+                    <button class="gp-header-tab">Store</button>
+                </div>
+            </div>
+            <div class="gp-games-grid">
+                <div class="gp-game" id="game8Ball">
+                    <div class="gp-game-badge"><span class="gp-game-badge-crown">👑</span><span class="gp-game-badge-num">0</span></div>
+                    <img class="gp-game-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='felt' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%232d5a27'/%3E%3Cstop offset='100%25' style='stop-color:%231a3d17'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23felt)' width='100' height='100' rx='12'/%3E%3Crect fill='%235d3a1a' x='8' y='8' width='84' height='84' rx='4'/%3E%3Crect fill='%230d5c36' x='12' y='12' width='76' height='76' rx='2'/%3E%3Ccircle cx='50' cy='60' r='14' fill='%23111'/%3E%3Ccircle cx='50' cy='60' r='6' fill='white'/%3E%3Ctext x='50' y='63' text-anchor='middle' fill='black' font-size='9' font-weight='bold'%3E8%3C/text%3E%3Cline x1='50' y1='28' x2='50' y2='44' stroke='%23d4a574' stroke-width='2'/%3E%3Ccircle cx='50' cy='28' r='4' fill='white'/%3E%3C/svg%3E" alt="8 Ball">
+                    <span class="gp-game-name">8 Ball</span>
+                </div>
+                <div class="gp-game gp-game-locked">
+                    <img class="gp-game-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%234a90d9' width='100' height='100' rx='12'/%3E%3Cg fill='%23ddd' opacity='0.3'%3E%3Crect x='12' y='12' width='12' height='12'/%3E%3Crect x='36' y='12' width='12' height='12'/%3E%3Crect x='60' y='12' width='12' height='12'/%3E%3Crect x='12' y='36' width='12' height='12'/%3E%3Crect x='36' y='36' width='12' height='12'/%3E%3Crect x='60' y='36' width='12' height='12'/%3E%3Crect x='12' y='60' width='12' height='12'/%3E%3Crect x='36' y='60' width='12' height='12'/%3E%3Crect x='60' y='60' width='12' height='12'/%3E%3C/g%3E%3Ccircle cx='42' cy='42' r='6' fill='%23ff4444'/%3E%3Cellipse cx='55' cy='70' rx='18' ry='6' fill='%23333' opacity='0.5'/%3E%3C/svg%3E" alt="Sea Battle">
+                    <span class="gp-game-name">Sea Battle</span>
+                </div>
+                <div class="gp-game gp-game-locked">
+                    <div class="gp-game-badge"><span class="gp-game-badge-crown">👑</span><span class="gp-game-badge-num">1</span></div>
+                    <img class="gp-game-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23a0522d' width='100' height='100' rx='12'/%3E%3Crect fill='%238B4513' x='10' y='50' width='80' height='45' rx='4'/%3E%3Crect fill='white' x='30' y='15' width='40' height='30' rx='2'/%3E%3Crect fill='%23ccc' x='30' y='45' width='40' height='8'/%3E%3Ccircle cx='50' cy='75' r='10' fill='%23ff6600'/%3E%3Cpath d='M45 75 Q50 68 55 75' stroke='%23333' fill='none' stroke-width='2'/%3E%3C/svg%3E" alt="Basketball">
+                    <span class="gp-game-name">Basketball</span>
+                </div>
+                <div class="gp-game gp-game-locked">
+                    <div class="gp-game-badge"><span class="gp-game-badge-crown">👑</span><span class="gp-game-badge-num">2</span></div>
+                    <img class="gp-game-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%234a7c59' width='100' height='100' rx='12'/%3E%3Crect fill='%23228b22' x='5' y='70' width='90' height='25' rx='2'/%3E%3Crect fill='%238B4513' x='65' y='40' width='8' height='35'/%3E%3Ccircle cx='55' cy='50' r='22' fill='white' stroke='%23ddd' stroke-width='2'/%3E%3Ccircle cx='55' cy='50' r='16' fill='%23e74c3c'/%3E%3Ccircle cx='55' cy='50' r='10' fill='%233498db'/%3E%3Ccircle cx='55' cy='50' r='4' fill='%23f1c40f'/%3E%3C/svg%3E" alt="Archery">
+                    <span class="gp-game-name">Archery</span>
+                </div>
+                <div class="gp-game gp-game-locked">
+                    <div class="gp-game-badge"><span class="gp-game-badge-crown">👑</span><span class="gp-game-badge-num">12</span></div>
+                    <img class="gp-game-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%235d8aa8' width='100' height='100' rx='12'/%3E%3Crect fill='%23f5deb3' x='15' y='20' width='22' height='28' rx='3' stroke='%23d4a574' stroke-width='1'/%3E%3Crect fill='%23f5deb3' x='42' y='25' width='22' height='28' rx='3' stroke='%23d4a574' stroke-width='1'/%3E%3Crect fill='%23f5deb3' x='20' y='52' width='22' height='28' rx='3' stroke='%23d4a574' stroke-width='1'/%3E%3Crect fill='%23f5deb3' x='47' y='57' width='22' height='28' rx='3' stroke='%23d4a574' stroke-width='1'/%3E%3Ctext x='24' y='40' fill='%23333' font-size='16' font-weight='bold'%3EB%3C/text%3E%3Ctext x='51' y='45' fill='%23333' font-size='16' font-weight='bold'%3ER%3C/text%3E%3Ctext x='29' y='72' fill='%23333' font-size='16' font-weight='bold'%3EI%3C/text%3E%3Ctext x='56' y='77' fill='%23333' font-size='16' font-weight='bold'%3EP%3C/text%3E%3Ctext x='70' y='30' fill='%232ecc71' font-size='14' font-weight='bold'%3EG%3C/text%3E%3C/svg%3E" alt="Word Games">
+                    <span class="gp-game-name">Word Games</span>
+                </div>
+                <div class="gp-game gp-game-locked">
+                    <div class="gp-game-badge"><span class="gp-game-badge-crown">👑</span><span class="gp-game-badge-num">17</span></div>
+                    <img class="gp-game-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%231a1a1a' width='100' height='100' rx='12'/%3E%3Ccircle cx='50' cy='50' r='40' fill='%23111' stroke='%23888' stroke-width='3'/%3E%3Ccircle cx='50' cy='50' r='32' fill='%23228b22'/%3E%3Ccircle cx='50' cy='50' r='24' fill='%23111'/%3E%3Ccircle cx='50' cy='50' r='16' fill='%23228b22'/%3E%3Ccircle cx='50' cy='50' r='8' fill='%23e74c3c'/%3E%3Ccircle cx='50' cy='50' r='2' fill='%23228b22'/%3E%3Ctext x='85' y='20' fill='white' font-size='10'%3E20%3C/text%3E%3Ctext x='15' y='55' fill='white' font-size='10'%3E11%3C/text%3E%3C/svg%3E" alt="Darts">
+                    <span class="gp-game-name">Darts</span>
+                </div>
+                <div class="gp-game gp-game-locked">
+                    <div class="gp-game-badge"><span class="gp-game-badge-crown">👑</span><span class="gp-game-badge-num">3</span></div>
+                    <img class="gp-game-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%234a7c59' width='100' height='100' rx='12'/%3E%3Cellipse cx='30' cy='35' rx='11' ry='14' fill='%23e74c3c'/%3E%3Cellipse cx='50' cy='30' rx='11' ry='14' fill='%23e74c3c'/%3E%3Cellipse cx='70' cy='35' rx='11' ry='14' fill='%23e74c3c'/%3E%3Cellipse cx='40' cy='50' rx='11' ry='14' fill='%23e74c3c'/%3E%3Cellipse cx='60' cy='50' rx='11' ry='14' fill='%23e74c3c'/%3E%3Cellipse cx='50' cy='65' rx='11' ry='14' fill='%23e74c3c'/%3E%3Ccircle cx='75' cy='80' r='8' fill='white'/%3E%3C/svg%3E" alt="Cup Pong">
+                    <span class="gp-game-name">Cup Pong</span>
+                </div>
+                <div class="gp-game gp-game-locked">
+                    <div class="gp-game-badge"><span class="gp-game-badge-crown">👑</span><span class="gp-game-badge-num">1</span></div>
+                    <img class="gp-game-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%2390ee90' width='100' height='100' rx='12'/%3E%3Crect fill='%23228b22' x='8' y='70' width='84' height='22' rx='2'/%3E%3Ccircle cx='30' cy='75' r='5' fill='white'/%3E%3Crect fill='%23333' x='70' y='50' width='4' height='25'/%3E%3Crect fill='%23e74c3c' x='67' y='47' width='10' height='6'/%3E%3C/svg%3E" alt="Mini Golf">
+                    <span class="gp-game-name">Mini Golf</span>
+                </div>
+                <div class="gp-game gp-game-locked">
+                    <img class="gp-game-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23f5f5f5' width='100' height='100' rx='12'/%3E%3Ccircle cx='50' cy='45' r='28' fill='white' stroke='%23333' stroke-width='2'/%3E%3Cline x1='50' y1='22' x2='50' y2='45' stroke='%23333' stroke-width='2'/%3E%3Cline x1='50' y1='45' x2='65' y2='55' stroke='%23333' stroke-width='2'/%3E%3Cpath d='M 30 78 Q 50 90 70 78' fill='none' stroke='%23333' stroke-width='3'/%3E%3C/svg%3E" alt="Knockout">
+                    <span class="gp-game-name">Knockout</span>
+                </div>
+                <div class="gp-game gp-game-locked">
+                    <div class="gp-game-badge"><span class="gp-game-badge-crown">👑</span><span class="gp-game-badge-num">2</span></div>
+                    <img class="gp-game-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23228b22' width='100' height='100' rx='12'/%3E%3Crect fill='%23e74c3c' x='18' y='20' width='32' height='45' rx='5' stroke='%23fff' stroke-width='2'/%3E%3Crect fill='%23f1c40f' x='50' y='35' width='32' height='45' rx='5' stroke='%23fff' stroke-width='2'/%3E%3Ctext x='32' y='50' fill='white' font-size='22' font-weight='bold'%3E5%3C/text%3E%3C/svg%3E" alt="Crazy 8">
+                    <span class="gp-game-name">Crazy 8</span>
+                </div>
+                <div class="gp-game gp-game-locked">
+                    <div class="gp-game-badge"><span class="gp-game-badge-crown">👑</span><span class="gp-game-badge-num">12</span></div>
+                    <img class="gp-game-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%233498db' width='100' height='100' rx='12'/%3E%3Ccircle cx='25' cy='25' r='9' fill='%23e74c3c'/%3E%3Ccircle cx='50' cy='25' r='9' fill='%23e74c3c'/%3E%3Ccircle cx='75' cy='25' r='9' fill='%23e74c3c'/%3E%3Ccircle cx='25' cy='50' r='9' fill='%23e74c3c'/%3E%3Ccircle cx='50' cy='50' r='9' fill='%23f1c40f'/%3E%3Ccircle cx='75' cy='50' r='9' fill='%232c3e50' stroke='%23ccc'/%3E%3Ccircle cx='25' cy='75' r='9' fill='%232c3e50' stroke='%23ccc'/%3E%3Ccircle cx='50' cy='75' r='9' fill='%232c3e50' stroke='%23ccc'/%3E%3Ccircle cx='75' cy='75' r='9' fill='%232c3e50' stroke='%23ccc'/%3E%3C/svg%3E" alt="Four in a Row">
+                    <span class="gp-game-name">Four in a Row</span>
+                </div>
+                <div class="gp-game gp-game-locked">
+                    <div class="gp-game-badge"><span class="gp-game-badge-crown">👑</span><span class="gp-game-badge-num">1</span></div>
+                    <img class="gp-game-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%234a7c59' width='100' height='100' rx='12'/%3E%3Crect fill='%23333' x='55' y='30' width='20' height='8' rx='2'/%3E%3Crect fill='%23444' x='60' y='38' width='10' height='30'/%3E%3Ccircle cx='40' cy='60' r='18' fill='%23ff6600'/%3E%3Ccircle cx='40' cy='60' r='6' fill='%23333'/%3E%3C/svg%3E" alt="Paintball">
+                    <span class="gp-game-name">Paintball</span>
+                </div>
+                <div class="gp-game gp-game-locked">
+                    <div class="gp-game-badge"><span class="gp-game-badge-crown">👑</span><span class="gp-game-badge-num">4</span></div>
+                    <img class="gp-game-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%235a9fd4' width='100' height='100' rx='12'/%3E%3Cpolygon points='15,75 50,25 85,75' fill='%23f5deb3' stroke='%23333' stroke-width='2'/%3E%3Ccircle cx='30' cy='60' r='8' fill='%23e74c3c'/%3E%3Ccircle cx='50' cy='55' r='8' fill='%233498db'/%3E%3Ccircle cx='70' cy='60' r='8' fill='%232ecc71'/%3E%3Ccircle cx='50' cy='70' r='8' fill='%23f1c40f'/%3E%3C/svg%3E" alt="Shuffleboard">
+                    <span class="gp-game-name">Shuffleboard</span>
+                </div>
+                <div class="gp-game gp-game-locked">
+                    <img class="gp-game-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23444' width='100' height='100' rx='12'/%3E%3Crect fill='%23555' x='25' y='40' width='50' height='35' rx='4'/%3E%3Crect fill='%232ecc71' x='30' y='32' width='40' height='12' rx='2'/%3E%3Ccircle cx='50' cy='82' r='6' fill='%23666'/%3E%3C/svg%3E" alt="Tanks">
+                    <span class="gp-game-name">Tanks</span>
+                </div>
+                <div class="gp-game gp-game-locked">
+                    <img class="gp-game-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23222' width='100' height='100' rx='12'/%3E%3Crect fill='%23e74c3c' x='10' y='10' width='25' height='25'/%3E%3Crect fill='%233498db' x='37' y='10' width='25' height='25'/%3E%3Crect fill='%23f1c40f' x='64' y='10' width='25' height='25'/%3E%3Crect fill='%232ecc71' x='10' y='37' width='25' height='25'/%3E%3Crect fill='%239b59b6' x='37' y='37' width='25' height='25'/%3E%3Crect fill='%23e67e22' x='64' y='37' width='25' height='25'/%3E%3Crect fill='%231abc9c' x='10' y='64' width='25' height='25'/%3E%3Crect fill='%23e91e63' x='37' y='64' width='25' height='25'/%3E%3Crect fill='%2300bcd4' x='64' y='64' width='25' height='25'/%3E%3C/svg%3E" alt="Filler">
+                    <span class="gp-game-name">Filler</span>
+                </div>
+                <div class="gp-game gp-game-locked">
+                    <img class="gp-game-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23c0392b' width='100' height='100' rx='12'/%3E%3Crect fill='%23f5deb3' x='15' y='15' width='70' height='70' rx='2'/%3E%3Crect fill='%23111' x='15' y='15' width='17.5' height='17.5'/%3E%3Crect fill='%23111' x='50' y='15' width='17.5' height='17.5'/%3E%3Crect fill='%23111' x='32.5' y='32.5' width='17.5' height='17.5'/%3E%3Crect fill='%23111' x='67.5' y='32.5' width='17.5' height='17.5'/%3E%3Crect fill='%23111' x='15' y='50' width='17.5' height='17.5'/%3E%3Crect fill='%23111' x='50' y='50' width='17.5' height='17.5'/%3E%3Crect fill='%23111' x='32.5' y='67.5' width='17.5' height='17.5'/%3E%3Crect fill='%23111' x='67.5' y='67.5' width='17.5' height='17.5'/%3E%3Ccircle cx='58' cy='24' r='6' fill='%23333'/%3E%3Ccircle cx='41' cy='41' r='6' fill='%23c0392b'/%3E%3C/svg%3E" alt="Checkers">
+                    <span class="gp-game-name">Checkers</span>
+                </div>
+                <div class="gp-game gp-game-locked">
+                    <img class="gp-game-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23d4a574' width='100' height='100' rx='12'/%3E%3Crect fill='%23f5deb3' x='15' y='15' width='70' height='70' rx='2'/%3E%3Crect fill='%238B4513' x='15' y='15' width='17.5' height='17.5'/%3E%3Crect fill='%238B4513' x='50' y='15' width='17.5' height='17.5'/%3E%3Crect fill='%238B4513' x='32.5' y='32.5' width='17.5' height='17.5'/%3E%3Crect fill='%238B4513' x='67.5' y='32.5' width='17.5' height='17.5'/%3E%3Crect fill='%238B4513' x='15' y='50' width='17.5' height='17.5'/%3E%3Crect fill='%238B4513' x='50' y='50' width='17.5' height='17.5'/%3E%3Crect fill='%238B4513' x='32.5' y='67.5' width='17.5' height='17.5'/%3E%3Crect fill='%238B4513' x='67.5' y='67.5' width='17.5' height='17.5'/%3E%3Cpath d='M24 76 L24 70 L20 70 L24 64 L28 70 L24 70 Z' fill='%23111'/%3E%3Ccircle cx='58' cy='41' r='6' fill='white' stroke='%23333'/%3E%3C/svg%3E" alt="Chess">
+                    <span class="gp-game-name">Chess</span>
+                </div>
+                <div class="gp-game gp-game-locked">
+                    <div class="gp-game-badge"><span class="gp-game-badge-crown">👑</span><span class="gp-game-badge-num">1</span></div>
+                    <img class="gp-game-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23d4a574' width='100' height='100' rx='12'/%3E%3Crect fill='%23f5deb3' x='12' y='25' width='76' height='50' rx='8'/%3E%3Ccircle cx='28' cy='40' r='8' fill='%233498db'/%3E%3Ccircle cx='50' cy='40' r='8' fill='%233498db'/%3E%3Ccircle cx='72' cy='40' r='8' fill='%233498db'/%3E%3Ccircle cx='39' cy='60' r='8' fill='%233498db'/%3E%3Ccircle cx='61' cy='60' r='8' fill='%233498db'/%3E%3Ctext x='28' y='90' fill='white' font-size='12'%3E0%3C/text%3E%3Ctext x='72' y='90' fill='white' font-size='12'%3E4%3C/text%3E%3C/svg%3E" alt="Mancala">
+                    <span class="gp-game-name">Mancala</span>
+                </div>
+                <div class="gp-game gp-game-locked">
+                    <div class="gp-game-badge"><span class="gp-game-badge-crown">👑</span><span class="gp-game-badge-num">1</span></div>
+                    <img class="gp-game-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23ecf0f1' width='100' height='100' rx='12'/%3E%3Cg stroke='%233498db' stroke-width='3'%3E%3Cline x1='25' y1='15' x2='25' y2='85'/%3E%3Cline x1='50' y1='15' x2='50' y2='85'/%3E%3Cline x1='75' y1='15' x2='75' y2='85'/%3E%3Cline x1='15' y1='25' x2='85' y2='25'/%3E%3Cline x1='15' y1='50' x2='85' y2='50'/%3E%3Cline x1='15' y1='75' x2='85' y2='75'/%3E%3C/g%3E%3Ccircle cx='38' cy='38' r='4' fill='%233498db'/%3E%3Ccircle cx='63' cy='63' r='4' fill='%23e74c3c'/%3E%3C/svg%3E" alt="Dots & Boxes">
+                    <span class="gp-game-name">Dots & Boxes</span>
+                </div>
+                <div class="gp-game gp-game-locked">
+                    <img class="gp-game-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23f5deb3' width='100' height='100' rx='12'/%3E%3Cg fill='%23333'%3E%3Ccircle cx='30' cy='30' r='6'/%3E%3Ccircle cx='50' cy='50' r='6'/%3E%3Ccircle cx='70' cy='30' r='6'/%3E%3C/g%3E%3Cg fill='white' stroke='%23333'%3E%3Ccircle cx='40' cy='40' r='6'/%3E%3Ccircle cx='60' cy='60' r='6'/%3E%3Ccircle cx='50' cy='70' r='6'/%3E%3C/g%3E%3C/svg%3E" alt="Gomoku">
+                    <span class="gp-game-name">Gomoku</span>
+                </div>
+                <div class="gp-game gp-game-locked">
+                    <img class="gp-game-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%232ecc71' width='100' height='100' rx='12'/%3E%3Ccircle cx='30' cy='30' r='10' fill='%23111'/%3E%3Ccircle cx='50' cy='30' r='10' fill='%23111'/%3E%3Ccircle cx='70' cy='30' r='10' fill='white' stroke='%23333'/%3E%3Ccircle cx='30' cy='50' r='10' fill='%23111'/%3E%3Ccircle cx='50' cy='50' r='10' fill='white' stroke='%23333'/%3E%3Ccircle cx='70' cy='50' r='10' fill='%23111'/%3E%3Ccircle cx='30' cy='70' r='10' fill='white' stroke='%23333'/%3E%3Ccircle cx='50' cy='70' r='10' fill='%23111'/%3E%3Ccircle cx='70' cy='70' r='10' fill='white' stroke='%23333'/%3E%3C/svg%3E" alt="Reversi">
+                    <span class="gp-game-name">Reversi</span>
+                </div>
+                <div class="gp-game gp-game-locked">
+                    <div class="gp-game-badge"><span class="gp-game-badge-crown">👑</span><span class="gp-game-badge-num">3</span></div>
+                    <img class="gp-game-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%239b59b6' width='100' height='100' rx='12'/%3E%3Crect fill='%235d3a1a' x='15' y='15' width='70' height='70' rx='4'/%3E%3Crect fill='%230d5c36' x='20' y='20' width='60' height='60' rx='2'/%3E%3Ccircle cx='50' cy='55' r='12' fill='%23111'/%3E%3Ccircle cx='50' cy='55' r='5' fill='white'/%3E%3Ctext x='50' y='58' text-anchor='middle' fill='black' font-size='7' font-weight='bold'%3E9%3C/text%3E%3Ccircle cx='35' cy='40' r='8' fill='%23f1c40f'/%3E%3Ccircle cx='65' cy='40' r='8' fill='%23e74c3c'/%3E%3C/svg%3E" alt="9 Ball">
+                    <span class="gp-game-name">9 Ball</span>
+                </div>
+                <div class="gp-game gp-game-locked">
+                    <div class="gp-game-badge"><span class="gp-game-badge-crown">👑</span><span class="gp-game-badge-num">1</span></div>
+                    <img class="gp-game-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23111' width='100' height='100' rx='12'/%3E%3Ctext x='20' y='45' fill='%23e74c3c' font-size='28' font-weight='bold'%3E?%3C/text%3E%3Ctext x='50' y='65' fill='%232ecc71' font-size='28' font-weight='bold'%3E?%3C/text%3E%3Ctext x='70' y='40' fill='%233498db' font-size='28' font-weight='bold'%3E?%3C/text%3E%3C/svg%3E" alt="20 Questions">
+                    <span class="gp-game-name">20 Questions</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 8 Ball Game Screen -->
+        <div id="eightBallScreen" class="eightball-screen">
+            <div class="eb-header">
+                <button class="eb-back" id="ebBack">Back</button>
+                <span class="eb-title">8 Ball</span>
+                <button class="eb-send" id="ebSend">Send</button>
+            </div>
+            <div class="eb-game-container">
+                <div class="eb-players-row">
+                    <div class="eb-player">
+                        <div class="eb-player-avatar active" id="ebAvatar1">Y</div>
+                        <div>
+                            <div class="eb-player-name">You</div>
+                            <div class="eb-player-balls" id="ebPlayer1Balls"></div>
+                        </div>
+                    </div>
+                    <div class="eb-player">
+                        <div class="eb-player-avatar" id="ebAvatar2">O</div>
+                        <div>
+                            <div class="eb-player-name">Opponent</div>
+                            <div class="eb-player-balls" id="ebPlayer2Balls"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="eb-table-wrap">
+                    <canvas id="poolCanvas" width="300" height="520"></canvas>
+                    <div class="eb-msg" id="ebMsg">Your Turn</div>
+                </div>
+                <div class="eb-hint">Drag to aim · Release to shoot</div>
+                <div class="eb-game-over" id="ebGameOver">
+                    <div class="eb-go-title" id="ebGoTitle">You Win!</div>
+                    <button class="eb-go-btn" id="ebPlayAgain">Play Again</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="input-area">
+            <button class="plus-btn" id="plusBtn">+</button>
+            <input type="file" id="imageInput" accept="image/*">
+            <div class="input-wrapper">
+                <textarea id="messageInput" class="message-input" placeholder="iMessage" rows="1"></textarea>
+            </div>
+            <button id="sendBtn" class="send-btn" disabled>Send</button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <!-- your Firebase keys — edit firebase-config.js, not this file -->
+    <script src="firebase-config.js"></script>
+
+    <script>
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const rtdb = firebase.database();
+        const firestore = firebase.firestore();
+
+        const MAX_MESSAGES = 100;
+
+        let currentUser = null;
+        let userData = null;
+        let currentChatUser = null;
+        const userCache = {};
+        const spunMessages = new Set();
+        let pendingImage = null;
+        let pendingIsGif = false;   // animated uploads must skip the canvas
+
+        const $ = id => document.getElementById(id);
+        const loadingOverlay = $('loadingOverlay');
+        const loginRequired = $('loginRequired');
+        const contactsScreen = $('contactsScreen');
+        const chatScreen = $('chatScreen');
+        const messagesArea = $('messagesArea');
+        const messageInput = $('messageInput');
+        const sendBtn = $('sendBtn');
+        const chatTitle = $('chatTitle');
+        const contactsList = $('contactsList');
+        const onlineUsers = $('onlineUsers');
+        const connectionStatus = $('connectionStatus');
+        const connectionText = $('connectionText');
+        const chatUserStatus = $('chatUserStatus');
+        const typingIndicator = $('typingIndicator');
+        const userAvatar = $('userAvatar');
+        const searchInput = $('searchInput');
+        const backBtn = $('backBtn');
+        const gifModal = $('gifModal');
+        const gifSearch = $('gifSearch');
+        const gifGrid = $('gifGrid');
+        const gifClose = $('gifClose');
+        const imageInput = $('imageInput');
+        const imagePreview = $('imagePreview');
+        const previewImg = $('previewImg');
+        const previewRemove = $('previewRemove');
+        const plusBtn = $('plusBtn');
+        const appDrawer = $('appDrawer');
+        const appPhotos = $('appPhotos');
+        const appGif = $('appGif');
+        const appLocation = $('appLocation');
+        const appMusic = $('appMusic');
+
+        function triggerDylanSpin() {
+            if (chatScreen.classList.contains('spinning')) return;
+            chatScreen.classList.add('spinning');
+            setTimeout(() => chatScreen.classList.remove('spinning'), 5000);
+        }
+
+        plusBtn.onclick = () => {
+            const isOpen = appDrawer.classList.toggle('show');
+            plusBtn.classList.toggle('active', isOpen);
+            gifModal.classList.remove('show');
+        };
+
+        appPhotos.onclick = () => {
+            appDrawer.classList.remove('show');
+            plusBtn.classList.remove('active');
+            imageInput.click();
+        };
+
+        appGif.onclick = () => {
+            appDrawer.classList.remove('show');
+            plusBtn.classList.remove('active');
+            gifModal.classList.add('show');
+            searchGifs('');
+            setTimeout(() => gifSearch.focus(), 100);
+        };
+
+        /* ===================== LOCATION =====================
+           Coordinates only — no API key and no map provider account.
+           The preview is an OpenStreetMap embed; tapping it opens the
+           full map in a new tab. Needs HTTPS, which GitHub Pages is.
+           ==================================================== */
+        appLocation.onclick = () => {
+            appDrawer.classList.remove('show');
+            plusBtn.classList.remove('active');
+
+            if (!currentChatUser) return;
+            if (!navigator.geolocation) {
+                alert('This browser has no location support.');
+                return;
+            }
+
+            const original = messageInput.placeholder;
+            messageInput.placeholder = 'Finding your location…';
+
+            navigator.geolocation.getCurrentPosition(
+                async pos => {
+                    messageInput.placeholder = original;
+                    try {
+                        await sendLocation(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
+                    } catch (err) {
+                        alert('Could not send your location: ' + err.message);
+                    }
+                },
+                err => {
+                    messageInput.placeholder = original;
+                    const why = {
+                        1: 'Location permission was denied. Allow it in your browser settings for this site.',
+                        2: 'Your location is unavailable right now.',
+                        3: 'Finding your location took too long. Try again.'
+                    }[err.code] || err.message;
+                    alert(why);
+                },
+                { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 }
+            );
+        };
+
+        async function sendLocation(lat, lng, accuracy) {
+            const chatId = activeChatId();
+
+            await rtdb.ref('/imessage/messages/'+chatId).push({
+                type: 'location',
+                lat: Number(lat),
+                lng: Number(lng),
+                accuracy: Math.round(accuracy || 0),
+                senderId: currentUser.uid,
+                senderName: userData.username,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+
+            await fanOut({ lastMessage: 'Location', lastMessageTime: firebase.database.ServerValue.TIMESTAMP });
+        }
+
+        /* Coordinates arrive from the database, so treat them as untrusted
+           until proven to be real numbers in range. */
+        function validCoords(lat, lng) {
+            // Number(null) is 0, so a message with missing coordinates would
+            // otherwise map to 0,0 in the Atlantic. Require actual numbers.
+            if (typeof lat !== 'number' || typeof lng !== 'number') return null;
+            return Number.isFinite(lat) && Number.isFinite(lng)
+                && Math.abs(lat) <= 90 && Math.abs(lng) <= 180
+                ? { lat, lng } : null;
+        }
+
+        function buildMapBubble(m) {
+            const c = validCoords(m.lat, m.lng);
+            const bub = document.createElement('div');
+
+            if (!c) {
+                bub.className = 'bubble';
+                bub.textContent = '[location unavailable]';
+                return bub;
+            }
+
+            bub.className = 'bubble has-media has-map';
+            const card = document.createElement('div');
+            card.className = 'map-card';
+
+            const d = 0.004;
+            const bbox = [c.lng - d, c.lat - d, c.lng + d, c.lat + d].join('%2C');
+            const frame = document.createElement('iframe');
+            frame.src = 'https://www.openstreetmap.org/export/embed.html?bbox=' + bbox +
+                        '&layer=mapnik&marker=' + c.lat + '%2C' + c.lng;
+            frame.setAttribute('loading', 'lazy');
+            frame.setAttribute('scrolling', 'no');
+            frame.setAttribute('sandbox', '');
+            frame.title = 'Shared location';
+
+            const cap = document.createElement('div');
+            cap.className = 'map-caption';
+            const b = document.createElement('b');
+            b.textContent = 'Shared location';
+            const sp = document.createElement('span');
+            sp.textContent = c.lat.toFixed(5) + ', ' + c.lng.toFixed(5) +
+                             (m.accuracy ? '  ·  ±' + m.accuracy + 'm' : '');
+            cap.append(b, sp);
+
+            card.append(frame, cap);
+            card.onclick = () => window.open(
+                'https://www.openstreetmap.org/?mlat=' + c.lat + '&mlon=' + c.lng + '#map=16/' + c.lat + '/' + c.lng,
+                '_blank', 'noopener'
+            );
+
+            bub.appendChild(card);
+            return bub;
+        }
+
+        /* ===================== MUSIC (SOUNDCLOUD) =====================
+           SoundCloud stopped handing out API keys, so there's no search
+           endpoint to call. Two things still work without any key:
+
+             oEmbed  -> https://soundcloud.com/oembed  (title + artwork)
+             Player  -> https://w.soundcloud.com/player (playable embed)
+
+           So: search happens on soundcloud.com, you paste the link back,
+           and the message carries a real inline player.
+           ============================================================= */
+        const musicModal  = $('musicModal');
+        const musicInput  = $('musicInput');
+        const musicResult = $('musicResult');
+        const musicLoad   = $('musicLoad');
+        let pendingTrack = null;
+
+        appMusic.onclick = () => {
+            appDrawer.classList.remove('show');
+            plusBtn.classList.remove('active');
+            musicModal.classList.add('show');
+            musicResult.innerHTML = '';
+            pendingTrack = null;
+            renderRecentTracks();
+            setTimeout(() => musicInput.focus(), 100);
+        };
+
+        $('musicClose').onclick = () => musicModal.classList.remove('show');
+
+        $('musicBrowse').onclick = () => {
+            const q = musicInput.value.trim();
+            window.open(q
+                ? 'https://soundcloud.com/search?q=' + encodeURIComponent(q)
+                : 'https://soundcloud.com/discover',
+                '_blank', 'noopener');
+        };
+
+        /* Only genuine SoundCloud links get turned into a player. */
+        function safeTrackUrl(u) {
+            if (typeof u !== 'string') return '';
+            try {
+                const parsed = new URL(u.trim());
+                if (parsed.protocol !== 'https:') return '';
+                const host = parsed.hostname.toLowerCase();
+                const ok = host === 'soundcloud.com' || host === 'www.soundcloud.com'
+                        || host === 'on.soundcloud.com' || host === 'm.soundcloud.com'
+                        || host === 'api.soundcloud.com';
+                return ok && parsed.pathname.length > 1 ? parsed.href : '';
+            } catch (e) { return ''; }
+        }
+
+        function playerSrc(url) {
+            return 'https://w.soundcloud.com/player/?url=' + encodeURIComponent(url) +
+                   '&color=%23ff5500&auto_play=false&hide_related=true' +
+                   '&show_comments=false&show_user=true&show_reposts=false&visual=false';
+        }
+
+        musicLoad.onclick = () => loadTrack(musicInput.value);
+        musicInput.addEventListener('keydown', e => { if (e.key === 'Enter') loadTrack(musicInput.value); });
+
+        async function loadTrack(raw) {
+            const url = safeTrackUrl(raw);
+            if (!url) {
+                musicResult.innerHTML = '<p class="music-note">That doesn\'t look like a SoundCloud link. It should start with https://soundcloud.com/</p>';
+                return;
+            }
+
+            musicLoad.disabled = true;
+            musicResult.innerHTML = '<p class="music-note">Looking it up…</p>';
+
+            /* oEmbed just gives us a nicer title and artwork. If it's
+               blocked or offline we still send the track — the player
+               embed works regardless, since iframes aren't subject to CORS. */
+            let title = 'SoundCloud track', author = '', art = '';
+            try {
+                const res = await fetch('https://soundcloud.com/oembed?format=json&url=' + encodeURIComponent(url));
+                if (res.ok) {
+                    const meta = await res.json();
+                    title  = meta.title || title;
+                    author = meta.author_name || '';
+                    art    = safeImageUrl(meta.thumbnail_url) || '';
+                }
+            } catch (e) {
+                console.warn('oEmbed lookup failed, sending without metadata:', e);
+            }
+
+            pendingTrack = { url, title, author, art };
+            musicLoad.disabled = false;
+            musicResult.innerHTML = '';
+            musicResult.appendChild(trackCard(pendingTrack, () => sendTrack(pendingTrack)));
+            musicResult.insertAdjacentHTML('beforeend', '<p class="music-note">Tap the card to send it.</p>');
+        }
+
+        function trackCard(t, onTap) {
+            const card = document.createElement('div');
+            card.className = 'music-card';
+
+            const art = document.createElement('img');
+            art.className = 'music-art';
+            if (t.art) art.src = t.art;
+            art.alt = '';
+
+            const meta = document.createElement('div');
+            meta.className = 'music-meta';
+            const ti = document.createElement('div');
+            ti.className = 'music-title';
+            ti.textContent = t.title;
+            const ar = document.createElement('div');
+            ar.className = 'music-artist';
+            ar.textContent = t.author || 'SoundCloud';
+            meta.append(ti, ar);
+
+            card.append(art, meta);
+            card.onclick = onTap;
+            return card;
+        }
+
+        async function sendTrack(t) {
+            if (!currentChatUser || !t) return;
+            const chatId = activeChatId();
+            musicModal.classList.remove('show');
+
+            try {
+                await rtdb.ref('/imessage/messages/'+chatId).push({
+                    type: 'music',
+                    trackUrl: t.url,
+                    trackTitle: t.title || '',
+                    trackAuthor: t.author || '',
+                    trackArt: t.art || '',
+                    senderId: currentUser.uid,
+                    senderName: userData.username,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
+
+                await fanOut({ lastMessage: '♪ ' + (t.title || 'Track'), lastMessageTime: firebase.database.ServerValue.TIMESTAMP });
+
+                rememberTrack(t);
+            } catch (err) {
+                alert('Could not send that track: ' + err.message);
+            }
+        }
+
+        /* Recently shared tracks, kept on your own user node so they
+           follow you between devices. */
+        async function rememberTrack(t) {
+            try {
+                const ref = rtdb.ref('/imessage/users/'+currentUser.uid+'/recentTracks');
+                const snap = await ref.once('value');
+                const list = (snap.val() || []).filter(x => x && x.url !== t.url);
+                list.unshift({ url: t.url, title: t.title || '', author: t.author || '', art: t.art || '' });
+                await ref.set(list.slice(0, 8));
+            } catch (e) { console.warn('Could not save recent track:', e); }
+        }
+
+        async function renderRecentTracks() {
+            const wrap = $('musicRecentWrap');
+            wrap.innerHTML = '';
+            try {
+                const snap = await rtdb.ref('/imessage/users/'+currentUser.uid+'/recentTracks').once('value');
+                const list = snap.val() || [];
+                if (!list.length) return;
+                wrap.insertAdjacentHTML('beforeend', '<div class="music-section">Recently shared</div>');
+                list.forEach(t => {
+                    if (!safeTrackUrl(t.url)) return;
+                    wrap.appendChild(trackCard(t, () => sendTrack(t)));
+                });
+            } catch (e) { /* no recents is fine */ }
+        }
+
+        function buildTrackBubble(m) {
+            const url = safeTrackUrl(m.trackUrl);
+            const bub = document.createElement('div');
+
+            if (!url) {
+                bub.className = 'bubble';
+                bub.textContent = '[track unavailable]';
+                return bub;
+            }
+
+            bub.className = 'bubble has-media has-track';
+            const card = document.createElement('div');
+            card.className = 'track-card';
+
+            const frame = document.createElement('iframe');
+            frame.src = playerSrc(url);
+            frame.setAttribute('allow', 'autoplay');
+            frame.setAttribute('loading', 'lazy');
+            frame.setAttribute('scrolling', 'no');
+            frame.title = m.trackTitle || 'SoundCloud track';
+
+            const cap = document.createElement('div');
+            cap.className = 'track-cap';
+            const b = document.createElement('b');
+            b.textContent = m.trackTitle || 'SoundCloud track';
+            const sp = document.createElement('span');
+            sp.textContent = m.trackAuthor || 'SoundCloud';
+            cap.append(b, sp);
+
+            card.append(frame, cap);
+            bub.appendChild(card);
+            return bub;
+        }
+
+        /* ===================== KLIPY GIF SEARCH =====================
+
+           SETUP
+           1. Sign up at klipy.com and create an app to get an API key.
+           2. Paste it into KLIPY_KEY below.
+           3. Check the two ENDPOINT lines against their current docs and
+              fix them if the paths differ — that's the only part that
+              varies between providers.
+
+           If a search fails, open your browser console: the raw response
+           is logged there, so you can see the real field names and adjust
+           pickUrl() below in seconds.
+           ============================================================ */
+        const KLIPY_KEY = 'PASTE_YOUR_KLIPY_KEY';
+
+        const KLIPY_SEARCH   = 'https://api.klipy.co/api/v1/{key}/gifs/search?q={q}&per_page=24';
+        const KLIPY_TRENDING = 'https://api.klipy.co/api/v1/{key}/gifs/trending?per_page=24';
+
+        /* Different GIF APIs nest the actual file URL differently. Rather
+           than guessing one shape, walk the likely ones and take the first
+           real image URL found. */
+        function pickUrl(item, preferStill) {
+            if (!item || typeof item !== 'object') return null;
+
+            const buckets = [
+                item.file, item.files, item.images, item.media, item.formats, item
+            ];
+            const sizeNames = preferStill
+                ? ['still','preview_still','fixed_height_still','thumbnail','preview','sm','small','md']
+                : ['md','gif','original','fixed_height','downsized','hd','lg','preview','sm'];
+
+            for (const bucket of buckets) {
+                if (!bucket || typeof bucket !== 'object') continue;
+                for (const name of sizeNames) {
+                    const slot = bucket[name];
+                    if (typeof slot === 'string' && /^https?:\/\//.test(slot)) return slot;
+                    if (slot && typeof slot === 'object') {
+                        for (const k of ['gif','url','src','webp','mp4']) {
+                            if (typeof slot[k] === 'string' && /^https?:\/\//.test(slot[k])) return slot[k];
+                        }
+                    }
+                }
+                for (const k of ['url','gif_url','image_url','src']) {
+                    if (typeof bucket[k] === 'string' && /^https?:\/\//.test(bucket[k])) return bucket[k];
+                }
+            }
+            return null;
+        }
+
+        /* Same idea for the list wrapper: data / results / items / raw array. */
+        function pickList(payload) {
+            if (Array.isArray(payload)) return payload;
+            for (const k of ['data','results','items','gifs','clips']) {
+                const v = payload && payload[k];
+                if (Array.isArray(v)) return v;
+                if (v && Array.isArray(v.data)) return v.data;
+                if (v && Array.isArray(v.items)) return v.items;
+            }
+            return [];
+        }
+
+        let gifSearchTimeout;
+        let gifRequestId = 0;      // so a slow old search can't overwrite a newer one
+
+        async function searchGifs(query) {
+            const mine = ++gifRequestId;
+            gifGrid.innerHTML = '<div class="gif-loading">Loading GIFs...</div>';
+
+            if (!KLIPY_KEY || KLIPY_KEY === 'PASTE_YOUR_KLIPY_KEY') {
+                gifGrid.innerHTML = '<div class="gif-loading">No Klipy key yet.<br>Sign up at klipy.com, then put your key in KLIPY_KEY near the top of this file.</div>';
+                return;
+            }
+
+            const q = (query || '').trim();
+            const endpoint = (q ? KLIPY_SEARCH : KLIPY_TRENDING)
+                .replace('{key}', encodeURIComponent(KLIPY_KEY))
+                .replace('{q}', encodeURIComponent(q));
+
+            try {
+                const res = await fetch(endpoint);
+                if (mine !== gifRequestId) return;      // a newer search already ran
+
+                if (!res.ok) {
+                    const why = (res.status === 401 || res.status === 403)
+                        ? 'Klipy rejected the key. Check KLIPY_KEY is correct and the app is active.'
+                        : res.status === 404
+                        ? 'Endpoint not found — check KLIPY_SEARCH against the current docs.'
+                        : res.status === 429
+                        ? 'Rate limit hit. Wait a minute and try again.'
+                        : 'Klipy returned ' + res.status + '.';
+                    console.error('Klipy error', res.status, endpoint);
+                    gifGrid.innerHTML = '<div class="gif-loading">' + escapeHtml(why) + '</div>';
+                    return;
+                }
+
+                const payload = await res.json();
+                if (mine !== gifRequestId) return;
+
+                console.log('Klipy raw response (for adjusting pickUrl if needed):', payload);
+
+                const list = pickList(payload);
+                gifGrid.innerHTML = '';
+
+                let shown = 0;
+                list.forEach(item => {
+                    const url = pickUrl(item, false);
+                    if (!url) return;
+                    const still = pickUrl(item, true) || url;
+
+                    const div = document.createElement('div');
+                    div.className = 'gif-item';
+                    const img = document.createElement('img');
+                    img.src = still;
+                    img.alt = 'GIF';
+                    img.loading = 'lazy';
+                    img.onmouseenter = () => img.src = url;
+                    img.onmouseleave = () => img.src = still;
+                    div.appendChild(img);
+                    div.onclick = () => sendGif(url);
+                    gifGrid.appendChild(div);
+                    shown++;
+                });
+
+                if (!shown) {
+                    gifGrid.innerHTML = list.length
+                        ? '<div class="gif-loading">Got ' + list.length + ' results but could not find image URLs in them.<br>Check the console for the raw response and adjust pickUrl().</div>'
+                        : '<div class="gif-loading">No GIFs found. Try another search.</div>';
+                }
+            } catch (e) {
+                if (mine !== gifRequestId) return;
+                console.error('GIF search error:', e);
+                gifGrid.innerHTML = '<div class="gif-loading">Could not reach Klipy. If the console mentions CORS, their API may need to be called from a server rather than the browser.</div>';
+            }
+        }
+
+        async function sendGif(url) {
+            gifModal.classList.remove('show');
+            if (!currentChatUser) return;
+            
+            const chatId = activeChatId();
+            
+            await rtdb.ref('/imessage/messages/'+chatId).push({
+                type: 'gif',
+                imageUrl: url,
+                senderId: currentUser.uid,
+                senderName: userData.username,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+            
+            await fanOut({ lastMessage: 'GIF', lastMessageTime: firebase.database.ServerValue.TIMESTAMP });
+        }
+
+        imageInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const maxSize = 400000;
+            const GIF_MAX = 600000;   // GIFs can't be recompressed, so just cap them
+
+            /* Drawing a GIF to a canvas keeps only the first frame, which
+               is why animated uploads looked frozen. Send the original
+               bytes untouched instead. */
+            if (file.type === 'image/gif') {
+                const gifReader = new FileReader();
+                gifReader.onerror = () => alert('Could not read that file.');
+                gifReader.onload = (ev) => {
+                    const dataUrl = ev.target.result;
+                    if (dataUrl.length > GIF_MAX) {
+                        alert('That GIF is ' + Math.round(dataUrl.length/1024) + 'KB. GIFs can\'t be compressed without losing the animation, so the limit is about ' + Math.round(GIF_MAX/1024) + 'KB. Try a shorter or smaller one.');
+                        imageInput.value = '';
+                        return;
+                    }
+                    pendingImage = dataUrl;
+                    pendingIsGif = true;
+                    previewImg.src = dataUrl;
+                    imagePreview.classList.add('show');
+                    sendBtn.disabled = false;
+                };
+                gifReader.readAsDataURL(file);
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onerror = () => alert('Could not read that file. Try another photo.');
+            reader.onload = (ev) => {
+                const img = new Image();
+                img.onerror = () => {
+                    alert("This browser can't open that image format. If it's a HEIC photo from an iPhone, save it as JPEG first.");
+                    imageInput.value = '';
+                };
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    const maxDim = 500;
+                    if (width > maxDim || height > maxDim) {
+                        if (width > height) {
+                            height = (height / width) * maxDim;
+                            width = maxDim;
+                        } else {
+                            width = (width / height) * maxDim;
+                            height = maxDim;
+                        }
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    let quality = 0.8;
+                    let dataUrl = canvas.toDataURL('image/jpeg', quality);
+                    
+                    while (dataUrl.length > maxSize && quality > 0.3) {
+                        quality -= 0.1;
+                        dataUrl = canvas.toDataURL('image/jpeg', quality);
+                    }
+                    
+                    if (dataUrl.length > maxSize) {
+                        alert('Image is too large even after compression. Please choose a smaller image.');
+                        return;
+                    }
+                    
+                    pendingImage = dataUrl;
+                    pendingIsGif = false;
+                    previewImg.src = pendingImage;
+                    imagePreview.classList.add('show');
+                    sendBtn.disabled = false;
+                };
+                img.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+
+        previewRemove.onclick = () => {
+            pendingImage = null;
+            pendingIsGif = false;
+            imagePreview.classList.remove('show');
+            imageInput.value = '';
+            sendBtn.disabled = !messageInput.value.trim();
+        };
+
+        gifClose.onclick = () => gifModal.classList.remove('show');
+
+        gifSearch.oninput = () => {
+            clearTimeout(gifSearchTimeout);
+            gifSearchTimeout = setTimeout(() => searchGifs(gifSearch.value), 400);
+        };
+
+        auth.onAuthStateChanged(async user => {
+            loadingOverlay.classList.add('hidden');
+            if (user) {
+                currentUser = user;
+                const doc = await firestore.collection('users').doc(user.uid).get();
+                if (doc.exists) {
+                    userData = doc.data();
+                } else {
+                    // Create new user document automatically
+                    const defaultUsername = user.email ? user.email.split('@')[0] : 'User' + Date.now().toString().slice(-4);
+                    userData = {
+                        username: defaultUsername,
+                        email: user.email || '',
+                        profilePic: user.photoURL || '',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+                    await firestore.collection('users').doc(user.uid).set(userData);
+                }
+                showScreen('contacts');
+                updateUserUI();
+                initPresence();
+                listenOnline();
+                listenConversations();
+                // Load 8ball wins
+                setTimeout(() => {
+                    if (typeof updateWinsBadge === 'function') updateWinsBadge();
+                }, 100);
+            } else {
+                showScreen('login');
+            }
+        });
+
+        function showScreen(s) {
+            loginRequired.classList.add('hidden');
+            contactsScreen.style.display = 'none';
+            chatScreen.style.display = 'none';
+            gifModal.classList.remove('show');
+            appDrawer.classList.remove('show');
+            plusBtn.classList.remove('active');
+            imagePreview.classList.remove('show');
+            pendingImage = null;
+            
+            if (s === 'login') loginRequired.classList.remove('hidden');
+            else if (s === 'contacts') contactsScreen.style.display = 'flex';
+            else if (s === 'chat') chatScreen.style.display = 'flex';
+        }
+
+        function updateUserUI() {
+            const myPic = safeImageUrl(userData.profilePic);
+            if (myPic) userAvatar.innerHTML = '<img src="'+escapeHtml(myPic)+'">';
+            else userAvatar.textContent = getInitials(userData.username);
+        }
+
+        /* ============ PROFILE PICTURE ============ */
+        const profileModal  = $('profileModal');
+        const profileBig    = $('profileBig');
+        const profileName   = $('profileName');
+        const profileHint   = $('profileHint');
+        const avatarInput   = $('avatarInput');
+        const avatarChange  = $('avatarChange');
+        const avatarRemove  = $('avatarRemove');
+
+        const AVATAR_PX  = 200;     // saved size, square
+        const AVATAR_MAX = 90000;   // ~90KB ceiling on the data URL
+
+        function paintProfileSheet() {
+            const bigPic = safeImageUrl(userData.profilePic);
+            if (bigPic) profileBig.innerHTML = '<img src="'+escapeHtml(bigPic)+'">';
+            else profileBig.textContent = getInitials(userData.username);
+            profileName.textContent = userData.username || '';
+            avatarRemove.style.display = userData.profilePic ? 'block' : 'none';
+        }
+
+        userAvatar.onclick = () => { paintProfileSheet(); profileHint.textContent = 'Tap change to pick a new photo'; profileModal.classList.add('show'); };
+        $('profileClose').onclick = () => profileModal.classList.remove('show');
+        profileModal.onclick = (e) => { if (e.target === profileModal) profileModal.classList.remove('show'); };
+        avatarChange.onclick = () => avatarInput.click();
+
+        // Write the picture everywhere it's read from:
+        // Firestore holds your own copy, Realtime DB is what other people see.
+        async function saveAvatar(dataUrl) {
+            avatarChange.disabled = avatarRemove.disabled = true;
+            profileHint.textContent = 'Saving…';
+            try {
+                await firestore.collection('users').doc(currentUser.uid)
+                      .set({ profilePic: dataUrl }, { merge: true });
+                await rtdb.ref('/imessage/users/'+currentUser.uid+'/profilePic')
+                      .set(dataUrl || null);
+
+                userData.profilePic = dataUrl;
+                delete userCache[currentUser.uid];
+                updateUserUI();
+                paintProfileSheet();
+                profileHint.textContent = dataUrl ? 'Photo updated' : 'Photo removed';
+            } catch (err) {
+                console.error('Avatar save failed:', err);
+                profileHint.textContent = 'Could not save: ' + err.message;
+            } finally {
+                avatarChange.disabled = avatarRemove.disabled = false;
+            }
+        }
+
+        avatarRemove.onclick = () => saveAvatar('');
+
+        avatarInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onerror = () => { profileHint.textContent = 'Could not read that file.'; };
+            reader.onload = (ev) => {
+                const img = new Image();
+                img.onerror = () => {
+                    profileHint.textContent = "Can't open that format. Save it as JPEG first.";
+                    avatarInput.value = '';
+                };
+                img.onload = () => {
+                    // centre-crop to a square so faces don't end up sideways
+                    const side = Math.min(img.width, img.height);
+                    const sx = (img.width  - side) / 2;
+                    const sy = (img.height - side) / 2;
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = canvas.height = AVATAR_PX;
+                    canvas.getContext('2d').drawImage(img, sx, sy, side, side, 0, 0, AVATAR_PX, AVATAR_PX);
+
+                    let q = 0.8;
+                    let dataUrl = canvas.toDataURL('image/jpeg', q);
+                    while (dataUrl.length > AVATAR_MAX && q > 0.35) {
+                        q -= 0.1;
+                        dataUrl = canvas.toDataURL('image/jpeg', q);
+                    }
+
+                    avatarInput.value = '';
+                    saveAvatar(dataUrl);
+                };
+                img.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+
+        function getInitials(n) { return n ? n.split(' ').map(x=>x[0]).join('').toUpperCase().slice(0,2) : '?'; }
+        function formatTime(t) {
+            if (!t) return '';
+            const d = new Date(t), diff = Date.now() - d;
+            if (diff < 60000) return 'Now';
+            if (diff < 3600000) return Math.floor(diff/60000)+'m';
+            if (diff < 86400000) return d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+            return d.toLocaleDateString([],{month:'short',day:'numeric'});
+        }
+        function getChatId(a,b) { return [a,b].sort().join('_'); }
+
+        /* ============ ONE-TO-ONE vs GROUP ============
+           A direct message lives at a chat id built from the two user ids.
+           A group lives at its own id, and the member list comes from
+           /imessage/groups/{id}/members. Everything downstream asks these
+           two helpers instead of assuming there are exactly two people. */
+        function activeChatId() {
+            if (!currentChatUser) return null;
+            return currentChatUser.isGroup
+                ? currentChatUser.uid
+                : getChatId(currentUser.uid, currentChatUser.uid);
+        }
+
+        function activeRecipients() {
+            if (!currentChatUser) return [];
+            return currentChatUser.isGroup
+                ? (currentChatUser.members || []).filter(uid => uid !== currentUser.uid)
+                : [currentChatUser.uid];
+        }
+
+        /* Push a conversation-list update to everyone in the chat: the
+           sender without an unread bump, everyone else with one. */
+        async function fanOut(update) {
+            const cid = activeChatId();
+            const isGroup = !!currentChatUser.isGroup;
+            const extra = isGroup ? { isGroup: true, groupName: currentChatUser.username } : {};
+
+            await rtdb.ref('/imessage/conversations/'+currentUser.uid+'/'+cid)
+                  .update({ ...update, ...extra });
+
+            await Promise.all(activeRecipients().map(uid =>
+                rtdb.ref('/imessage/conversations/'+uid+'/'+cid).update({
+                    ...update, ...extra,
+                    unread: firebase.database.ServerValue.increment(1)
+                })
+            ));
+        }
+        function escapeHtml(t) { const d=document.createElement('div'); d.textContent=t==null?'':String(t); return d.innerHTML; }
+
+        /* Anything that lands in an src= attribute has to be checked.
+           A string like  x" onerror="…  would otherwise break out of
+           the attribute and run as code. Only real image sources pass. */
+        function safeImageUrl(u) {
+            if (typeof u !== 'string') return '';
+            return /^(data:image\/(png|jpe?g|gif|webp);base64,[A-Za-z0-9+/=]+$|https:\/\/[^"'<>\s]+$)/i.test(u) ? u : '';
+        }
+        
+        async function getUserInfo(uid) {
+            if (userCache[uid]) return userCache[uid];
+            const snap = await rtdb.ref('/imessage/users/'+uid).once('value');
+            const info = snap.val() || {username:'User'};
+            userCache[uid] = info;
+            return info;
+        }
+
+        function initPresence() {
+            const statusRef = rtdb.ref('/imessage/status/'+currentUser.uid);
+            const userRef = rtdb.ref('/imessage/users/'+currentUser.uid);
+            
+            userRef.set({ username: userData.username, profilePic: userData.profilePic || null });
+            statusRef.set(true);
+            statusRef.onDisconnect().set(false);
+            
+            rtdb.ref('.info/connected').on('value', snap => {
+                if (snap.val()) {
+                    connectionStatus.classList.add('online');
+                    connectionText.textContent = 'Online';
+                    statusRef.set(true);
+                    statusRef.onDisconnect().set(false);
+                } else {
+                    connectionStatus.classList.remove('online');
+                    connectionText.textContent = 'Offline';
+                }
+            });
+        }
+
+        function listenOnline() {
+            let usersData = {};
+            let statusData = {};
+            
+            function renderUsers() {
+                // Get all users except current user
+                const allUsers = Object.keys(usersData)
+                    .filter(uid => uid !== currentUser.uid)
+                    .map(uid => ({
+                        uid,
+                        info: usersData[uid],
+                        online: statusData[uid] === true
+                    }));
+                
+                // Sort: online users first, then alphabetically
+                allUsers.sort((a, b) => {
+                    if (a.online && !b.online) return -1;
+                    if (!a.online && b.online) return 1;
+                    return (a.info.username || '').localeCompare(b.info.username || '');
+                });
+                
+                // Limit to 100 users
+                const limitedUsers = allUsers.slice(0, 100);
+                
+                onlineUsers.innerHTML = '';
+                
+                if (limitedUsers.length === 0) {
+                    onlineUsers.innerHTML = '<span style="color:#8e8e93;font-size:13px;">No users yet</span>';
+                    return;
+                }
+                
+                limitedUsers.forEach(({uid, info, online}) => {
+                    const el = document.createElement('div');
+                    el.className = 'online-user';
+                    const oPic = safeImageUrl(info.profilePic);
+                    el.innerHTML = '<div class="online-user-avatar-wrap"><div class="online-user-avatar">'+(oPic?'<img src="'+escapeHtml(oPic)+'">':escapeHtml(getInitials(info.username)))+'</div><div class="online-user-status '+(online?'online':'')+'"></div></div><div class="online-user-name">'+escapeHtml(info.username || 'User')+'</div>';
+                    el.onclick = () => openChat(uid, info);
+                    onlineUsers.appendChild(el);
+                });
+            }
+            
+            // Listen to all users
+            rtdb.ref('/imessage/users').on('value', snap => {
+                usersData = snap.val() || {};
+                renderUsers();
+            });
+            
+            // Listen for status changes
+            rtdb.ref('/imessage/status').on('value', snap => {
+                statusData = snap.val() || {};
+                renderUsers();
+            });
+        }
+
+        /* ============ CREATING A GROUP ============
+           A group gets its own push id and a members list. That id is
+           used as the chat id, exactly where a paired id would go for a
+           direct message, so every send path works unchanged. */
+        const groupModal   = $('groupModal');
+        const groupPickList= $('groupPickList');
+        const groupCreate  = $('groupCreate');
+        const groupNameInput = $('groupNameInput');
+        let groupPicks = new Set();
+
+        let groupLoadId = 0;   // stops a slow load appending on top of a newer one
+
+        $('newGroupBtn').onclick = async () => {
+            const mine = ++groupLoadId;
+            groupPicks = new Set();
+            groupNameInput.value = '';
+            groupCreate.disabled = true;
+            groupPickList.innerHTML = '<div class="music-note">Loading people…</div>';
+            groupModal.classList.add('show');
+
+            let snap;
+            try {
+                snap = await rtdb.ref('/imessage/users').once('value');
+            } catch (err) {
+                if (mine !== groupLoadId) return;
+                groupPickList.innerHTML = '<div class="music-note">Could not load people: ' +
+                    escapeHtml(err.message) +
+                    '<br><br>If that says permission denied, the Realtime Database rules need publishing.</div>';
+                return;
+            }
+            if (mine !== groupLoadId) return;   // a newer open already ran
+
+            // keyed by uid, so the same person can never appear twice
+            const people = Object.entries(snap.val() || {}).filter(([uid]) => uid !== currentUser.uid);
+
+            groupPickList.innerHTML = '';
+            if (!people.length) {
+                groupPickList.innerHTML = '<div class="music-note">Nobody else has signed in to iMessage yet. Another account needs to open this page at least once before it shows up here.</div>';
+                return;
+            }
+
+            people.forEach(([uid, info]) => {
+                const row = document.createElement('div');
+                row.className = 'group-pick';
+
+                const av = document.createElement('div');
+                av.className = 'group-pick-avatar';
+                const pic = safeImageUrl(info.profilePic);
+                if (pic) { const i = document.createElement('img'); i.src = pic; av.appendChild(i); }
+                else av.textContent = getInitials(info.username);
+
+                const nm = document.createElement('div');
+                nm.className = 'group-pick-name';
+                nm.textContent = info.username || 'User';
+
+                const tick = document.createElement('div');
+                tick.className = 'group-tick';
+
+                row.append(av, nm, tick);
+                row.onclick = () => {
+                    if (groupPicks.has(uid)) groupPicks.delete(uid); else groupPicks.add(uid);
+                    row.classList.toggle('on', groupPicks.has(uid));
+                    refreshCreateBtn();
+                };
+                groupPickList.appendChild(row);
+            });
+
+            refreshCreateBtn();
+        };
+
+        /* One other person is enough. Requiring two meant you needed three
+           accounts before the button would ever light up. */
+        function refreshCreateBtn() {
+            const named  = !!groupNameInput.value.trim();
+            const picked = groupPicks.size >= 1;
+            groupCreate.disabled = !(named && picked);
+
+            const hint = $('groupHint');
+            if (hint) {
+                hint.textContent = groupCreate.disabled
+                    ? (!named && !picked ? 'Type a name and pick at least one person.'
+                      : !named ? 'Type a group name.'
+                      : 'Pick at least one person.')
+                    : 'Ready — tap Create.';
+            }
+        }
+        groupNameInput.oninput = refreshCreateBtn;
+        $('groupCancel').onclick = () => groupModal.classList.remove('show');
+
+        groupCreate.onclick = async () => {
+            const name = groupNameInput.value.trim();
+            if (!name || groupPicks.size < 1) return;
+
+            groupCreate.disabled = true;
+            const hint = $('groupHint');
+            if (hint) hint.textContent = 'Creating…';
+
+            const members = {};
+            [currentUser.uid, ...groupPicks].forEach(uid => members[uid] = true);
+
+            try {
+                const ref = rtdb.ref('/imessage/groups').push();
+                await ref.set({
+                    name,
+                    members,
+                    createdBy: currentUser.uid,
+                    createdAt: firebase.database.ServerValue.TIMESTAMP
+                });
+
+                const stub = { lastMessage: 'Group created', lastMessageTime: firebase.database.ServerValue.TIMESTAMP, isGroup: true, groupName: name };
+                await Promise.all(Object.keys(members).map(uid =>
+                    rtdb.ref('/imessage/conversations/'+uid+'/'+ref.key).update(stub)
+                ));
+
+                groupModal.classList.remove('show');
+                openChat(ref.key, { username: name, isGroup: true, members: Object.keys(members) });
+            } catch (err) {
+                console.error('Group creation failed:', err);
+                if (hint) hint.textContent = 'Failed: ' + err.message +
+                    (String(err.message).toLowerCase().includes('permission')
+                        ? ' — publish the Realtime Database rules, the groups section is missing.' : '');
+                groupCreate.disabled = false;
+            }
+        };
+
+        function listenConversations() {
+            rtdb.ref('/imessage/conversations/'+currentUser.uid).on('value', async snap => {
+                const data = snap.val() || {};
+                const entries = Object.entries(data).sort((a,b) => (b[1].lastMessageTime||0) - (a[1].lastMessageTime||0));
+                
+                if (entries.length === 0) {
+                    contactsList.innerHTML = '<div class="empty-state"><div class="empty-state-text">No conversations yet.<br>Tap an online user to start chatting!</div></div>';
+                    return;
+                }
+                
+                const convos = await Promise.all(entries.map(async ([cid, convo]) => {
+                    if (convo.isGroup) {
+                        const g = (await rtdb.ref('/imessage/groups/'+cid).once('value')).val() || {};
+                        return {
+                            uid: cid, convo, online: false, isGroup: true,
+                            info: { username: g.name || convo.groupName || 'Group' },
+                            members: Object.keys(g.members || {})
+                        };
+                    }
+                    const info = await getUserInfo(cid);
+                    const statusSnap = await rtdb.ref('/imessage/status/'+cid).once('value');
+                    const online = statusSnap.val() === true;
+                    return {uid: cid, convo, info, online, isGroup: false};
+                }));
+                
+                contactsList.innerHTML = '';
+                
+                convos.forEach(({uid, convo, info, online, isGroup, members}) => {
+                    const el = document.createElement('div');
+                    el.className = 'contact-item';
+                    const cPic = safeImageUrl(info.profilePic);
+                    const unread = parseInt(convo.unread, 10) || 0;
+                    const avClass = 'contact-avatar ' + (isGroup ? 'group' : (online?'online':''));
+                    const sub = isGroup && members ? members.length + ' people' : '';
+                    el.innerHTML = '<div class="'+avClass+'">'+(cPic?'<img src="'+escapeHtml(cPic)+'">':escapeHtml(getInitials(info.username)))+'</div><div class="contact-info"><div class="contact-name">'+escapeHtml(info.username)+(sub?' <span style="color:#8e8e93;font-weight:400;font-size:12px">'+escapeHtml(sub)+'</span>':'')+'</div><div class="contact-preview">'+escapeHtml(convo.lastMessage||'')+'</div></div><div class="contact-time">'+escapeHtml(formatTime(convo.lastMessageTime))+'</div>'+(unread?'<span class="unread-badge">'+unread+'</span>':'')+'<span class="contact-arrow">></span>';
+                    el.onclick = () => openChat(uid, isGroup ? {...info, isGroup: true, members} : info);
+                    contactsList.appendChild(el);
+                });
+            });
+        }
+
+        let messagesListener = null;
+        let typingListener = null;
+        let statusListener = null;
+        let renderedMsgIds = new Set();
+        let msgEls = new Map();   // message key -> its bubble element, so deletions can be undrawn
+
+        function openChat(uid, userInfo) {
+            cleanupChatListeners();
+            
+            currentChatUser = {uid, ...userInfo};
+            chatTitle.textContent = userInfo.username;
+            messagesArea.innerHTML = '';
+            renderedMsgIds = new Set();
+            msgEls = new Map();
+            spunMessages.clear();
+            showScreen('chat');
+            
+            const chatId = activeChatId();
+            const inGroup = !!currentChatUser.isGroup;
+            
+            messagesListener = rtdb.ref('/imessage/messages/'+chatId).orderByChild('timestamp').limitToLast(MAX_MESSAGES).on('value', snap => {
+                const data = snap.val() || {};
+                
+                const sortedMessages = Object.entries(data).sort((a, b) => (a[1].timestamp || 0) - (b[1].timestamp || 0));
+                
+                sortedMessages.forEach(([key, m]) => {
+                    if (renderedMsgIds.has(key)) return;
+                    renderedMsgIds.add(key);
+                    
+                    const el = document.createElement('div');
+                    const mine = m.senderId === currentUser.uid;
+                    el.className = 'message '+(mine?'sent':'received')+(inGroup && !mine ? ' named' : '');
+
+                    // in a group you need to know who's talking
+                    if (inGroup && !mine) {
+                        const who = document.createElement('div');
+                        who.className = 'msg-sender';
+                        who.textContent = m.senderName || 'Someone';
+                        el.appendChild(who);
+                    }
+                    
+                    if (m.type === 'game') {
+                        el.innerHTML = `
+                            <div class="bubble game-invite" data-game-id="${m.gameId}">
+                                <div class="game-invite-content">
+                                    <div class="game-invite-preview">
+                                        <div class="game-invite-table"></div>
+                                        <div class="game-invite-logo"></div>
+                                        <div class="game-invite-icon play-icon"></div>
+                                    </div>
+                                    <div class="game-invite-bar">
+                                        <div class="game-invite-title">LET'S PLAY 8 BALL!</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        const gameEl = el.querySelector('.game-invite');
+                        gameEl.onclick = () => openGame(m.gameId);
+                        
+                        // Check game state for win/loss display
+                        rtdb.ref('/imessage/games/'+m.gameId).once('value', snap => {
+                            const game = snap.val();
+                            if (!game) return;
+                            
+                            const iconEl = gameEl.querySelector('.game-invite-icon');
+                            const titleEl = gameEl.querySelector('.game-invite-title');
+                            
+                            if (game.winner) {
+                                const iWon = game.winner === currentUser.uid;
+                                iconEl.className = 'game-invite-icon ' + (iWon ? 'crown-icon' : 'lose-icon');
+                                titleEl.textContent = iWon ? 'YOU WON!' : 'YOU LOST!';
+                            } else if (game.currentTurn === currentUser.uid) {
+                                iconEl.className = 'game-invite-icon play-icon';
+                                titleEl.textContent = 'YOUR TURN!';
+                            } else {
+                                iconEl.className = 'game-invite-icon play-icon';
+                                titleEl.textContent = "LET'S PLAY 8 BALL!";
+                            }
+                        });
+                    } else if (m.type === 'music') {
+                        el.appendChild(buildTrackBubble(m));
+                    } else if (m.type === 'location') {
+                        el.appendChild(buildMapBubble(m));
+                    } else if (m.type === 'gif' || m.type === 'image') {
+                        const url = safeImageUrl(m.imageUrl);
+                        const bub = document.createElement('div');
+                        bub.className = 'bubble has-media';
+                        if (url) {
+                            const pic = document.createElement('img');
+                            pic.src = url;                 // set as a property, never parsed as markup
+                            pic.alt = m.type === 'gif' ? 'GIF' : 'Photo';
+                            pic.loading = 'lazy';
+                            bub.appendChild(pic);
+                        } else {
+                            bub.className = 'bubble';
+                            bub.textContent = '[unreadable attachment]';
+                        }
+                        el.appendChild(bub);
+                    } else {
+                        el.innerHTML = '<div class="bubble">'+escapeHtml(m.text)+'</div>';
+                        
+                        const isRecent = m.timestamp && (Date.now() - m.timestamp < 10000);
+                        if (isRecent && !spunMessages.has(key) && m.text.toLowerCase().includes('dylan jarvis')) {
+                            spunMessages.add(key);
+                            triggerDylanSpin();
+                        }
+                    }
+                    
+                    messagesArea.appendChild(el);
+                    msgEls.set(key, el);
+
+                    // long-press (or right-click) your own message to delete it
+                    if (m.senderId === currentUser.uid) attachDelete(el, key, chatId);
+                });
+
+                // Anything we drew that's no longer in the database was
+                // deleted — take it off the screen.
+                msgEls.forEach((el, key) => {
+                    if (!(key in data)) {
+                        el.classList.add('removing');
+                        setTimeout(() => el.remove(), 200);
+                        msgEls.delete(key);
+                        renderedMsgIds.delete(key);
+                    }
+                });
+                
+                setTimeout(scrollToBottom, 50);
+            });
+            
+            if (inGroup) {
+                // anyone in the group typing lights the indicator
+                typingListener = rtdb.ref('/imessage/typing/'+chatId).on('value', snap => {
+                    const who = snap.val() || {};
+                    const others = Object.keys(who).filter(u => u !== currentUser.uid && who[u]);
+                    typingIndicator.classList.toggle('show', others.length > 0);
+                    if (others.length) scrollToBottom();
+                });
+                chatUserStatus.classList.remove('online');
+            } else {
+                typingListener = rtdb.ref('/imessage/typing/'+chatId+'/'+uid).on('value', snap => {
+                    typingIndicator.classList.toggle('show', snap.val()===true);
+                    if (snap.val()) scrollToBottom();
+                });
+                
+                statusListener = rtdb.ref('/imessage/status/'+uid).on('value', snap => {
+                    chatUserStatus.classList.toggle('online', snap.val()===true);
+                });
+            }
+            
+            rtdb.ref('/imessage/conversations/'+currentUser.uid+'/'+chatId+'/unread').set(0);
+            
+            setTimeout(() => {
+                messageInput.focus();
+                scrollToBottom();
+            }, 100);
+        }
+        
+        function scrollToBottom() {
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+        
+        /* ============ DELETE YOUR OWN MESSAGES ============
+           Hold a message you sent (or right-click on a desktop) to
+           bring up the confirmation sheet. Only your own bubbles
+           get the handler, and the database rules mean you couldn't
+           remove someone else's even if you tried. */
+        const delModal   = $('delModal');
+        const delConfirm = $('delConfirm');
+        let pendingDelete = null;
+
+        function attachDelete(el, key, chatId) {
+            const bubble = el.querySelector('.bubble');
+            if (!bubble) return;
+
+            let timer = null;
+            const arm = () => {
+                el.classList.add('pressing');
+                timer = setTimeout(() => {
+                    el.classList.remove('pressing');
+                    askDelete(key, chatId);
+                }, 500);
+            };
+            const disarm = () => { clearTimeout(timer); el.classList.remove('pressing'); };
+
+            bubble.addEventListener('pointerdown', arm);
+            ['pointerup','pointerleave','pointercancel'].forEach(e =>
+                bubble.addEventListener(e, disarm));
+            bubble.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                disarm();
+                askDelete(key, chatId);
+            });
+        }
+
+        function askDelete(key, chatId) {
+            pendingDelete = { key, chatId };
+            delModal.classList.add('show');
+        }
+
+        function closeDelete() {
+            pendingDelete = null;
+            delModal.classList.remove('show');
+        }
+
+        $('delCancel').onclick = closeDelete;
+        delModal.onclick = (e) => { if (e.target === delModal) closeDelete(); };
+
+        delConfirm.onclick = async () => {
+            if (!pendingDelete) return;
+            const { key, chatId } = pendingDelete;
+            delConfirm.disabled = true;
+            try {
+                await rtdb.ref('/imessage/messages/'+chatId+'/'+key).remove();
+
+                // If that was the newest message, the conversation preview
+                // still quotes it. Repoint it at whatever is now last.
+                if (currentChatUser) {
+                    const snap = await rtdb.ref('/imessage/messages/'+chatId)
+                        .orderByChild('timestamp').limitToLast(1).once('value');
+                    const rest = snap.val() || {};
+                    const last = Object.values(rest)[0];
+                    const preview = last
+                        ? (last.type === 'image' ? 'Photo' : last.type === 'gif' ? 'GIF' : last.type === 'location' ? 'Location' : last.type === 'music' ? '♪ ' + (last.trackTitle || 'Track') : last.type === 'game' ? 'Game' : (last.text || ''))
+                        : '';
+                    const patch = { lastMessage: preview, lastMessageTime: last ? last.timestamp : null };
+                    await rtdb.ref('/imessage/conversations/'+currentUser.uid+'/'+chatId).update(patch);
+                    await Promise.all(activeRecipients().map(uid =>
+                        rtdb.ref('/imessage/conversations/'+uid+'/'+chatId).update(patch)));
+                }
+                closeDelete();
+            } catch (err) {
+                console.error('Delete failed:', err);
+                alert('Could not delete that message: ' + err.message);
+            } finally {
+                delConfirm.disabled = false;
+            }
+        };
+
+        function cleanupChatListeners() {
+            if (currentChatUser) {
+                const chatId = activeChatId();
+                if (messagesListener) {
+                    rtdb.ref('/imessage/messages/'+chatId).off('value', messagesListener);
+                    messagesListener = null;
+                }
+                if (typingListener) {
+                    if (currentChatUser.isGroup) rtdb.ref('/imessage/typing/'+chatId).off('value', typingListener);
+                    else rtdb.ref('/imessage/typing/'+chatId+'/'+currentChatUser.uid).off('value', typingListener);
+                    typingListener = null;
+                }
+                if (statusListener) {
+                    rtdb.ref('/imessage/status/'+currentChatUser.uid).off('value', statusListener);
+                    statusListener = null;
+                }
+                setTyping(false);
+            }
+        }
+
+        async function sendMessage() {
+            const text = messageInput.value.trim();
+            if (!text && !pendingImage) return;
+            if (!currentChatUser) return;
+            
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            sendBtn.disabled = true;
+            setTyping(false);
+            
+            const chatId = activeChatId();
+            
+            if (pendingImage) {
+                const photo = pendingImage;
+                try {
+                    const kind = pendingIsGif ? 'gif' : 'image';
+                    await rtdb.ref('/imessage/messages/'+chatId).push({
+                        type: kind,
+                        imageUrl: photo,
+                        senderId: currentUser.uid,
+                        senderName: userData.username,
+                        timestamp: firebase.database.ServerValue.TIMESTAMP
+                    });
+                    
+                    await fanOut({ lastMessage: kind === 'gif' ? 'GIF' : 'Photo', lastMessageTime: firebase.database.ServerValue.TIMESTAMP });
+                    
+                    pendingImage = null;
+                    pendingIsGif = false;
+                    imagePreview.classList.remove('show');
+                    imageInput.value = '';
+                } catch (err) {
+                    // Almost always a database rule rejecting the write.
+                    console.error('Photo send failed:', err);
+                    alert('The photo did not send: ' + err.message);
+                    sendBtn.disabled = false;
+                    return;
+                }
+            }
+            
+            if (text) {
+                await rtdb.ref('/imessage/messages/'+chatId).push({
+                    text,
+                    senderId: currentUser.uid,
+                    senderName: userData.username,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
+                
+                const messagesSnap = await rtdb.ref('/imessage/messages/'+chatId).orderByChild('timestamp').once('value');
+                const allMessages = messagesSnap.val();
+                if (allMessages) {
+                    const keys = Object.keys(allMessages);
+                    if (keys.length > MAX_MESSAGES) {
+                        const sorted = keys.sort((a, b) => (allMessages[a].timestamp || 0) - (allMessages[b].timestamp || 0));
+                        const toDelete = sorted.slice(0, keys.length - MAX_MESSAGES);
+                        const updates = {};
+                        toDelete.forEach(key => updates[key] = null);
+                        await rtdb.ref('/imessage/messages/'+chatId).update(updates);
+                    }
+                }
+                
+                await fanOut({ lastMessage: text, lastMessageTime: firebase.database.ServerValue.TIMESTAMP });
+            }
+        }
+
+        let typingTimeout;
+        function setTyping(v) {
+            if (!currentChatUser) return;
+            rtdb.ref('/imessage/typing/'+activeChatId()+'/'+currentUser.uid).set(v?true:null);
+        }
+
+        backBtn.onclick = () => {
+            cleanupChatListeners();
+            currentChatUser = null;
+            showScreen('contacts');
+        };
+
+        sendBtn.onclick = sendMessage;
+
+        messageInput.oninput = () => {
+            messageInput.style.height = 'auto';
+            messageInput.style.height = Math.min(messageInput.scrollHeight,100)+'px';
+            sendBtn.disabled = !messageInput.value.trim() && !pendingImage;
+            setTyping(true);
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => setTyping(false), 2000);
+        };
+
+        messageInput.onfocus = () => {
+            appDrawer.classList.remove('show');
+            plusBtn.classList.remove('active');
+            gifModal.classList.remove('show');
+        };
+
+        messageInput.onkeypress = e => { if (e.key==='Enter'&&!e.shiftKey) { e.preventDefault(); sendMessage(); } };
+
+        searchInput.oninput = e => {
+            const q = e.target.value.toLowerCase();
+            contactsList.querySelectorAll('.contact-item').forEach(el => {
+                el.style.display = el.querySelector('.contact-name').textContent.toLowerCase().includes(q) ? 'flex' : 'none';
+            });
+        };
+
+        window.onbeforeunload = () => { 
+            if (currentUser) rtdb.ref('/imessage/status/'+currentUser.uid).set(false); 
+            cleanupChatListeners();
+        };
+
+        // ==================== GAMEPIGEON ====================
+        const gamePigeonModal = $('gamePigeonModal');
+        const game8Ball = $('game8Ball');
+        const eightBallScreen = $('eightBallScreen');
+        const ebBack = $('ebBack');
+        const ebSend = $('ebSend');
+        const poolCanvas = $('poolCanvas');
+        const ebPlayer1Balls = $('ebPlayer1Balls');
+        const ebPlayer2Balls = $('ebPlayer2Balls');
+        const appGamePigeon = $('appGamePigeon');
+
+        let poolCtx = null;
+        let currentGameId = null;
+        let gameListener = null;
+        let poolGame = null;
+
+        // GamePigeon Menu
+        appGamePigeon.onclick = () => {
+            appDrawer.classList.remove('show');
+            plusBtn.classList.remove('active');
+            gamePigeonModal.classList.add('show');
+        };
+
+        // Close modal by clicking grabber or background
+        gamePigeonModal.querySelector('.gp-grabber').onclick = () => {
+            gamePigeonModal.classList.remove('show');
+        };
+
+        game8Ball.onclick = () => {
+            gamePigeonModal.classList.remove('show');
+            eightBallScreen.classList.add('show');
+            initPool();
+        };
+
+        ebBack.onclick = () => {
+            // Cleanup game listener
+            if (currentGameId && gameListener) {
+                rtdb.ref('/imessage/games/'+currentGameId).off('value', gameListener);
+            }
+            eightBallScreen.classList.remove('show');
+            poolGame = null;
+            currentGameId = null;
+            gameListener = null;
+        };
+
+        ebSend.onclick = async () => {
+            // Manual send button (backup in case auto-send didn't work)
+            if (!poolGame || poolGame.isMyTurn) return;
+            await autoSendPoolGame();
+        };
+
+        // ==================== 8 BALL POOL GAME (VERTICAL) ====================
+        const TABLE_WIDTH = 300;
+        const TABLE_HEIGHT = 520;
+        const BALL_RADIUS = 8;
+        const POCKET_RADIUS = 20; // Smaller holes
+        const FRICTION = 0.984; // Slightly faster
+
+        // Ball colors
+        const BALL_COLORS = {
+            0: {main: '#FFFFFF'}, 1: {main: '#FDD835'}, 2: {main: '#1565C0'},
+            3: {main: '#D32F2F'}, 4: {main: '#7B1FA2'}, 5: {main: '#EF6C00'},
+            6: {main: '#2E7D32'}, 7: {main: '#6D4C41'}, 8: {main: '#212121'},
+            9: {main: '#FDD835', stripe: true}, 10: {main: '#1565C0', stripe: true},
+            11: {main: '#D32F2F', stripe: true}, 12: {main: '#7B1FA2', stripe: true},
+            13: {main: '#EF6C00', stripe: true}, 14: {main: '#2E7D32', stripe: true},
+            15: {main: '#6D4C41', stripe: true}
+        };
+
+        // Pocket positions - 4 corners + 2 side pockets
+        const POCKETS = [
+            {x: 26, y: 26}, {x: TABLE_WIDTH - 26, y: 26},  // Top corners
+            {x: 20, y: TABLE_HEIGHT/2}, {x: TABLE_WIDTH - 20, y: TABLE_HEIGHT/2},  // Side middles
+            {x: 26, y: TABLE_HEIGHT - 26}, {x: TABLE_WIDTH - 26, y: TABLE_HEIGHT - 26}  // Bottom corners
+        ];
+        
+        // UI elements
+        const ebMsg = document.getElementById('ebMsg');
+        const ebAvatar1 = document.getElementById('ebAvatar1');
+        const ebAvatar2 = document.getElementById('ebAvatar2');
+        const ebGameOver = document.getElementById('ebGameOver');
+        const ebGoTitle = document.getElementById('ebGoTitle');
+        const ebPlayAgain = document.getElementById('ebPlayAgain');
+
+        function initPool() {
+            poolCtx = poolCanvas.getContext('2d');
+            poolCanvas.width = TABLE_WIDTH;
+            poolCanvas.height = TABLE_HEIGHT;
+            
+            poolGame = {
+                balls: [],
+                dragging: false,
+                aimAngle: 0,
+                power: 0,
+                isMyTurn: true,
+                animating: false,
+                type1: null,
+                type2: null,
+                sunk1: [],
+                sunk2: [],
+                firstHit: null,
+                pocketed: [],
+                amPlayer1: true,
+                opponentUid: currentChatUser ? currentChatUser.uid : null
+            };
+            
+            // Cue ball at bottom
+            poolGame.balls.push({x: TABLE_WIDTH/2, y: TABLE_HEIGHT - 120, vx: 0, vy: 0, number: 0, out: false});
+            
+            // Rack at top (pointing down)
+            const rackX = TABLE_WIDTH / 2;
+            const rackY = 130;
+            const sp = BALL_RADIUS * 2 + 0.5;
+            const order = [1, 9, 2, 10, 8, 11, 3, 12, 4, 13, 5, 14, 6, 15, 7];
+            let i = 0;
+            
+            for (let row = 0; row < 5; row++) {
+                for (let col = 0; col <= row; col++) {
+                    poolGame.balls.push({
+                        x: rackX + (col - row/2) * sp,
+                        y: rackY + row * sp * 0.866,
+                        vx: 0, vy: 0,
+                        number: order[i++],
+                        out: false
+                    });
+                }
+            }
+            
+            ebGameOver.classList.remove('show');
+            setupPoolControls();
+            renderPool();
+        }
+
+        function setupPoolControls() {
+            let dragging = false;
+            let dragStart = {x: 0, y: 0};
+            
+            const getPos = (e) => {
+                const rect = poolCanvas.getBoundingClientRect();
+                const cx = e.touches ? e.touches[0].clientX : e.clientX;
+                const cy = e.touches ? e.touches[0].clientY : e.clientY;
+                return {
+                    x: (cx - rect.left) * (TABLE_WIDTH / rect.width),
+                    y: (cy - rect.top) * (TABLE_HEIGHT / rect.height)
+                };
+            };
+
+            const handleStart = (e) => {
+                e.preventDefault();
+                if (!poolGame.isMyTurn || poolGame.animating) return;
+                const cue = poolGame.balls[0];
+                if (cue.out) return;
+                
+                dragging = true;
+                dragStart = getPos(e);
+                poolGame.aimAngle = 0;
+                poolGame.power = 0;
+            };
+
+            const handleMove = (e) => {
+                e.preventDefault();
+                if (!dragging) return;
+                
+                const pos = getPos(e);
+                const cue = poolGame.balls[0];
+                const dx = pos.x - dragStart.x;
+                const dy = pos.y - dragStart.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                
+                if (dist > 5) {
+                    poolGame.aimAngle = Math.atan2(dragStart.y - pos.y, dragStart.x - pos.x);
+                    poolGame.power = Math.min(dist / 120, 1); // Power caps at 1.0
+                }
+                
+                renderPool();
+            };
+
+            const handleEnd = (e) => {
+                e.preventDefault();
+                if (!dragging) return;
+                dragging = false;
+                
+                if (poolGame.power > 0.08) {
+                    shoot();
+                }
+                poolGame.power = 0;
+                renderPool();
+            };
+            
+            const handleCancel = (e) => {
+                // Cancel without shooting (e.g., mouse leaves canvas)
+                if (!dragging) return;
+                dragging = false;
+                poolGame.power = 0;
+                renderPool();
+            };
+
+            poolCanvas.addEventListener('mousedown', handleStart);
+            poolCanvas.addEventListener('mousemove', handleMove);
+            poolCanvas.addEventListener('mouseup', handleEnd);
+            poolCanvas.addEventListener('mouseleave', handleCancel);
+            poolCanvas.addEventListener('touchstart', handleStart, {passive: false});
+            poolCanvas.addEventListener('touchmove', handleMove, {passive: false});
+            poolCanvas.addEventListener('touchend', handleEnd, {passive: false});
+            
+            ebPlayAgain.onclick = () => initPool();
+        }
+
+        function showPoolMsg(txt, dur = 1500) {
+            ebMsg.textContent = txt;
+            ebMsg.classList.add('show');
+            setTimeout(() => ebMsg.classList.remove('show'), dur);
+        }
+
+        function updatePoolUI() {
+            ebAvatar1.classList.toggle('active', poolGame.isMyTurn);
+            ebAvatar2.classList.toggle('active', !poolGame.isMyTurn);
+            
+            ebPlayer1Balls.innerHTML = '';
+            ebPlayer2Balls.innerHTML = '';
+            
+            if (poolGame.type1) {
+                for (let i = 0; i < 7; i++) {
+                    const d = document.createElement('div');
+                    d.className = 'eb-ball-dot ' + (poolGame.type1 === 'solid' ? 'solid' : 'stripe');
+                    if (poolGame.sunk1.length > i) d.classList.add('done');
+                    ebPlayer1Balls.appendChild(d);
+                }
+                for (let i = 0; i < 7; i++) {
+                    const d = document.createElement('div');
+                    d.className = 'eb-ball-dot ' + (poolGame.type2 === 'solid' ? 'solid' : 'stripe');
+                    if (poolGame.sunk2.length > i) d.classList.add('done');
+                    ebPlayer2Balls.appendChild(d);
+                }
+            }
+        }
+
+        function shoot() {
+            const cue = poolGame.balls[0];
+            const force = poolGame.power * 12; // Faster
+            
+            cue.vx = Math.cos(poolGame.aimAngle) * force;
+            cue.vy = Math.sin(poolGame.aimAngle) * force;
+            
+            poolGame.animating = true;
+            poolGame.firstHit = null;
+            poolGame.pocketed = [];
+            
+            animatePool();
+        }
+
+        function animatePool() {
+            let moving = false;
+            const CU = 28; // Cushion
+            
+            poolGame.balls.forEach(b => {
+                if (b.out) return;
+                b.x += b.vx;
+                b.y += b.vy;
+                b.vx *= FRICTION;
+                b.vy *= FRICTION;
+                
+                // Walls
+                if (b.x < CU + BALL_RADIUS) { b.x = CU + BALL_RADIUS; b.vx *= -0.8; }
+                if (b.x > TABLE_WIDTH - CU - BALL_RADIUS) { b.x = TABLE_WIDTH - CU - BALL_RADIUS; b.vx *= -0.8; }
+                if (b.y < CU + BALL_RADIUS) { b.y = CU + BALL_RADIUS; b.vy *= -0.8; }
+                if (b.y > TABLE_HEIGHT - CU - BALL_RADIUS) { b.y = TABLE_HEIGHT - CU - BALL_RADIUS; b.vy *= -0.8; }
+                
+                if (Math.abs(b.vx) > 0.08 || Math.abs(b.vy) > 0.08) moving = true;
+                else { b.vx = 0; b.vy = 0; }
+            });
+            
+            // Ball collisions
+            for (let i = 0; i < poolGame.balls.length; i++) {
+                for (let j = i + 1; j < poolGame.balls.length; j++) {
+                    const a = poolGame.balls[i], b = poolGame.balls[j];
+                    if (a.out || b.out) continue;
+                    const dx = b.x - a.x, dy = b.y - a.y;
+                    const d = Math.sqrt(dx*dx + dy*dy);
+                    if (d < BALL_RADIUS * 2) {
+                        if (a.number === 0 && poolGame.firstHit === null) poolGame.firstHit = b.number;
+                        if (b.number === 0 && poolGame.firstHit === null) poolGame.firstHit = a.number;
+                        
+                        const nx = dx/d, ny = dy/d;
+                        const dv = (a.vx - b.vx)*nx + (a.vy - b.vy)*ny;
+                        if (dv > 0) {
+                            a.vx -= dv*nx; a.vy -= dv*ny;
+                            b.vx += dv*nx; b.vy += dv*ny;
+                        }
+                        const ol = BALL_RADIUS * 2 - d;
+                        a.x -= ol/2*nx; a.y -= ol/2*ny;
+                        b.x += ol/2*nx; b.y += ol/2*ny;
+                        moving = true;
+                    }
+                }
+            }
+            
+            // Pockets
+            poolGame.balls.forEach(b => {
+                if (b.out) return;
+                for (const p of POCKETS) {
+                    if (Math.sqrt((b.x-p.x)**2 + (b.y-p.y)**2) < POCKET_RADIUS) {
+                        b.out = true;
+                        b.vx = b.vy = 0;
+                        poolGame.pocketed.push(b.number);
+                        break;
+                    }
+                }
+            });
+            
+            renderPool();
+            
+            if (moving) requestAnimationFrame(animatePool);
+            else endPoolTurn();
+        }
+
+        function endPoolTurn() {
+            poolGame.animating = false;
+            const cue = poolGame.balls[0];
+            let foul = false, keepTurn = false;
+            
+            // Scratch
+            if (cue.out) {
+                foul = true;
+                cue.out = false;
+                cue.x = TABLE_WIDTH/2;
+                cue.y = TABLE_HEIGHT - 120;
+                showPoolMsg('Scratch!');
+            }
+            
+            // Assign types on first non-cue, non-8 ball pocket
+            if (!poolGame.type1 && poolGame.pocketed.length) {
+                const first = poolGame.pocketed.find(n => n > 0 && n < 8) || poolGame.pocketed.find(n => n > 8);
+                if (first) {
+                    if (first <= 7) {
+                        poolGame.type1 = 'solid';
+                        poolGame.type2 = 'stripe';
+                    } else {
+                        poolGame.type1 = 'stripe';
+                        poolGame.type2 = 'solid';
+                    }
+                    showPoolMsg('You are ' + poolGame.type1 + 's!');
+                }
+            }
+            
+            // Track sunk balls
+            poolGame.pocketed.forEach(n => {
+                if (n === 0 || n === 8) return;
+                const sol = n <= 7;
+                if ((poolGame.type1 === 'solid' && sol) || (poolGame.type1 === 'stripe' && !sol)) {
+                    if (!poolGame.sunk1.includes(n)) poolGame.sunk1.push(n);
+                }
+            });
+            
+            // 8-ball check
+            if (poolGame.pocketed.includes(8)) {
+                const done = poolGame.sunk1.length >= 7;
+                const won = done && !foul;
+                ebGoTitle.textContent = won ? 'You Win!' : 'You Lose!';
+                ebGoTitle.className = 'eb-go-title ' + (won ? 'win' : 'lose');
+                ebGameOver.classList.add('show');
+                
+                // Update wins and game state in Firebase
+                if (currentUser && poolGame.gameId) {
+                    const opponentUid = poolGame.opponentUid || (currentChatUser ? currentChatUser.uid : null);
+                    const winnerId = won ? currentUser.uid : opponentUid;
+                    if (winnerId) {
+                        rtdb.ref('/imessage/games/'+poolGame.gameId+'/winner').set(winnerId);
+                    }
+                }
+                if (won && currentUser) {
+                    rtdb.ref('/imessage/users/'+currentUser.uid+'/wins/8ball').transaction(val => (val || 0) + 1);
+                    updateWinsBadge();
+                }
+                return;
+            }
+            
+            // Wrong ball foul (only after types assigned)
+            if (!foul && poolGame.firstHit !== null && poolGame.type1) {
+                const needSol = poolGame.type1 === 'solid';
+                const hitSol = poolGame.firstHit <= 7 && poolGame.firstHit > 0;
+                if (poolGame.firstHit !== 8 && poolGame.firstHit !== 0 && needSol !== hitSol) {
+                    foul = true;
+                    showPoolMsg('Wrong ball!');
+                }
+            }
+            
+            // Keep turn if pocketed own ball (no foul)
+            const minePocketed = poolGame.pocketed.some(n => {
+                if (n === 0 || n === 8) return false;
+                const sol = n <= 7;
+                return (poolGame.type1 === 'solid' && sol) || (poolGame.type1 === 'stripe' && !sol);
+            });
+            
+            if (!foul && minePocketed) {
+                keepTurn = true;
+                showPoolMsg('Nice! Go again!');
+            }
+            
+            updatePoolUI();
+            renderPool();
+            
+            // Auto-send if turn is over (miss or foul)
+            if (!keepTurn) {
+                poolGame.isMyTurn = false;
+                showPoolMsg('Sending...', 1500);
+                // Call immediately but with delay before closing screen
+                autoSendPoolGame();
+            }
+        }
+        
+        async function autoSendPoolGame() {
+            if (!poolGame) {
+                console.error('autoSendPoolGame: No poolGame');
+                return;
+            }
+            
+            // Get opponent UID from game state or currentChatUser
+            const opponentUid = poolGame.opponentUid || (currentChatUser ? currentChatUser.uid : null);
+            if (!opponentUid) {
+                console.error('autoSendPoolGame: No opponent found', poolGame);
+                showPoolMsg('Error: No opponent', 2000);
+                return;
+            }
+            
+            console.log('autoSendPoolGame: Sending to', opponentUid);
+            
+            try {
+                const chatId = getChatId(currentUser.uid, opponentUid);
+                
+                if (poolGame.gameId) {
+                    // Existing game - update state with correct perspective
+                    const isPlayer1 = poolGame.amPlayer1 !== false;
+                    
+                    const updateData = {
+                        balls: poolGame.balls.map(b => ({x: b.x, y: b.y, number: b.number, out: b.out})),
+                        currentTurn: opponentUid
+                    };
+                    
+                    // Save types from correct perspective
+                    if (isPlayer1) {
+                        updateData.player1Type = poolGame.type1;
+                        updateData.player2Type = poolGame.type2;
+                        updateData.player1Pocketed = poolGame.sunk1;
+                        updateData.player2Pocketed = poolGame.sunk2;
+                    } else {
+                        updateData.player1Type = poolGame.type2;
+                        updateData.player2Type = poolGame.type1;
+                        updateData.player1Pocketed = poolGame.sunk2;
+                        updateData.player2Pocketed = poolGame.sunk1;
+                    }
+                    
+                    console.log('Updating game:', poolGame.gameId, updateData);
+                    await rtdb.ref('/imessage/games/'+poolGame.gameId).update(updateData);
+                    
+                    const update = { lastMessage: 'Your turn - 8 Ball', lastMessageTime: firebase.database.ServerValue.TIMESTAMP };
+                    await rtdb.ref('/imessage/conversations/'+currentUser.uid+'/'+opponentUid).update(update);
+                    await rtdb.ref('/imessage/conversations/'+opponentUid+'/'+currentUser.uid).update({...update, unread: firebase.database.ServerValue.increment(1)});
+                    
+                    console.log('Game sent successfully');
+                } else {
+                    // New game - current user is always player1
+                    const gameId = Date.now().toString();
+                    
+                    const gameState = {
+                        balls: poolGame.balls.map(b => ({x: b.x, y: b.y, number: b.number, out: b.out})),
+                        currentTurn: opponentUid,
+                        player1: currentUser.uid,
+                        player2: opponentUid,
+                        player1Type: poolGame.type1,
+                        player2Type: poolGame.type2,
+                        player1Pocketed: poolGame.sunk1 || [],
+                        player2Pocketed: poolGame.sunk2 || [],
+                        winner: null,
+                        created: firebase.database.ServerValue.TIMESTAMP
+                    };
+                    
+                    console.log('Creating new game:', gameId, gameState);
+                    await rtdb.ref('/imessage/games/'+gameId).set(gameState);
+                    
+                    await rtdb.ref('/imessage/messages/'+chatId).push({
+                        type: 'game',
+                        gameType: '8ball',
+                        gameId: gameId,
+                        senderId: currentUser.uid,
+                        senderName: userData.username,
+                        timestamp: firebase.database.ServerValue.TIMESTAMP
+                    });
+                    
+                    const update = { lastMessage: '8 Ball Game', lastMessageTime: firebase.database.ServerValue.TIMESTAMP };
+                    await rtdb.ref('/imessage/conversations/'+currentUser.uid+'/'+opponentUid).update(update);
+                    await rtdb.ref('/imessage/conversations/'+opponentUid+'/'+currentUser.uid).update({...update, unread: firebase.database.ServerValue.increment(1)});
+                    
+                    console.log('New game created successfully');
+                }
+                
+                // Small delay before closing so user sees the result
+                setTimeout(() => {
+                    // Cleanup game listener
+                    if (currentGameId && gameListener) {
+                        rtdb.ref('/imessage/games/'+currentGameId).off('value', gameListener);
+                    }
+                    eightBallScreen.classList.remove('show');
+                    poolGame = null;
+                    currentGameId = null;
+                    gameListener = null;
+                }, 500);
+            } catch (err) {
+                console.error('autoSendPoolGame error:', err);
+                showPoolMsg('Error sending: ' + err.message, 3000);
+            }
+        }
+        
+        function updateWinsBadge() {
+            if (!currentUser) return;
+            rtdb.ref('/imessage/users/'+currentUser.uid+'/wins/8ball').once('value', snap => {
+                const wins = snap.val() || 0;
+                const badge = document.querySelector('#game8Ball .gp-game-badge-num');
+                if (badge) badge.textContent = wins;
+            });
+        }
+
+        function renderPool() {
+            const ctx = poolCtx;
+            ctx.clearRect(0, 0, TABLE_WIDTH, TABLE_HEIGHT);
+            
+            // Draw table background
+            ctx.fillStyle = '#0d5c36';
+            ctx.fillRect(0, 0, TABLE_WIDTH, TABLE_HEIGHT);
+            
+            // Draw wooden rails
+            ctx.fillStyle = '#5d3a1a';
+            ctx.fillRect(0, 0, TABLE_WIDTH, 28);
+            ctx.fillRect(0, TABLE_HEIGHT - 28, TABLE_WIDTH, 28);
+            ctx.fillRect(0, 0, 28, TABLE_HEIGHT);
+            ctx.fillRect(TABLE_WIDTH - 28, 0, 28, TABLE_HEIGHT);
+            
+            // Inner rail detail
+            ctx.fillStyle = '#8b6914';
+            ctx.fillRect(4, 4, TABLE_WIDTH - 8, 20);
+            ctx.fillRect(4, TABLE_HEIGHT - 24, TABLE_WIDTH - 8, 20);
+            ctx.fillRect(4, 4, 20, TABLE_HEIGHT - 8);
+            ctx.fillRect(TABLE_WIDTH - 24, 4, 20, TABLE_HEIGHT - 8);
+            
+            // Green felt
+            ctx.fillStyle = '#0a7e3d';
+            ctx.fillRect(28, 28, TABLE_WIDTH - 56, TABLE_HEIGHT - 56);
+            
+            // Draw pockets
+            ctx.fillStyle = '#000';
+            POCKETS.forEach(p => { 
+                ctx.beginPath(); 
+                ctx.arc(p.x, p.y, POCKET_RADIUS, 0, Math.PI*2); 
+                ctx.fill(); 
+                // Pocket rim
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            });
+            
+            const cue = poolGame.balls[0];
+            
+            // Draw aim line and cue stick
+            if (poolGame.power > 0 && poolGame.isMyTurn && !poolGame.animating && !cue.out) {
+                // Aim line - more visible
+                ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([6, 4]);
+                ctx.beginPath();
+                ctx.moveTo(cue.x, cue.y);
+                ctx.lineTo(cue.x + Math.cos(poolGame.aimAngle) * 200, cue.y + Math.sin(poolGame.aimAngle) * 200);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                // Target dot at end of aim line
+                const targetX = cue.x + Math.cos(poolGame.aimAngle) * 200;
+                const targetY = cue.y + Math.sin(poolGame.aimAngle) * 200;
+                ctx.fillStyle = 'rgba(255,255,255,0.8)';
+                ctx.beginPath();
+                ctx.arc(targetX, targetY, 4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Power indicator bar at bottom
+                const barWidth = 100;
+                const barHeight = 8;
+                const barX = (TABLE_WIDTH - barWidth) / 2;
+                const barY = TABLE_HEIGHT - 20;
+                ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                ctx.fillRect(barX - 2, barY - 2, barWidth + 4, barHeight + 4);
+                ctx.fillStyle = '#333';
+                ctx.fillRect(barX, barY, barWidth, barHeight);
+                const powerColor = poolGame.power < 0.5 ? '#4cd964' : poolGame.power < 0.8 ? '#ffcc00' : '#ff3b30';
+                ctx.fillStyle = powerColor;
+                ctx.fillRect(barX, barY, barWidth * poolGame.power, barHeight);
+                
+                // Cue stick
+                const pull = 10 + poolGame.power * 40;
+                const len = 120;
+                const sx = cue.x - Math.cos(poolGame.aimAngle) * pull;
+                const sy = cue.y - Math.sin(poolGame.aimAngle) * pull;
+                const ex = sx - Math.cos(poolGame.aimAngle) * len;
+                const ey = sy - Math.sin(poolGame.aimAngle) * len;
+                
+                // Shadow
+                ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+                ctx.lineWidth = 8;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(sx + 2, sy + 3);
+                ctx.lineTo(ex + 2, ey + 3);
+                ctx.stroke();
+                
+                // Stick body
+                const g = ctx.createLinearGradient(sx, sy, ex, ey);
+                g.addColorStop(0, '#f5deb3');
+                g.addColorStop(0.06, '#f5deb3');
+                g.addColorStop(0.06, '#c4955a');
+                g.addColorStop(0.5, '#8b5a2b');
+                g.addColorStop(1, '#5c3317');
+                ctx.strokeStyle = g;
+                ctx.lineWidth = 7;
+                ctx.beginPath();
+                ctx.moveTo(sx, sy);
+                ctx.lineTo(ex, ey);
+                ctx.stroke();
+                
+                // Tip
+                ctx.strokeStyle = '#5cacee';
+                ctx.lineWidth = 6;
+                ctx.beginPath();
+                ctx.moveTo(sx, sy);
+                ctx.lineTo(sx - Math.cos(poolGame.aimAngle) * 4, sy - Math.sin(poolGame.aimAngle) * 4);
+                ctx.stroke();
+            }
+            
+            // Draw balls
+            poolGame.balls.forEach(b => { if (!b.out) drawBall(ctx, b.x, b.y, b.number); });
+        }
+        
+        function drawBall(ctx, x, y, number) {
+            const c = BALL_COLORS[number];
+            const r = BALL_RADIUS;
+            const stripe = c.stripe;
+            
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.beginPath();
+            ctx.ellipse(x + 1, y + 2, r * 0.85, r * 0.45, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.clip();
+            
+            if (stripe) {
+                // White base
+                const wg = ctx.createRadialGradient(x - 2, y - 2, 0, x, y, r);
+                wg.addColorStop(0, '#fff');
+                wg.addColorStop(0.85, '#eee');
+                wg.addColorStop(1, '#ccc');
+                ctx.fillStyle = wg;
+                ctx.fillRect(x - r, y - r, r * 2, r * 2);
+                // Stripe
+                ctx.fillStyle = c.main;
+                ctx.fillRect(x - r * 1.2, y - r * 0.35, r * 2.4, r * 0.7);
+            } else {
+                const sg = ctx.createRadialGradient(x - 2, y - 2, 0, x, y, r);
+                sg.addColorStop(0, lightenColor(c.main, 45));
+                sg.addColorStop(0.55, c.main);
+                sg.addColorStop(1, darkenColor(c.main, 30));
+                ctx.fillStyle = sg;
+                ctx.fillRect(x - r, y - r, r * 2, r * 2);
+            }
+            ctx.restore();
+            
+            // Number
+            if (number > 0) {
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(x, y, r * 0.4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold ' + (r * 0.55) + 'px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(number, x, y + 0.5);
+            }
+            
+            // Highlight
+            const hg = ctx.createRadialGradient(x - r * 0.3, y - r * 0.35, 0, x - r * 0.3, y - r * 0.35, r * 0.5);
+            hg.addColorStop(0, 'rgba(255,255,255,0.7)');
+            hg.addColorStop(0.6, 'rgba(255,255,255,0.15)');
+            hg.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = hg;
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        function lightenColor(color, percent) {
+            const num = parseInt(color.replace('#', ''), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = Math.min(255, (num >> 16) + amt);
+            const G = Math.min(255, ((num >> 8) & 0x00FF) + amt);
+            const B = Math.min(255, (num & 0x0000FF) + amt);
+            return '#' + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
+        }
+        
+        function darkenColor(color, percent) {
+            const num = parseInt(color.replace('#', ''), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = Math.max(0, (num >> 16) - amt);
+            const G = Math.max(0, ((num >> 8) & 0x00FF) - amt);
+            const B = Math.max(0, (num & 0x0000FF) - amt);
+            return '#' + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
+        }
+
+        // Handle game messages in chat
+        function renderGameMessage(m, el) {
+            el.innerHTML = `
+                <div class="bubble game-invite">
+                    <div class="game-invite-content">
+                        <div class="game-invite-preview"></div>
+                        <div class="game-invite-title">LET'S PLAY 8 BALL!</div>
+                        <div class="game-invite-subtitle">Tap to play</div>
+                        <button class="game-invite-play" onclick="openGame('${m.gameId}')">Play</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function openGame(gameId) {
+            const snap = await rtdb.ref('/imessage/games/'+gameId).once('value');
+            const gameState = snap.val();
+            if (!gameState) return;
+            
+            currentGameId = gameId;
+            eightBallScreen.classList.add('show');
+            
+            poolCtx = poolCanvas.getContext('2d');
+            poolCanvas.width = TABLE_WIDTH;
+            poolCanvas.height = TABLE_HEIGHT;
+            
+            // Load game state - adjust perspective based on which player we are
+            const isPlayer1 = gameState.player1 === currentUser.uid;
+            const opponentUid = isPlayer1 ? gameState.player2 : gameState.player1;
+            
+            poolGame = {
+                balls: gameState.balls.map(b => ({...b, vx: 0, vy: 0, out: b.pocketed || b.out})),
+                dragging: false,
+                aimAngle: 0,
+                power: 0,
+                isMyTurn: gameState.currentTurn === currentUser.uid,
+                animating: false,
+                type1: isPlayer1 ? gameState.player1Type : gameState.player2Type,
+                type2: isPlayer1 ? gameState.player2Type : gameState.player1Type,
+                sunk1: isPlayer1 ? (gameState.player1Pocketed || []) : (gameState.player2Pocketed || []),
+                sunk2: isPlayer1 ? (gameState.player2Pocketed || []) : (gameState.player1Pocketed || []),
+                firstHit: null,
+                pocketed: [],
+                gameId: gameId,
+                player1: gameState.player1,
+                player2: gameState.player2,
+                opponentUid: opponentUid,
+                amPlayer1: isPlayer1
+            };
+            
+            ebSend.style.display = 'none';
+            ebGameOver.classList.remove('show');
+            updatePoolUI();
+            
+            setupPoolControls();
+            renderPool();
+            
+            // Listen for game updates
+            gameListener = rtdb.ref('/imessage/games/'+gameId).on('value', snap => {
+                const state = snap.val();
+                if (!state || !poolGame) return;
+                
+                const isPlayer1 = state.player1 === currentUser.uid;
+                poolGame.isMyTurn = state.currentTurn === currentUser.uid;
+                poolGame.amPlayer1 = isPlayer1;
+                poolGame.opponentUid = isPlayer1 ? state.player2 : state.player1;
+                
+                // Update types from correct perspective
+                poolGame.type1 = isPlayer1 ? state.player1Type : state.player2Type;
+                poolGame.type2 = isPlayer1 ? state.player2Type : state.player1Type;
+                poolGame.sunk1 = isPlayer1 ? (state.player1Pocketed || []) : (state.player2Pocketed || []);
+                poolGame.sunk2 = isPlayer1 ? (state.player2Pocketed || []) : (state.player1Pocketed || []);
+                
+                updatePoolUI();
+                
+                if (!poolGame.animating) {
+                    poolGame.balls = state.balls.map(b => ({...b, vx: 0, vy: 0, out: b.pocketed || b.out}));
+                    renderPool();
+                }
+            });
+        }
+
+        // Override to handle game messages
+        const originalRenderMessage = null; // We'll modify the message rendering
+    </script>
+</body>
+</html>

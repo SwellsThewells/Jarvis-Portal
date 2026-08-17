@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jarvis Portal</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:    #050505;
+    --white: #FFFFFF;
+    --dim:   #6E6E6E;
+    --edge:  rgba(255,255,255,.16);
+    --gap:   14px;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+
+  body{
+    min-height:100vh;
+    background:var(--bg);
+    color:var(--white);
+    font-family:"JetBrains Mono", ui-monospace, monospace;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---- halftone dot field, dense up top, dissolving outward ---- */
+  body::before{
+    content:"";
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:radial-gradient(circle, #fff 1px, transparent 1px);
+    background-size:13px 13px;
+    -webkit-mask-image:radial-gradient(ellipse 85% 65% at 50% 4%, #000 0%, rgba(0,0,0,.55) 45%, transparent 78%);
+            mask-image:radial-gradient(ellipse 85% 65% at 50% 4%, #000 0%, rgba(0,0,0,.55) 45%, transparent 78%);
+    opacity:.22;
+  }
+  /* ---- hairline verticals for structure, barely there ---- */
+  body::after{
+    content:"";
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:linear-gradient(90deg, #fff 1px, transparent 1px);
+    background-size:104px 100%;
+    -webkit-mask-image:linear-gradient(#000, transparent 65%);
+            mask-image:linear-gradient(#000, transparent 65%);
+    opacity:.05;
+  }
+
+  .wrap{
+    position:relative; z-index:1;
+    max-width:880px;
+    margin:0 auto;
+    padding:84px 20px 90px;
+  }
+
+  /* ---- title ---- */
+  header{ text-align:center; margin-bottom:64px; }
+  h1{
+    margin:0;
+    font-size:clamp(19px, 4.4vw, 30px);
+    font-weight:700;
+    letter-spacing:.42em;
+    text-indent:.42em;   /* re-centres against the trailing letter-space */
+    text-transform:uppercase;
+  }
+  .sub{
+    margin:20px 0 0;
+    font-size:11px; font-weight:400; letter-spacing:.3em;
+    text-transform:uppercase; color:var(--dim);
+  }
+
+  /* ---- grid ---- */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:var(--gap);
+  }
+  @media (max-width:760px){ .grid{ grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:440px){ .grid{ grid-template-columns:1fr; } }
+
+  .tile{
+    position:relative;
+    display:block;
+    aspect-ratio:1 / 1;
+    overflow:hidden;
+    background:#0B0B0B;
+    border:1px solid var(--edge);
+    border-radius:2px;
+    text-decoration:none;
+    color:inherit;
+    transition:border-color .2s ease, transform .2s ease;
+    animation:in .4s ease backwards;
+    animation-delay:calc(var(--i) * 55ms);
+  }
+  @keyframes in{ from{ opacity:0; } to{ opacity:1; } }
+
+  .tile:hover, .tile:focus-visible{
+    border-color:var(--white);
+    transform:translateY(-2px);
+    outline:none;
+  }
+
+  .shot{ position:absolute; inset:0; overflow:hidden; }
+  .shot iframe{
+    width:1280px; height:1600px; border:0;
+    transform-origin:top left;
+    pointer-events:none;
+    opacity:0;
+    filter:grayscale(1) contrast(.92) brightness(.78);
+    transition:opacity .4s ease, filter .25s ease;
+  }
+  .tile.ready .shot iframe{ opacity:1; }
+  .tile:hover .shot iframe{ filter:grayscale(1) contrast(1) brightness(1); }
+
+  /* placeholder while loading / if a page won't frame */
+  .stub{
+    position:absolute; inset:0;
+    display:grid; place-items:center;
+    font-size:26px; font-weight:700; letter-spacing:.16em;
+    color:rgba(255,255,255,.14);
+    background:
+      repeating-linear-gradient(45deg, transparent 0 6px, rgba(255,255,255,.03) 6px 7px),
+      #0B0B0B;
+    transition:opacity .3s ease;
+  }
+  .tile.ready .stub{ opacity:0; }
+
+  .meta{
+    position:absolute; left:0; right:0; bottom:0;
+    padding:30px 12px 11px;
+    background:linear-gradient(transparent, rgba(0,0,0,.9) 55%);
+    font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .meta span{ color:var(--dim); }
+  .tile:hover .meta span{ color:var(--white); }
+
+  .empty{
+    grid-column:1 / -1;
+    border:1px dashed var(--edge);
+    padding:44px 20px; text-align:center;
+    font-size:12px; letter-spacing:.1em; color:var(--dim);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition-duration:.01ms !important; }
+  }
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Jarvis Portal</h1>
+    <p class="sub">Pick A Website</p>
+  </header>
+
+  <main class="grid" id="grid"></main>
+
+</div>
+
+<script>
+/* =========================================================
+   ADD YOUR PAGES HERE
+   file  — the .html file, sitting next to this one
+   name  — the label on the square
+   image — OPTIONAL screenshot path, used instead of the live
+           preview (good for pages that autoplay sound)
+   ========================================================= */
+const SITES = [
+  { name: "Jarvia",   file: "Jarvia.html" },
+  { name: "Siamese Clicker",   file: "siameseclicker.html" },
+  { name: "Unblocked Youtube", file: "Youtube.html" },
+];
+
+const BASE_WIDTH = 1280;
+const LOAD_TIMEOUT = 7000;
+const grid = document.getElementById("grid");
+
+function initials(n){
+  return n.split(/\s+/).map(w => w[0] || "").join("").slice(0,2).toUpperCase() || "—";
+}
+
+function build(){
+  if(!SITES.length){
+    grid.innerHTML = '<div class="empty">No pages listed. Add one to the SITES list in this file.</div>';
+    return;
+  }
+
+  SITES.forEach((site, i) => {
+    const a = document.createElement("a");
+    a.className = "tile";
+    a.href = site.file;
+    a.style.setProperty("--i", i);
+    a.setAttribute("aria-label", site.name);
+
+    const shot = document.createElement("div");
+    shot.className = "shot";
+
+    const stub = document.createElement("div");
+    stub.className = "stub";
+    stub.textContent = initials(site.name);
+
+    if(site.image){
+      const img = document.createElement("img");
+      img.src = site.image; img.alt = ""; img.loading = "lazy";
+      img.style.cssText = "width:100%;height:100%;object-fit:cover;object-position:top center;filter:grayscale(1) brightness(.8)";
+      img.addEventListener("load", () => a.classList.add("ready"));
+      shot.appendChild(img);
+    } else {
+      const frame = document.createElement("iframe");
+      frame.src = site.file;
+      frame.setAttribute("scrolling", "no");
+      frame.setAttribute("tabindex", "-1");
+      frame.setAttribute("aria-hidden", "true");
+      frame.setAttribute("loading", "lazy");
+      frame.setAttribute("sandbox", "allow-same-origin allow-scripts");
+      frame.addEventListener("load", () => a.classList.add("ready"));
+      setTimeout(() => a.classList.add("ready"), LOAD_TIMEOUT);
+      shot.appendChild(frame);
+    }
+
+    const meta = document.createElement("div");
+    meta.className = "meta";
+    const label = document.createElement("span");
+    label.textContent = site.name;
+    meta.appendChild(label);
+
+    a.append(shot, stub, meta);
+    grid.appendChild(a);
+  });
+}
+
+function fitThumbnails(){
+  document.querySelectorAll(".shot").forEach(shot => {
+    const frame = shot.querySelector("iframe");
+    if(frame) frame.style.transform = "scale(" + (shot.clientWidth / BASE_WIDTH) + ")";
+  });
+}
+
+build();
+fitThumbnails();
+addEventListener("resize", fitThumbnails);
+</script>
+</body>
+</html>

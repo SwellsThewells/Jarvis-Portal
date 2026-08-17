@@ -1,0 +1,51 @@
+{
+  "rules": {
+    "imessage": {
+
+      "users": {
+        ".read": "auth != null",
+        "$uid": { ".write": "auth != null && auth.uid == $uid" }
+      },
+
+      "status": {
+        ".read": "auth != null",
+        "$uid": { ".write": "auth != null && auth.uid == $uid" }
+      },
+
+      "typing": {
+        "$chat": {
+          ".read": "auth != null",
+          "$uid": { ".write": "auth != null && auth.uid == $uid" }
+        }
+      },
+
+      "groups": {
+        ".read": "auth != null",
+        "$gid": {
+          ".write": "auth != null && (!data.exists() || data.child('members').child(auth.uid).exists())"
+        }
+      },
+
+      "messages": {
+        "$chat": {
+          ".read": "auth != null && ($chat.contains(auth.uid) || root.child('imessage/groups/' + $chat + '/members/' + auth.uid).exists())",
+          ".write": "auth != null && ($chat.contains(auth.uid) || root.child('imessage/groups/' + $chat + '/members/' + auth.uid).exists())"
+        }
+      },
+
+      "conversations": {
+        "$uid": {
+          ".read": "auth != null && auth.uid == $uid",
+          ".write": "auth != null"
+        }
+      },
+
+      "games": {
+        "$id": {
+          ".read": "auth != null",
+          ".write": "auth != null"
+        }
+      }
+    }
+  }
+}
