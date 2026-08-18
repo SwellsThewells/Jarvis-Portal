@@ -521,8 +521,6 @@ const SITES = [
   { name: "Jarvia",   file: "Jarvia.html" },
   { name: "Siamese Clicker",   file: "siameseclicker.html" },
   { name: "iMessage", file: "imessage.html" },
-  { name: "Idle Dice", file: "dice/dice.html" },
-  { name: "Antimatter Dimensions", file: "antimatter/anti.html" },
 ];
 
 /* =========================================================
@@ -814,18 +812,20 @@ vol.addEventListener('input', () => {
 let listening = false;
 keyBtn.onclick = () => {
   listening = true;
+  window.__psRebinding = true;   // stop the cover script acting on the next key
   keyBtn.classList.add('listening');
   keyBtn.textContent = 'Press any key…';
 };
 
 document.addEventListener('keydown', (e) => {
   if (!listening) return;
-  if (settings.privacyOn === false) { listening = false; return; }
+  if (settings.privacyOn === false) { listening = false; window.__psRebinding = false; return; }
   e.preventDefault();
   // stopPropagation isn't enough: the privacy script listens on this same
   // node, so binding Escape would trigger the cover as you set it.
   e.stopImmediatePropagation();
   listening = false;
+  window.__psRebinding = false;
   keyBtn.classList.remove('listening');
   keyBtn.textContent = 'Click, then press a key';
 
