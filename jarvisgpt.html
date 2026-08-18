@@ -211,6 +211,32 @@
   .send:disabled{ opacity:.32; cursor:default; }
   .send svg{ width:15px; height:15px; stroke:#1A1418; stroke-width:2.2; fill:none; stroke-linecap:round; stroke-linejoin:round; }
 
+  .modelchip{
+    display:flex; align-items:center; gap:7px;
+    padding:5px 11px; border-radius:999px;
+    background:var(--raise); border:1px solid transparent;
+    color:var(--dim); font-family:inherit; font-size:12px;
+    cursor:pointer; white-space:nowrap;
+  }
+  .modelchip:hover{ border-color:var(--line); color:var(--text); }
+  .modelchip .led{
+    width:7px; height:7px; border-radius:50%; flex:none;
+    background:var(--faint);
+  }
+  .modelchip.loading .led{ background:var(--warm); animation:pulse 1s ease-in-out infinite; }
+  .modelchip.ready   .led{ background:#6FCF97; }
+  .modelchip.ready   { color:var(--text); }
+  .modelchip.failed  .led{ background:#E0736B; }
+  @keyframes pulse{ 0%,100%{ opacity:.3; } 50%{ opacity:1; } }
+
+  .bar{
+    width:100%; max-width:720px; height:2px;
+    background:var(--line); border-radius:2px; overflow:hidden;
+    margin:0 auto 10px; display:none;
+  }
+  .bar.on{ display:block; }
+  .bar i{ display:block; height:100%; width:0; background:var(--grad); transition:width .3s ease; }
+
   .disclaimer{
     margin:11px 0 0; text-align:center;
     font-size:11.5px; color:var(--faint);
@@ -243,6 +269,9 @@
       <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
     </div>
     <div class="plus-pill"><span class="spark"></span>Get Plus</div>
+    <button class="modelchip" id="modelChip" type="button">
+      <span class="led"></span><span id="modelLabel">Canned answers</span>
+    </button>
   </div>
 
   <div class="segment">
@@ -268,6 +297,8 @@
 
   <div class="thread" id="thread"></div>
 
+  <div class="bar" id="bar"><i id="barFill"></i></div>
+
   <div class="composer">
     <div class="box">
       <div class="icon" title="Attach">
@@ -286,7 +317,7 @@
         <svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
       </button>
     </div>
-    <p class="disclaimer">JarvisGPT runs on canned answers. It isn't a real model and won't know anything current.</p>
+    <p class="disclaimer" id="disclaimer">Running on canned answers. Load the local model for real replies.</p>
   </div>
 </main>
 
@@ -326,6 +357,7 @@ document.querySelectorAll('.segment button').forEach(b => {
 });
 
 $('newChat').onclick = () => {
+  if (window.jgptReset) window.jgptReset();
   thread.innerHTML = '';
   main.classList.remove('chatting');
   input.value = '';
@@ -388,9 +420,30 @@ async function submit(){
   const wait = mode === 'fast' ? 260 : mode === 'long' ? 1500 : 700;
 
   const dots = thinking();
+
+  // real model if it's loaded, canned answers otherwise
+  if (window.jgptGenerate) {
+    let node = null, raw = '';
+    try {
+      await window.jgptGenerate(text, chunk => {
+        if (!node) { dots.remove(); node = bubble('bot', ''); }
+        raw += chunk;
+        node.textContent = prefixSentences(raw);
+        thread.scrollTop = thread.scrollHeight;
+      });
+      if (!node) { dots.remove(); bubble('bot', prefixSentences('(the model returned nothing)')); }
+      return;
+    } catch (err) {
+      console.error('Model generation failed:', err);
+      if (node) return;                       // partial answer is better than none
+      dots.remove();
+      bubble('bot', prefixSentences('The model stopped partway: ' + err.message));
+      return;
+    }
+  }
+
   await sleep(wait + Math.random() * 400);
   dots.remove();
-
   await type(bubble('bot', ''), prefixSentences(reply(text, mode)));
 }
 
@@ -550,6 +603,120 @@ function reply(text, mode){
 }
 
 resize();
+</script>
+
+<script type="module">
+/* ================================================================
+   THE ACTUAL MODEL
+
+   This runs a real language model in your browser using WebLLM.
+   No server, no API key, nothing leaves your machine — the weights
+   download once, cache, and generate on your GPU.
+
+   The trade: it is genuinely small. A 0.5B model gets simple things
+   right and confidently invents the rest. That is what half a
+   billion parameters buys. Swap MODEL below for a bigger one if
+   your machine can take it.
+
+   Requires WebGPU: Chrome or Edge 113+, or Safari 18+. The chip in
+   the toolbar says so plainly when it can't run.
+   ================================================================ */
+
+const MODEL = 'Qwen2.5-0.5B-Instruct-q4f16_1-MLC';
+// heavier, noticeably better, ~900MB:
+// const MODEL = 'Llama-3.2-1B-Instruct-q4f16_1-MLC';
+// lighter, ~300MB:
+// const MODEL = 'SmolLM2-360M-Instruct-q4f16_1-MLC';
+
+const SYSTEM = "You are JarvisGPT, a small assistant on Dylan's personal website. " +
+               "Keep answers short — two or three sentences unless asked for more. " +
+               "If you don't know something, say so plainly instead of guessing.";
+
+const chip  = document.getElementById('modelChip');
+const label = document.getElementById('modelLabel');
+const led   = chip.querySelector('.led');
+const bar   = document.getElementById('bar');
+const fill  = document.getElementById('barFill');
+const disclaimer = document.getElementById('disclaimer');
+
+let engine = null;
+let loading = false;
+let history = [{ role: 'system', content: SYSTEM }];
+
+function setChip(state, text){
+  chip.classList.remove('loading','ready','failed');
+  if (state) chip.classList.add(state);
+  label.textContent = text;
+}
+
+if (!navigator.gpu) {
+  setChip('failed', 'No WebGPU — canned answers');
+  chip.title = 'This browser has no WebGPU, so a local model cannot run. ' +
+               'Chrome or Edge on desktop will.';
+} else {
+  setChip('', 'Load local model (~400MB)');
+  chip.title = 'Downloads once, then caches. Runs entirely on your machine.';
+}
+
+chip.onclick = async () => {
+  if (engine || loading || !navigator.gpu) return;
+  loading = true;
+  bar.classList.add('on');
+  setChip('loading', 'Loading…');
+
+  try {
+    const webllm = await import('https://esm.run/@mlc-ai/web-llm');
+
+    engine = await webllm.CreateMLCEngine(MODEL, {
+      initProgressCallback: (p) => {
+        const pct = Math.round((p.progress || 0) * 100);
+        fill.style.width = pct + '%';
+        setChip('loading', p.text && p.text.length < 40 ? p.text : ('Loading ' + pct + '%'));
+      }
+    });
+
+    bar.classList.remove('on');
+    setChip('ready', 'Local model');
+    disclaimer.textContent =
+      'Running ' + MODEL.split('-').slice(0,2).join(' ') +
+      ' on your GPU. Small models get things wrong — check anything that matters.';
+
+    /* handed to the page's submit() */
+    window.jgptGenerate = async (text, onChunk) => {
+      history.push({ role: 'user', content: text });
+
+      const stream = await engine.chat.completions.create({
+        messages: history,
+        stream: true,
+        temperature: 0.7,
+        max_tokens: 400
+      });
+
+      let full = '';
+      for await (const part of stream) {
+        const bit = part.choices?.[0]?.delta?.content || '';
+        if (bit) { full += bit; onChunk(bit); }
+      }
+
+      history.push({ role: 'assistant', content: full });
+
+      // keep the context from growing without bound on a small model
+      if (history.length > 13) history = [history[0], ...history.slice(-12)];
+      return full;
+    };
+
+    window.jgptReset = () => { history = [{ role: 'system', content: SYSTEM }]; };
+
+  } catch (err) {
+    console.error('Model load failed:', err);
+    bar.classList.remove('on');
+    engine = null;
+    setChip('failed', 'Load failed — canned answers');
+    chip.title = String(err.message || err);
+  } finally {
+    loading = false;
+  }
+};
 </script>
 
 <script src="privacy-screen.js"></script>
