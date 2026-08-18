@@ -396,6 +396,11 @@
     <button class="keybtn" id="keyBtn" type="button">Click, then press a key</button>
   </div>
 
+  <div class="set" id="blurRow">
+    <label for="blurBtn">Cover on window switch <b id="blurVal">Off</b></label>
+    <button class="keybtn" id="blurBtn" type="button">Turn on</button>
+  </div>
+
   <p class="note">The panic key hides the page behind a cover screen, and applies to every page on this site. Three fast taps of Shift always works too. Click the cover's logo three times to come back.</p>
 </div>
 
@@ -718,7 +723,7 @@ const cogBtn = $('cogBtn'), panel = $('panel');
 const vol = $('vol'), volVal = $('volVal');
 const keyBtn = $('keyBtn'), keyVal = $('keyVal');
 
-let settings = { volume: 10, hotkey: 'Escape', privacyOn: true };
+let settings = { volume: 10, hotkey: 'Escape', privacyOn: true, coverOnBlur: false };
 
 cogBtn.onclick = (e) => {
   e.stopPropagation();
@@ -740,10 +745,13 @@ function applySettings(){
   if (window.privacyScreen) {
     window.privacyScreen.setHotkey(settings.hotkey);
     window.privacyScreen.setEnabled(settings.privacyOn !== false);
+    window.privacyScreen.setCoverOnBlur(settings.coverOnBlur === true);
   }
 }
 
 const onBtn = $('onBtn'), onVal = $('onVal'), keyRow = $('keyRow');
+
+const blurBtn = $('blurBtn'), blurVal = $('blurVal'), blurRow = $('blurRow');
 
 function paintPrivacy(){
   const on = settings.privacyOn !== false;
@@ -752,7 +760,21 @@ function paintPrivacy(){
   onBtn.classList.toggle('off', !on);
   keyRow.style.opacity = on ? '1' : '.4';
   keyBtn.disabled = !on;
+
+  const blur = settings.coverOnBlur === true;
+  blurVal.textContent = blur ? 'On' : 'Off';
+  blurBtn.textContent = blur ? 'Turn off' : 'Turn on';
+  blurBtn.classList.toggle('off', !blur);
+  blurRow.style.opacity = on ? '1' : '.4';
+  blurBtn.disabled = !on;
 }
+
+blurBtn.onclick = () => {
+  settings.coverOnBlur = settings.coverOnBlur !== true;
+  paintPrivacy();
+  if (window.privacyScreen) window.privacyScreen.setCoverOnBlur(settings.coverOnBlur);
+  saveSettings();
+};
 
 onBtn.onclick = () => {
   settings.privacyOn = settings.privacyOn === false;   // flip
@@ -815,6 +837,7 @@ addEventListener('load', () => {
   if (!window.privacyScreen) return;
   window.privacyScreen.setHotkey(settings.hotkey);
   window.privacyScreen.setEnabled(settings.privacyOn !== false);
+  window.privacyScreen.setCoverOnBlur(settings.coverOnBlur === true);
 });
 
 async function loadSettings(user){
