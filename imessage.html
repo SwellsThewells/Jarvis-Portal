@@ -2034,16 +2034,28 @@
 
         /* Push a conversation-list update to everyone in the chat: the
            sender without an unread bump, everyone else with one. */
+        /* A conversation is filed under WHO it is with, not under the
+           chat id. In a group that's the group id for everyone. In a
+           direct message it's the other person's id in your list, and
+           your id in theirs — the chat id belongs to nobody, and filing
+           under it creates a ghost row that matches no user. */
+        function myConvKey() {
+            return currentChatUser.uid;     // group id, or the other person
+        }
+        function theirConvKey() {
+            return currentChatUser.isGroup ? currentChatUser.uid : currentUser.uid;
+        }
+
         async function fanOut(update) {
-            const cid = activeChatId();
             const isGroup = !!currentChatUser.isGroup;
             const extra = isGroup ? { isGroup: true, groupName: currentChatUser.username } : {};
 
-            await rtdb.ref('/imessage/conversations/'+currentUser.uid+'/'+cid)
+            await rtdb.ref('/imessage/conversations/'+currentUser.uid+'/'+myConvKey())
                   .update({ ...update, ...extra });
 
+            const theirs = theirConvKey();
             await Promise.all(activeRecipients().map(uid =>
-                rtdb.ref('/imessage/conversations/'+uid+'/'+cid).update({
+                rtdb.ref('/imessage/conversations/'+uid+'/'+theirs).update({
                     ...update, ...extra,
                     unread: firebase.database.ServerValue.increment(1)
                 })
@@ -2278,8 +2290,26 @@
                 }
                 
                 const convos = await Promise.all(entries.map(async ([cid, convo]) => {
+                    /* Sweep out rows left by the old bug: anything filed
+                       under a key that is neither a real user nor a group
+                       can't ever be opened, so drop it rather than draw a
+                       blank "User" row. */
+                    if (!convo.isGroup) {
+                        const exists = await rtdb.ref('/imessage/users/'+cid).once('value');
+                        if (!exists.exists()) {
+                            rtdb.ref('/imessage/conversations/'+currentUser.uid+'/'+cid)
+                                .remove().catch(() => {});
+                            return null;
+                        }
+                    }
+
                     if (convo.isGroup) {
-                        const g = (await rtdb.ref('/imessage/groups/'+cid).once('value')).val() || {};
+                        const g = (await rtdb.ref('/imessage/groups/'+cid).once('value')).val();
+                        if (!g) {
+                            rtdb.ref('/imessage/conversations/'+currentUser.uid+'/'+cid)
+                                .remove().catch(() => {});
+                            return null;
+                        }
                         return {
                             uid: cid, convo, online: false, isGroup: true,
                             info: { username: g.name || convo.groupName || 'Group' },
@@ -2294,7 +2324,7 @@
                 
                 contactsList.innerHTML = '';
                 
-                convos.forEach(({uid, convo, info, online, isGroup, members}) => {
+                convos.filter(Boolean).forEach(({uid, convo, info, online, isGroup, members}) => {
                     const el = document.createElement('div');
                     el.className = 'contact-item';
                     const cPic = safeImageUrl(info.profilePic);
@@ -2457,7 +2487,7 @@
                 });
             }
             
-            rtdb.ref('/imessage/conversations/'+currentUser.uid+'/'+chatId+'/unread').set(0);
+            rtdb.ref('/imessage/conversations/'+currentUser.uid+'/'+myConvKey()+'/unread').set(0);
             
             setTimeout(() => {
                 messageInput.focus();
@@ -2533,9 +2563,9 @@
                         ? (last.type === 'image' ? 'Photo' : last.type === 'gif' ? 'GIF' : last.type === 'location' ? 'Location' : last.type === 'music' ? '♪ ' + (last.trackTitle || 'Track') : last.type === 'game' ? 'Game' : (last.text || ''))
                         : '';
                     const patch = { lastMessage: preview, lastMessageTime: last ? last.timestamp : null };
-                    await rtdb.ref('/imessage/conversations/'+currentUser.uid+'/'+chatId).update(patch);
+                    await rtdb.ref('/imessage/conversations/'+currentUser.uid+'/'+myConvKey()).update(patch);
                     await Promise.all(activeRecipients().map(uid =>
-                        rtdb.ref('/imessage/conversations/'+uid+'/'+chatId).update(patch)));
+                        rtdb.ref('/imessage/conversations/'+uid+'/'+theirConvKey()).update(patch)));
                 }
                 closeDelete();
             } catch (err) {
