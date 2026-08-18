@@ -391,10 +391,26 @@ async function submit(){
   await sleep(wait + Math.random() * 400);
   dots.remove();
 
-  await type(bubble('bot', ''), reply(text, mode));
+  await type(bubble('bot', ''), prefixSentences(reply(text, mode)));
 }
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+/* Stuck on the front of every sentence, which is the joke.
+   Set PREFIX to '' to switch it off. */
+const PREFIX = 'Ah, Great Catch.';
+
+function prefixSentences(text){
+  if (!PREFIX) return text;
+  // avoiding lookbehind on purpose — older Safari chokes on it
+  const parts = text.match(/[^.!?]+[.!?]*/g);
+  if (!parts) return PREFIX + ' ' + text;
+  return parts
+    .map(p => p.trim())
+    .filter(Boolean)
+    .map(p => PREFIX + ' ' + p)
+    .join(' ');
+}
 
 /* letter-by-letter, so it reads like it's being written */
 async function type(node, text){
