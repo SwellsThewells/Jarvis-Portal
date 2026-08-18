@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jarvis Playables</title>
+<link rel="icon" href="jarvtube-logo.png">
+
+<style>
+  :root{
+    --bg:      #0F0F0F;
+    --panel:   #181818;
+    --raise:   #272727;
+    --hover:   #3F3F3F;
+    --line:    #303030;
+    --text:    #F1F1F1;
+    --dim:     #AAAAAA;
+    --brand:   #6B5B5A;
+    --font: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; height:100%; }
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:var(--font);
+    -webkit-font-smoothing:antialiased;
+  }
+  button{ font-family:inherit; }
+
+  /* ---------------- masthead ---------------- */
+  .mast{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; gap:16px;
+    padding:8px 16px; height:56px;
+    background:var(--bg);
+  }
+  .burger{
+    width:40px; height:40px; border:0; background:none; cursor:pointer;
+    border-radius:50%; display:grid; place-items:center; color:var(--text);
+  }
+  .burger:hover{ background:var(--raise); }
+  .burger span{ display:block; width:16px; height:1.5px; background:currentColor; margin:2.5px 0; }
+
+  .brand{ display:flex; align-items:center; height:26px; text-decoration:none; }
+  .brand img{ height:26px; width:auto; display:block; }
+
+  .searchwrap{
+    flex:1; max-width:560px; margin:0 auto;
+    display:flex; align-items:center;
+  }
+  .searchwrap input{
+    flex:1; height:38px;
+    background:#121212; border:1px solid var(--line);
+    border-radius:19px 0 0 19px; border-right:0;
+    padding:0 16px; color:var(--text); font-size:15px; outline:none;
+  }
+  .searchwrap input:focus{ border-color:#3ea6ff; }
+  .searchbtn{
+    width:62px; height:38px; border:1px solid var(--line);
+    background:var(--raise); border-radius:0 19px 19px 0;
+    cursor:pointer; color:var(--text);
+    display:grid; place-items:center;
+  }
+  .searchbtn:hover{ background:var(--hover); }
+
+  .mast-right{ display:flex; align-items:center; gap:8px; margin-left:auto; }
+  .create{
+    display:flex; align-items:center; gap:7px;
+    height:36px; padding:0 15px;
+    background:var(--raise); color:var(--text);
+    border:0; border-radius:18px; cursor:pointer;
+    font-size:14px; font-weight:500;
+  }
+  .create:hover{ background:var(--hover); }
+  .avatar{
+    width:32px; height:32px; border-radius:50%;
+    background:var(--raise); overflow:hidden; cursor:pointer;
+    display:grid; place-items:center; font-size:13px; color:var(--dim);
+  }
+  .avatar img{ width:100%; height:100%; object-fit:cover; }
+
+  .icon{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+
+  /* ---------------- page ---------------- */
+  .page{ padding:14px 24px 60px; max-width:1600px; margin:0 auto; }
+
+  .pagehead{ display:flex; align-items:center; gap:14px; margin:10px 0 18px; }
+  .pagehead img{ width:46px; height:46px; border-radius:12px; object-fit:cover; }
+  .pagehead h1{ margin:0; font-size:27px; font-weight:700; letter-spacing:-.01em; }
+
+  .tabs{ display:flex; gap:26px; border-bottom:1px solid var(--line); margin-bottom:16px; }
+  .tab{
+    background:none; border:0; padding:0 0 11px; cursor:pointer;
+    color:var(--dim); font-size:15px; font-weight:500;
+    border-bottom:2px solid transparent; margin-bottom:-1px;
+  }
+  .tab.on{ color:var(--text); border-bottom-color:var(--text); }
+
+  .chips{ display:flex; gap:11px; margin-bottom:22px; flex-wrap:wrap; }
+  .chip{
+    height:32px; padding:0 13px; border:0; border-radius:8px;
+    background:var(--raise); color:var(--text);
+    font-size:14px; cursor:pointer; white-space:nowrap;
+  }
+  .chip:hover{ background:var(--hover); }
+  .chip.on{ background:var(--text); color:#0F0F0F; font-weight:500; }
+
+  /* ---------------- grid ---------------- */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(196px, 1fr));
+    gap:16px 14px;
+  }
+  .card{ cursor:pointer; }
+  .shot{
+    position:relative;
+    aspect-ratio:1 / 1;
+    border-radius:12px; overflow:hidden;
+    background:var(--panel);
+    border:1px solid var(--line);
+  }
+  .card:hover .shot{ border-color:#4a4a4a; }
+  .shot img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .shot iframe{
+    width:800px; height:800px; border:0;
+    transform-origin:top left; pointer-events:none;
+    background:#fff;
+  }
+  .shot .letter{
+    position:absolute; inset:0; display:grid; place-items:center;
+    font-size:40px; font-weight:700; color:#4a4a4a;
+    background:linear-gradient(160deg,#232323,#161616);
+  }
+  .badge{
+    position:absolute; top:7px; left:7px;
+    background:#CC0000; color:#fff;
+    font-size:11px; font-weight:600;
+    padding:2px 7px; border-radius:4px;
+  }
+  .cardmeta{ display:flex; gap:8px; padding:9px 2px 0; }
+  .cardmeta .txt{ min-width:0; flex:1; }
+  .cardtitle{
+    font-size:14px; font-weight:500; line-height:1.35;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+  }
+  .cardsub{ font-size:12px; color:var(--dim); margin-top:3px; }
+  .kebab{
+    background:none; border:0; color:var(--dim); cursor:pointer;
+    padding:0 2px; font-size:16px; line-height:1; flex:none;
+  }
+  .kebab:hover{ color:var(--text); }
+
+  .empty{
+    grid-column:1/-1; padding:70px 20px; text-align:center;
+    color:var(--dim); font-size:15px; line-height:1.7;
+  }
+
+  /* ---------------- player ---------------- */
+  .player{ display:none; padding:14px 24px 60px; max-width:1600px; margin:0 auto; }
+  .player.on{ display:grid; grid-template-columns:minmax(0,1fr) 330px; gap:24px; }
+  @media (max-width:1100px){ .player.on{ grid-template-columns:1fr; } }
+
+  .stage{
+    aspect-ratio:16 / 10;
+    background:linear-gradient(150deg,#1b2a1b,#0d140d);
+    border-radius:12px; overflow:hidden; position:relative;
+  }
+  .stage iframe{ width:100%; height:100%; border:0; display:block; }
+  .stage .loading{
+    position:absolute; inset:0; display:grid; place-items:center;
+    color:var(--dim); font-size:14px; text-align:center;
+  }
+
+  .playbar{ display:flex; align-items:center; gap:12px; padding:14px 2px 0; }
+  .playbar h2{ margin:0; font-size:19px; font-weight:600; }
+  .who{ display:flex; align-items:center; gap:10px; margin-top:12px; }
+  .who .av{
+    width:36px; height:36px; border-radius:50%;
+    background:var(--brand); display:grid; place-items:center;
+    font-size:14px; font-weight:600; overflow:hidden;
+  }
+  .who .av img{ width:100%; height:100%; object-fit:cover; }
+  .whoname{ font-size:14px; font-weight:500; }
+  .whosub{ font-size:12px; color:var(--dim); }
+  .backbtn{
+    margin-left:auto; height:34px; padding:0 15px;
+    background:var(--raise); color:var(--text); border:0;
+    border-radius:17px; cursor:pointer; font-size:14px;
+  }
+  .backbtn:hover{ background:var(--hover); }
+
+  .rail h3{ margin:0 0 12px; font-size:15px; font-weight:600; }
+  .railgrid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+  /* ---------------- upload ---------------- */
+  .sheet{
+    position:fixed; inset:0; z-index:120;
+    background:rgba(0,0,0,.7);
+    display:none; align-items:center; justify-content:center;
+    padding:20px;
+  }
+  .sheet.on{ display:flex; }
+  .box{
+    width:100%; max-width:520px; max-height:90vh; overflow-y:auto;
+    background:var(--panel); border:1px solid var(--line);
+    border-radius:14px; padding:24px;
+  }
+  .box h2{ margin:0 0 4px; font-size:20px; }
+  .box .sub{ margin:0 0 20px; color:var(--dim); font-size:13px; line-height:1.6; }
+
+  .field{ margin-bottom:16px; }
+  .field label{ display:block; font-size:13px; color:var(--dim); margin-bottom:7px; }
+  .field input[type=text]{
+    width:100%; height:40px; padding:0 12px;
+    background:#121212; border:1px solid var(--line); border-radius:8px;
+    color:var(--text); font-size:14px; font-family:inherit; outline:none;
+  }
+  .field input[type=text]:focus{ border-color:#3ea6ff; }
+
+  .drop{
+    border:1.5px dashed var(--line); border-radius:10px;
+    padding:22px; text-align:center; cursor:pointer;
+    color:var(--dim); font-size:14px; line-height:1.6;
+  }
+  .drop:hover, .drop.over{ border-color:#3ea6ff; color:var(--text); }
+  .drop b{ color:var(--text); display:block; margin-bottom:3px; }
+  input[type=file]{ position:absolute; width:1px; height:1px; opacity:0; }
+
+  .thumbrow{ display:flex; gap:12px; align-items:center; }
+  .thumbprev{
+    width:82px; height:82px; border-radius:8px; flex:none;
+    background:#121212; border:1px solid var(--line);
+    overflow:hidden; display:grid; place-items:center;
+    font-size:11px; color:var(--dim); text-align:center; padding:6px;
+  }
+  .thumbprev img{ width:100%; height:100%; object-fit:cover; }
+
+  .btnrow{ display:flex; gap:10px; margin-top:22px; }
+  .btn{
+    flex:1; height:40px; border:0; border-radius:20px; cursor:pointer;
+    font-size:14px; font-weight:500;
+  }
+  .btn.primary{ background:#3ea6ff; color:#0F0F0F; }
+  .btn.primary:disabled{ background:var(--raise); color:#666; cursor:default; }
+  .btn.ghost{ background:var(--raise); color:var(--text); }
+  .note{ margin:14px 0 0; font-size:12.5px; color:var(--dim); line-height:1.65; }
+  .note.warn{ color:#ffb86b; }
+
+  @media (max-width:700px){
+    .searchwrap{ display:none; }
+    .page,.player{ padding-left:12px; padding-right:12px; }
+  }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none !important; } }
+</style>
+</head>
+
+<body>
+
+<!-- ============ masthead ============ -->
+<div class="mast">
+  <button class="burger" id="homeBtn" title="Jarvis Portal"><span></span><span></span><span></span></button>
+  <a class="brand" href="#" id="brandLink"><img src="jarvtube-wordmark.png" alt="JarvTube"></a>
+
+  <div class="searchwrap">
+    <input id="search" type="text" placeholder="Search games">
+    <button class="searchbtn" title="Search">
+      <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+    </button>
+  </div>
+
+  <div class="mast-right">
+    <button class="create" id="createBtn">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      Create
+    </button>
+    <div class="avatar" id="me">?</div>
+  </div>
+</div>
+
+<!-- ============ browse ============ -->
+<div class="page" id="browse">
+  <div class="pagehead">
+    <img src="jarvtube-logo.png" alt="">
+    <h1>Playables</h1>
+  </div>
+
+  <div class="tabs">
+    <button class="tab" data-tab="home">Home</button>
+    <button class="tab on" data-tab="browse">Browse</button>
+  </div>
+
+  <div class="chips" id="chips">
+    <button class="chip on" data-filter="all">All</button>
+    <button class="chip" data-filter="new">New</button>
+    <button class="chip" data-filter="popular">Most played</button>
+    <button class="chip" data-filter="mine">Yours</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+</div>
+
+<!-- ============ player ============ -->
+<div class="player" id="player">
+  <div>
+    <div class="stage" id="stage">
+      <div class="loading" id="stageMsg">Loading…</div>
+    </div>
+    <div class="playbar">
+      <h2 id="playTitle"></h2>
+      <button class="backbtn" id="backBtn">Back to games</button>
+    </div>
+    <div class="who">
+      <div class="av" id="playAv"></div>
+      <div>
+        <div class="whoname" id="playAuthor"></div>
+        <div class="whosub" id="playPlays"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rail">
+    <h3>Play more games</h3>
+    <div class="railgrid" id="rail"></div>
+  </div>
+</div>
+
+<!-- ============ upload ============ -->
+<div class="sheet" id="sheet">
+  <div class="box">
+    <h2>Publish a game</h2>
+    <p class="sub">A single self-contained .html file, up to 10MB. Everything it needs — script, style, images — has to be inside that one file, since nothing else gets uploaded alongside it.</p>
+
+    <div class="field">
+      <label for="gtitle">Title</label>
+      <input id="gtitle" type="text" maxlength="60" placeholder="My Mini Mart">
+    </div>
+
+    <div class="field">
+      <label>Game file</label>
+      <div class="drop" id="drop">
+        <b id="dropTitle">Choose an .html file</b>
+        <span id="dropSub">or drag it here</span>
+      </div>
+      <input type="file" id="htmlFile" accept=".html,.htm,text/html">
+    </div>
+
+    <div class="field">
+      <label>Thumbnail</label>
+      <div class="thumbrow">
+        <div class="thumbprev" id="thumbPrev">Live preview of the game</div>
+        <div style="flex:1">
+          <button class="btn ghost" id="pickThumb" style="height:34px;width:100%">Choose an image</button>
+          <button class="btn ghost" id="clearThumb" style="height:34px;width:100%;margin-top:8px">Use the game itself</button>
+        </div>
+      </div>
+      <input type="file" id="thumbFile" accept="image/*">
+    </div>
+
+    <p class="note" id="upNote"></p>
+
+    <div class="btnrow">
+      <button class="btn ghost" id="cancelUp">Cancel</button>
+      <button class="btn primary" id="doUp" disabled>Publish</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+
+<script>
+/* ================================================================
+   JARVIS PLAYABLES
+
+   Games are uploaded as one self-contained .html file and stored in
+   the Realtime Database. Everyone signed in can play everyone's.
+
+   SECURITY, because this one matters:
+   An uploaded game is somebody else's JavaScript. If it ran on this
+   page it could read your Firebase session and act as you — read
+   your messages, delete your account data. So every game runs in an
+   iframe with sandbox="allow-scripts" and WITHOUT allow-same-origin.
+   That gives it a throwaway origin of its own with no access to
+   this page, your login, storage or cookies. Do not add
+   allow-same-origin to those iframes. It undoes all of it.
+   ================================================================ */
+
+const MAX_HTML  = 10000000;  // 10MB — the hard ceiling for a single
+                            // value in Realtime Database, so this is as
+                            // far as it goes without a real file host
+const MAX_THUMB = 120000;   // ~120KB per custom thumbnail
+
+/* A card with no custom thumbnail previews by loading the whole game.
+   That's fine at 200KB and ruinous at 10MB — scrolling the grid would
+   pull tens of megabytes. Past this size the card shows a placeholder
+   instead and the uploader is told to add a thumbnail. */
+const PREVIEW_MAX = 900000;
+
+const kb = n => n >= 1000000
+  ? (n/1000000).toFixed(1) + 'MB'
+  : Math.round(n/1024) + 'KB';
+
+if (typeof firebaseConfig === 'undefined' || firebaseConfig.apiKey === 'PASTE_YOURS') {
+  document.getElementById('grid').innerHTML =
+    '<div class="empty">firebase-config.js is not filled in yet.</div>';
+} else {
+  firebase.initializeApp(firebaseConfig);
+  start();
+}
+
+function start(){
+
+const auth = firebase.auth();
+const rtdb = firebase.database();
+const firestore = firebase.firestore();
+
+const $ = id => document.getElementById(id);
+const esc = t => { const d = document.createElement('div'); d.textContent = t == null ? '' : String(t); return d.innerHTML; };
+
+let me = null, myName = 'You', myPic = '';
+let games = [], filter = 'all', query = '';
+
+/* ---------------- session ---------------- */
+$('homeBtn').onclick   = () => location.href = 'index.html';
+$('brandLink').onclick = (e) => { e.preventDefault(); showBrowse(); };
+
+auth.onAuthStateChanged(async user => {
+  me = user;
+  if (user) {
+    myName = (user.email || '').split('@')[0];
+    try {
+      const doc = await firestore.collection('users').doc(user.uid).get();
+      if (doc.exists) {
+        if (doc.data().username) myName = doc.data().username;
+        if (doc.data().profilePic) myPic = doc.data().profilePic;
+      }
+    } catch (e) {}
+    $('me').innerHTML = myPic ? '<img src="' + esc(safeImg(myPic)) + '">' : esc(myName.slice(0,1).toUpperCase());
+    $('me').title = myName;
+  } else {
+    $('me').textContent = '?';
+    $('me').title = 'Not signed in';
+  }
+  listen();
+});
+
+$('me').onclick = () => { if (!me) location.href = 'index.html'; };
+
+function safeImg(u){
+  return (typeof u === 'string' && /^(data:image\/(png|jpe?g|gif|webp);base64,|https:\/\/)/i.test(u)) ? u : '';
+}
+
+/* ---------------- the library ---------------- */
+function listen(){
+  rtdb.ref('/playables/meta').on('value', snap => {
+    const val = snap.val() || {};
+    games = Object.entries(val).map(([id, g]) => ({ id, ...g }));
+    render();
+  }, err => {
+    $('grid').innerHTML = '<div class="empty">Could not load games.<br>' + esc(err.message) +
+      '<br><br>If that says permission denied, the playables section is missing from your database rules.</div>';
+  });
+}
+
+document.querySelectorAll('.chip').forEach(c => {
+  c.onclick = () => {
+    document.querySelectorAll('.chip').forEach(x => x.classList.remove('on'));
+    c.classList.add('on');
+    filter = c.dataset.filter;
+    render();
+  };
+});
+document.querySelectorAll('.tab').forEach(t => {
+  t.onclick = () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+    t.classList.add('on');
+  };
+});
+$('search').addEventListener('input', e => { query = e.target.value.toLowerCase().trim(); render(); });
+
+function visible(){
+  let list = games.slice();
+  if (query) list = list.filter(g => (g.title||'').toLowerCase().includes(query) ||
+                                     (g.author||'').toLowerCase().includes(query));
+  if (filter === 'mine')    list = list.filter(g => me && g.authorId === me.uid);
+  if (filter === 'popular') list.sort((a,b) => (b.plays||0) - (a.plays||0));
+  else                      list.sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
+  if (filter === 'new')     list = list.filter(g => Date.now() - (g.createdAt||0) < 7*864e5);
+  return list;
+}
+
+function plays(n){
+  n = n || 0;
+  if (n >= 1e6) return (n/1e6).toFixed(1).replace('.0','') + 'M plays';
+  if (n >= 1e3) return (n/1e3).toFixed(1).replace('.0','') + 'K plays';
+  return n + (n === 1 ? ' play' : ' plays');
+}
+
+function render(){
+  const grid = $('grid');
+  const list = visible();
+  grid.innerHTML = '';
+
+  if (!list.length){
+    grid.innerHTML = '<div class="empty">' +
+      (games.length ? 'Nothing matches that.'
+                    : 'No games yet.<br>Hit <b>Create</b> and publish the first one.') +
+      '</div>';
+    return;
+  }
+
+  list.forEach(g => grid.appendChild(card(g)));
+}
+
+function card(g, small){
+  const el = document.createElement('div');
+  el.className = 'card';
+
+  const shot = document.createElement('div');
+  shot.className = 'shot';
+
+  const letter = document.createElement('div');
+  letter.className = 'letter';
+  letter.textContent = (g.title || '?').slice(0,1).toUpperCase();
+  shot.appendChild(letter);
+
+  if (g.hasThumb)                            loadThumb(g.id, shot);
+  else if ((g.size || 0) <= PREVIEW_MAX)     queuePreview(g.id, shot);
+  // too big to preview: the letter placeholder stays
+
+  if (Date.now() - (g.createdAt||0) < 7*864e5){
+    const b = document.createElement('div');
+    b.className = 'badge';
+    b.textContent = 'New';
+    shot.appendChild(b);
+  }
+
+  const meta = document.createElement('div');
+  meta.className = 'cardmeta';
+  meta.innerHTML =
+    '<div class="txt"><div class="cardtitle">' + esc(g.title || 'Untitled') + '</div>' +
+    '<div class="cardsub">' + esc(plays(g.plays)) + ' · ' + esc(g.author || 'someone') + '</div></div>' +
+    (me && g.authorId === me.uid ? '<button class="kebab" title="Delete">&#8942;</button>' : '');
+
+  const kebab = meta.querySelector('.kebab');
+  if (kebab) kebab.onclick = (e) => { e.stopPropagation(); removeGame(g); };
+
+  el.append(shot, meta);
+  el.onclick = () => play(g);
+  if (small) el.querySelector('.cardtitle').style.fontSize = '13px';
+  return el;
+}
+
+/* custom thumbnails live in their own node so the listing stays light */
+function loadThumb(id, shot){
+  rtdb.ref('/playables/thumbs/' + id).once('value').then(s => {
+    const url = safeImg(s.val());
+    if (!url) return;
+    const img = document.createElement('img');
+    img.src = url;
+    img.alt = '';
+    shot.appendChild(img);
+  }).catch(() => {});
+}
+
+/* No custom thumbnail: show the game itself, running scaled-down in a
+   sandboxed frame. Only fetched once the card is actually on screen —
+   otherwise opening the page would pull every game at once. */
+const seen = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    seen.unobserve(e.target);
+    const id = e.target.dataset.game;
+    rtdb.ref('/playables/html/' + id).once('value').then(s => {
+      const html = s.val();
+      if (!html) return;
+      const frame = document.createElement('iframe');
+      frame.setAttribute('sandbox', 'allow-scripts');   // never allow-same-origin
+      frame.setAttribute('scrolling', 'no');
+      frame.setAttribute('tabindex', '-1');
+      frame.srcdoc = html;
+      e.target.appendChild(frame);
+      const scale = e.target.clientWidth / 800;
+      frame.style.transform = 'scale(' + scale + ')';
+    }).catch(() => {});
+  });
+}, { rootMargin: '200px' });
+
+function queuePreview(id, shot){
+  shot.dataset.game = id;
+  seen.observe(shot);
+}
+
+/* ---------------- playing ---------------- */
+async function play(g){
+  $('browse').style.display = 'none';
+  $('player').classList.add('on');
+  $('playTitle').textContent = g.title || 'Untitled';
+  $('playAuthor').textContent = g.author || 'someone';
+  $('playPlays').textContent = plays(g.plays);
+  $('playAv').textContent = (g.author || '?').slice(0,1).toUpperCase();
+  window.scrollTo(0,0);
+
+  const stage = $('stage');
+  stage.innerHTML = '<div class="loading" id="stageMsg">Loading…</div>';
+
+  const rail = $('rail');
+  rail.innerHTML = '';
+  visible().filter(x => x.id !== g.id).slice(0,6).forEach(x => rail.appendChild(card(x, true)));
+
+  try{
+    const snap = await rtdb.ref('/playables/html/' + g.id).once('value');
+    const html = snap.val();
+    if (!html) { stage.innerHTML = '<div class="loading">That game is missing its file.</div>'; return; }
+
+    const frame = document.createElement('iframe');
+    // allow-scripts only. See the note at the top of this file.
+    frame.setAttribute('sandbox', 'allow-scripts allow-pointer-lock');
+    frame.setAttribute('allow', 'fullscreen; gamepad');
+    frame.srcdoc = html;
+    stage.innerHTML = '';
+    stage.appendChild(frame);
+
+    rtdb.ref('/playables/meta/' + g.id + '/plays')
+        .set(firebase.database.ServerValue.increment(1)).catch(() => {});
+  }catch(err){
+    stage.innerHTML = '<div class="loading">Could not load it: ' + esc(err.message) + '</div>';
+  }
+}
+
+$('backBtn').onclick = showBrowse;
+function showBrowse(){
+  $('player').classList.remove('on');
+  $('stage').innerHTML = '';          // stop the game dead
+  $('browse').style.display = '';
+}
+
+async function removeGame(g){
+  if (!confirm('Delete "' + (g.title||'this game') + '" for everyone?')) return;
+  try{
+    await rtdb.ref('/playables/html/' + g.id).remove();
+    await rtdb.ref('/playables/thumbs/' + g.id).remove();
+    await rtdb.ref('/playables/meta/' + g.id).remove();
+  }catch(err){ alert('Could not delete it: ' + err.message); }
+}
+
+/* ---------------- publishing ---------------- */
+const sheet = $('sheet'), drop = $('drop'), htmlFile = $('htmlFile');
+let pendingHtml = null, pendingThumb = null;
+
+$('createBtn').onclick = () => {
+  if (!me) { alert('Sign in on the portal first — games are published under your name.'); return; }
+  resetSheet();
+  sheet.classList.add('on');
+};
+$('cancelUp').onclick = () => sheet.classList.remove('on');
+sheet.onclick = e => { if (e.target === sheet) sheet.classList.remove('on'); };
+
+function resetSheet(){
+  pendingHtml = null; pendingThumb = null;
+  $('gtitle').value = '';
+  $('dropTitle').textContent = 'Choose an .html file';
+  $('dropSub').textContent = 'or drag it here';
+  $('thumbPrev').innerHTML = 'Live preview of the game';
+  $('upNote').textContent = '';
+  $('upNote').className = 'note';
+  $('doUp').disabled = true;
+}
+
+drop.onclick = () => htmlFile.click();
+drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
+drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+drop.addEventListener('drop', e => {
+  e.preventDefault(); drop.classList.remove('over');
+  if (e.dataTransfer.files[0]) takeHtml(e.dataTransfer.files[0]);
+});
+htmlFile.onchange = e => { if (e.target.files[0]) takeHtml(e.target.files[0]); };
+
+function takeHtml(file){
+  if (!/\.html?$/i.test(file.name) && file.type !== 'text/html'){
+    note('That needs to be an .html file.', true); return;
+  }
+  const r = new FileReader();
+  r.onerror = () => note('Could not read that file.', true);
+  r.onload = ev => {
+    const text = ev.target.result;
+    if (text.length > MAX_HTML){
+      note('That file is ' + kb(text.length) + '. The ceiling is ' + kb(MAX_HTML) +
+           ' — a single value in the database cannot hold more than that.', true);
+      return;
+    }
+    pendingHtml = text;
+    $('dropTitle').textContent = file.name;
+    $('dropSub').textContent = kb(text.length) + ' — ready';
+    if (!$('gtitle').value.trim()) $('gtitle').value = file.name.replace(/\.html?$/i,'').slice(0,60);
+
+    if (text.length > PREVIEW_MAX)
+      note('Over ' + kb(PREVIEW_MAX) + ', so the card can\'t preview the game itself — ' +
+           'pick a thumbnail image or it shows a plain placeholder. Big games also eat ' +
+           'the monthly download allowance fast.', true);
+    else note('');
+
+    check();
+  };
+  r.readAsText(file);
+}
+
+$('gtitle').addEventListener('input', check);
+function check(){ $('doUp').disabled = !(pendingHtml && $('gtitle').value.trim()); }
+function note(msg, warn){
+  $('upNote').textContent = msg || '';
+  $('upNote').className = 'note' + (warn ? ' warn' : '');
+}
+
+$('pickThumb').onclick = () => $('thumbFile').click();
+$('clearThumb').onclick = () => {
+  pendingThumb = null;
+  $('thumbPrev').innerHTML = 'Live preview of the game';
+};
+
+$('thumbFile').onchange = e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    const img = new Image();
+    img.onerror = () => note("That image format can't be read here.", true);
+    img.onload = () => {
+      // square crop, same as the cards show
+      const side = Math.min(img.width, img.height);
+      const c = document.createElement('canvas');
+      c.width = c.height = 420;
+      c.getContext('2d').drawImage(img, (img.width-side)/2, (img.height-side)/2, side, side, 0, 0, 420, 420);
+
+      let q = .8, url = c.toDataURL('image/jpeg', q);
+      while (url.length > MAX_THUMB && q > .35){ q -= .1; url = c.toDataURL('image/jpeg', q); }
+
+      pendingThumb = url;
+      $('thumbPrev').innerHTML = '<img src="' + url + '">';
+      $('thumbFile').value = '';
+    };
+    img.src = ev.target.result;
+  };
+  r.readAsDataURL(file);
+};
+
+$('doUp').onclick = async () => {
+  if (!pendingHtml || !me) return;
+  const title = $('gtitle').value.trim().slice(0,60);
+
+  $('doUp').disabled = true;
+  note('Publishing ' + kb(pendingHtml.length) + '… large files take a moment.');
+
+  try{
+    const ref = rtdb.ref('/playables/meta').push();
+    const id = ref.key;
+
+    /* Meta has to land FIRST. The rules authorise writes to the html and
+       thumb nodes by looking up authorId in meta — write them first and
+       there's nothing to check against, so the database refuses them. */
+    await ref.set({
+      title,
+      author: myName,
+      authorId: me.uid,
+      hasThumb: !!pendingThumb,
+      plays: 0,
+      size: pendingHtml.length,
+      createdAt: firebase.database.ServerValue.TIMESTAMP
+    });
+
+    try{
+      await rtdb.ref('/playables/html/' + id).set(pendingHtml);
+      if (pendingThumb) await rtdb.ref('/playables/thumbs/' + id).set(pendingThumb);
+    }catch(inner){
+      // don't leave a listing pointing at a game that never uploaded
+      await ref.remove().catch(() => {});
+      throw inner;
+    }
+
+    sheet.classList.remove('on');
+  }catch(err){
+    console.error(err);
+    note('Failed: ' + err.message +
+      (/permission/i.test(err.message) ? ' — the playables rules need publishing.' : ''), true);
+    $('doUp').disabled = false;
+  }
+};
+
+}
+</script>
+
+<script src="privacy-screen.js"></script>
+</body>
+</html>
