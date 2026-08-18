@@ -240,6 +240,30 @@
   }
   .account button:hover{ color:var(--white); }
 
+  /* ---------- in-portal viewer ---------- */
+  .viewer{
+    position:fixed; inset:0; z-index:6;
+    background:var(--bg);
+    display:none; flex-direction:column;
+  }
+  .viewer.open{ display:flex; }
+  .viewerbar{
+    display:flex; align-items:center; gap:12px;
+    padding:9px 14px; flex:none;
+    border-bottom:1px solid var(--edge);
+    font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--dim);
+  }
+  .viewerbar b{ color:var(--white); font-weight:500; }
+  .viewerbar .sp{ margin-left:auto; display:flex; gap:8px; }
+  .viewerbar button{
+    background:none; border:1px solid var(--edge); border-radius:2px;
+    color:var(--dim); font-family:inherit; font-size:9.5px;
+    letter-spacing:.2em; text-transform:uppercase;
+    padding:6px 11px; cursor:pointer;
+  }
+  .viewerbar button:hover{ color:var(--white); border-color:var(--white); }
+  .viewer iframe{ flex:1; width:100%; border:0; background:#000; }
+
   /* ---------- sound toggle ---------- */
   .sound{
     position:fixed; right:18px; bottom:18px; z-index:3;
@@ -374,6 +398,17 @@
 
 </div>
 
+<div class="viewer" id="viewer">
+  <div class="viewerbar">
+    <span>Viewing <b id="viewerName"></b></span>
+    <span class="sp">
+      <button id="viewerTab" type="button">Open in tab</button>
+      <button id="viewerClose" type="button">Close</button>
+    </span>
+  </div>
+  <iframe id="viewerFrame" title="Embedded page"></iframe>
+</div>
+
 <audio id="track" src="bloom.mp3" loop preload="auto"></audio>
 
 <button class="cog" id="cogBtn" type="button" aria-expanded="false">Settings</button>
@@ -394,6 +429,11 @@
   <div class="set" id="keyRow">
     <label for="keyBtn">Panic key <b id="keyVal">Escape</b></label>
     <button class="keybtn" id="keyBtn" type="button">Click, then press a key</button>
+  </div>
+
+  <div class="set">
+    <label for="tabBtn">Open pages <b id="tabVal">In this tab</b></label>
+    <button class="keybtn" id="tabBtn" type="button">Change</button>
   </div>
 
   <div class="set" id="blurRow">
@@ -524,7 +564,6 @@ const SITES = [
   { name: "Idle Dice",   file: "dice/dice.html" },
   { name: "Antimatter Jarvmentis", file: "antimatter/anti.html" },
 ];
-
 /* =========================================================
    2. FIREBASE
    firebaseConfig and USER_DOMAIN both come from
@@ -672,6 +711,15 @@ function build(){
     a.href = site.file;
     a.style.setProperty('--i', i);
     a.setAttribute('aria-label', site.name);
+    if (openMode() === 'tab'){ a.target = '_blank'; a.rel = 'noopener'; }
+
+    a.addEventListener('click', (e) => {
+      // let ctrl/cmd/middle-click do what the browser normally would
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+      if (openMode() !== 'portal') return;
+      e.preventDefault();
+      openInPortal(site);
+    });
 
     const shot = document.createElement('div');
     shot.className = 'shot';
@@ -726,7 +774,7 @@ const cogBtn = $('cogBtn'), panel = $('panel');
 const vol = $('vol'), volVal = $('volVal');
 const keyBtn = $('keyBtn'), keyVal = $('keyVal');
 
-let settings = { volume: 10, hotkey: 'Escape', privacyOn: true, coverOnBlur: false };
+let settings = { volume: 10, hotkey: 'Escape', privacyOn: true, coverOnBlur: false, openMode: 'here' };
 
 cogBtn.onclick = (e) => {
   e.stopPropagation();
@@ -743,6 +791,7 @@ function applySettings(){
   keyVal.textContent = prettyKey(settings.hotkey);
   if (window.portalAudio) window.portalAudio.setVolume(settings.volume / 100);
   paintPrivacy();
+  paintTabs();
   // these also mirror into browser storage, which is how pages without
   // Firebase (the games, etc.) pick up the same settings
   if (window.privacyScreen) {
@@ -753,6 +802,70 @@ function applySettings(){
 }
 
 const onBtn = $('onBtn'), onVal = $('onVal'), keyRow = $('keyRow');
+
+const tabBtn = $('tabBtn'), tabVal = $('tabVal');
+
+/* here   — navigate away, as a normal link
+   portal — load it inside the portal, over the grid
+   tab    — a new browser tab */
+const MODES = ['here', 'portal', 'tab'];
+const MODE_LABEL = { here: 'In this tab', portal: 'Inside the portal', tab: 'In a new tab' };
+
+function openMode(){
+  // old saves used a boolean
+  if (settings.openMode) return settings.openMode;
+  return settings.newTab === true ? 'tab' : 'here';
+}
+
+function paintTabs(){
+  const m = openMode();
+  tabVal.textContent = MODE_LABEL[m] || MODE_LABEL.here;
+  applyTabTarget();
+}
+
+/* the grid may already be drawn, so retarget the tiles in place */
+function applyTabTarget(){
+  const m = openMode();
+  document.querySelectorAll('.tile').forEach(a => {
+    if (m === 'tab'){ a.target = '_blank'; a.rel = 'noopener'; }
+    else            { a.removeAttribute('target'); a.removeAttribute('rel'); }
+  });
+}
+
+tabBtn.onclick = () => {
+  const next = MODES[(MODES.indexOf(openMode()) + 1) % MODES.length];
+  settings.openMode = next;
+  delete settings.newTab;
+  paintTabs();
+  saveSettings();
+};
+
+/* ---------- viewing a page inside the portal ----------
+   These are your own pages, so the frame is NOT sandboxed — iMessage
+   needs its Firebase session and the idle games need their saved
+   progress, both of which a sandbox would cut off. */
+const viewer = $('viewer'), viewerFrame = $('viewerFrame');
+let viewing = null;
+
+function openInPortal(site){
+  viewing = site;
+  $('viewerName').textContent = site.name;
+  viewerFrame.src = site.file;
+  viewer.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeViewer(){
+  viewer.classList.remove('open');
+  viewerFrame.src = 'about:blank';   // stop it running, and its audio
+  document.body.style.overflow = '';
+  viewing = null;
+}
+
+$('viewerClose').onclick = closeViewer;
+$('viewerTab').onclick = () => {
+  if (viewing) window.open(viewing.file, '_blank', 'noopener');
+};
 
 const blurBtn = $('blurBtn'), blurVal = $('blurVal'), blurRow = $('blurRow');
 
