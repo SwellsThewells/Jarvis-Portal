@@ -294,6 +294,8 @@
 
   function cover() {
     if (up || !enabled) return;
+    // some apps rebuild the page under us; make sure we're still attached
+    if (!el.isConnected && document.body) document.body.appendChild(el);
     up = true;
     disguiseTab();
     el.classList.add('up');
@@ -328,9 +330,19 @@
 
   let shiftTaps = 0, shiftTimer = null;
 
-  document.addEventListener('keydown', e => {
-    if (e.key === CONFIG.hotkey) { e.preventDefault(); toggle(); return; }
-    if (e.code === CONFIG.hotkey) { e.preventDefault(); toggle(); return; }
+  /* On window, in the capture phase, so it runs before anything the page
+     has bound. Games like Antimatter Dimensions use Escape themselves —
+     stopImmediatePropagation keeps the key from reaching them at all. */
+  window.addEventListener('keydown', e => {
+    // the portal's settings panel is capturing a new key right now
+    if (window.__psRebinding) return;
+
+    if (e.key === CONFIG.hotkey || e.code === CONFIG.hotkey) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      toggle();
+      return;
+    }
 
     if (CONFIG.panicChord && e.key === 'Shift' && !e.repeat) {
       shiftTaps++;
