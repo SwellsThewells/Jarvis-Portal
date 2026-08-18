@@ -132,6 +132,27 @@
     font-size:40px; font-weight:700; color:#4a4a4a;
     background:linear-gradient(160deg,#232323,#161616);
   }
+  .shot .fav{
+    position:absolute; top:6px; right:6px; z-index:3;
+    width:30px; height:30px; border:0; border-radius:50%;
+    background:rgba(0,0,0,.55); color:#fff; cursor:pointer;
+    display:none; place-items:center; font-size:15px; line-height:1;
+  }
+  .card:hover .fav, .shot .fav.on{ display:grid; }
+  .shot .fav.on{ color:#FFD24A; }
+  .shot .fav:hover{ background:rgba(0,0,0,.8); }
+
+  .stagebar{ display:flex; gap:8px; margin-top:10px; }
+  .sbtn{
+    height:34px; padding:0 14px; border:0; border-radius:17px;
+    background:var(--raise); color:var(--text); cursor:pointer; font-size:14px;
+    display:flex; align-items:center; gap:6px;
+  }
+  .sbtn:hover{ background:var(--hover); }
+  .sbtn.on{ background:var(--text); color:#0F0F0F; }
+  .stage:fullscreen{ border-radius:0; }
+  .stage:fullscreen iframe{ width:100%; height:100%; }
+
   .badge{
     position:absolute; top:7px; left:7px;
     background:#CC0000; color:#fff;
@@ -294,6 +315,7 @@
     <button class="chip on" data-filter="all">All</button>
     <button class="chip" data-filter="new">New</button>
     <button class="chip" data-filter="popular">Most played</button>
+    <button class="chip" data-filter="saved">Saved</button>
     <button class="chip" data-filter="mine">Yours</button>
   </div>
 
@@ -306,9 +328,14 @@
     <div class="stage" id="stage">
       <div class="loading" id="stageMsg">Loading…</div>
     </div>
+    <div class="stagebar">
+      <button class="sbtn" id="fsBtn">&#9974; Fullscreen</button>
+      <button class="sbtn" id="favBtn">&#9734; Save</button>
+      <button class="sbtn" id="editBtn" style="display:none">Edit</button>
+      <button class="backbtn" id="backBtn">Back to games</button>
+    </div>
     <div class="playbar">
       <h2 id="playTitle"></h2>
-      <button class="backbtn" id="backBtn">Back to games</button>
     </div>
     <div class="who">
       <div class="av" id="playAv"></div>
@@ -328,8 +355,8 @@
 <!-- ============ upload ============ -->
 <div class="sheet" id="sheet">
   <div class="box">
-    <h2>Publish a game</h2>
-    <p class="sub">A single self-contained .html file, up to 10MB. Everything it needs — script, style, images — has to be inside that one file, since nothing else gets uploaded alongside it.</p>
+    <h2 id="sheetTitle">Publish a game</h2>
+    <p class="sub" id="sheetSub">A single self-contained .html file, up to 50MB. Everything it needs — script, style, images — has to be inside that one file, since nothing else gets uploaded alongside it.</p>
 
     <div class="field">
       <label for="gtitle">Title</label>
@@ -389,9 +416,12 @@
    allow-same-origin to those iframes. It undoes all of it.
    ================================================================ */
 
-const MAX_HTML  = 10000000;  // 10MB — the hard ceiling for a single
-                            // value in Realtime Database, so this is as
-                            // far as it goes without a real file host
+/* Realtime Database refuses any single value over 10MB. To go past
+   that the file is split into chunks stored side by side and joined
+   back together on load — so 50MB works, at the cost of a genuinely
+   large download every time somebody presses play. */
+const MAX_HTML   = 50000000;   // 50MB
+const CHUNK_SIZE = 4000000;    // 4MB per node, comfortably under the limit
 const MAX_THUMB = 120000;   // ~120KB per custom thumbnail
 
 /* A card with no custom thumbnail previews by loading the whole game.
@@ -401,7 +431,7 @@ const MAX_THUMB = 120000;   // ~120KB per custom thumbnail
 const PREVIEW_MAX = 900000;
 
 const kb = n => n >= 1000000
-  ? (n/1000000).toFixed(1) + 'MB'
+  ? (n/1000000).toFixed(n >= 10000000 ? 0 : 1) + 'MB'
   : Math.round(n/1024) + 'KB';
 
 if (typeof firebaseConfig === 'undefined' || firebaseConfig.apiKey === 'PASTE_YOURS') {
@@ -423,6 +453,8 @@ const esc = t => { const d = document.createElement('div'); d.textContent = t ==
 
 let me = null, myName = 'You', myPic = '';
 let games = [], filter = 'all', query = '';
+let favs = new Set();
+let current = null;
 
 /* ---------------- session ---------------- */
 $('homeBtn').onclick   = () => location.href = 'index.html';
@@ -446,7 +478,24 @@ auth.onAuthStateChanged(async user => {
     $('me').title = 'Not signed in';
   }
   listen();
+  listenFavs();
 });
+
+function listenFavs(){
+  if (!me) { favs = new Set(); render(); return; }
+  rtdb.ref('/playables/favorites/' + me.uid).on('value', s => {
+    favs = new Set(Object.keys(s.val() || {}));
+    render();
+    if (current) paintFav();
+  }, () => {});
+}
+
+function toggleFav(id){
+  if (!me) { alert('Sign in on the portal to save games.'); return; }
+  const ref = rtdb.ref('/playables/favorites/' + me.uid + '/' + id);
+  if (favs.has(id)) ref.remove().catch(() => {});
+  else ref.set(true).catch(err => alert('Could not save that: ' + err.message));
+}
 
 $('me').onclick = () => { if (!me) location.href = 'index.html'; };
 
@@ -487,6 +536,7 @@ function visible(){
   if (query) list = list.filter(g => (g.title||'').toLowerCase().includes(query) ||
                                      (g.author||'').toLowerCase().includes(query));
   if (filter === 'mine')    list = list.filter(g => me && g.authorId === me.uid);
+  if (filter === 'saved')   list = list.filter(g => favs.has(g.id));
   if (filter === 'popular') list.sort((a,b) => (b.plays||0) - (a.plays||0));
   else                      list.sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
   if (filter === 'new')     list = list.filter(g => Date.now() - (g.createdAt||0) < 7*864e5);
@@ -507,8 +557,10 @@ function render(){
 
   if (!list.length){
     grid.innerHTML = '<div class="empty">' +
-      (games.length ? 'Nothing matches that.'
-                    : 'No games yet.<br>Hit <b>Create</b> and publish the first one.') +
+      (filter === 'saved' && !favs.size
+          ? 'Nothing saved yet.<br>Tap the star on a game to keep it here.'
+       : games.length ? 'Nothing matches that.'
+                      : 'No games yet.<br>Hit <b>Create</b> and publish the first one.') +
       '</div>';
     return;
   }
@@ -531,6 +583,13 @@ function card(g, small){
   if (g.hasThumb)                            loadThumb(g.id, shot);
   else if ((g.size || 0) <= PREVIEW_MAX)     queuePreview(g.id, shot);
   // too big to preview: the letter placeholder stays
+
+  const star = document.createElement('button');
+  star.className = 'fav' + (favs.has(g.id) ? ' on' : '');
+  star.innerHTML = favs.has(g.id) ? '&#9733;' : '&#9734;';
+  star.title = favs.has(g.id) ? 'Saved' : 'Save';
+  star.onclick = (e) => { e.stopPropagation(); toggleFav(g.id); };
+  shot.appendChild(star);
 
   if (Date.now() - (g.createdAt||0) < 7*864e5){
     const b = document.createElement('div');
@@ -563,6 +622,9 @@ function loadThumb(id, shot){
     const img = document.createElement('img');
     img.src = url;
     img.alt = '';
+    // the placeholder is position:absolute, so it paints OVER a static
+    // image. It has to go, or the thumbnail is invisible underneath it.
+    img.onload = () => { const l = shot.querySelector('.letter'); if (l) l.remove(); };
     shot.appendChild(img);
   }).catch(() => {});
 }
@@ -576,12 +638,14 @@ const seen = new IntersectionObserver(entries => {
     seen.unobserve(e.target);
     const id = e.target.dataset.game;
     rtdb.ref('/playables/html/' + id).once('value').then(s => {
-      const html = s.val();
+      const html = joinHtml(s.val());
       if (!html) return;
       const frame = document.createElement('iframe');
       frame.setAttribute('sandbox', 'allow-scripts');   // never allow-same-origin
       frame.setAttribute('scrolling', 'no');
       frame.setAttribute('tabindex', '-1');
+      // same stacking problem as thumbnails — drop the placeholder
+      frame.onload = () => { const l = e.target.querySelector('.letter'); if (l) l.remove(); };
       frame.srcdoc = html;
       e.target.appendChild(frame);
       const scale = e.target.clientWidth / 800;
@@ -595,8 +659,35 @@ function queuePreview(id, shot){
   seen.observe(shot);
 }
 
+/* ---------------- storing big files ---------------- */
+
+async function writeHtml(id, text){
+  const ref = rtdb.ref('/playables/html/' + id);
+  if (text.length <= CHUNK_SIZE) { await ref.set(text); return 1; }
+
+  const parts = {};
+  let n = 0;
+  for (let i = 0; i < text.length; i += CHUNK_SIZE) parts['c' + (n++)] = text.slice(i, i + CHUNK_SIZE);
+
+  // one write, so a half-uploaded game can't exist
+  await ref.set(parts);
+  return n;
+}
+
+/* Old games were stored as one plain string; new ones as c0, c1…
+   Handle both so nothing published earlier breaks. */
+function joinHtml(val){
+  if (val == null) return null;
+  if (typeof val === 'string') return val;
+  const keys = Object.keys(val).filter(k => /^c\d+$/.test(k))
+                     .sort((a,b) => parseInt(a.slice(1)) - parseInt(b.slice(1)));
+  if (!keys.length) return null;
+  return keys.map(k => val[k]).join('');
+}
+
 /* ---------------- playing ---------------- */
 async function play(g){
+  current = g;
   $('browse').style.display = 'none';
   $('player').classList.add('on');
   $('playTitle').textContent = g.title || 'Untitled';
@@ -608,13 +699,16 @@ async function play(g){
   const stage = $('stage');
   stage.innerHTML = '<div class="loading" id="stageMsg">Loading…</div>';
 
+  paintFav();
+  $('editBtn').style.display = (me && g.authorId === me.uid) ? '' : 'none';
+
   const rail = $('rail');
   rail.innerHTML = '';
   visible().filter(x => x.id !== g.id).slice(0,6).forEach(x => rail.appendChild(card(x, true)));
 
   try{
     const snap = await rtdb.ref('/playables/html/' + g.id).once('value');
-    const html = snap.val();
+    const html = joinHtml(snap.val());
     if (!html) { stage.innerHTML = '<div class="loading">That game is missing its file.</div>'; return; }
 
     const frame = document.createElement('iframe');
@@ -631,6 +725,28 @@ async function play(g){
     stage.innerHTML = '<div class="loading">Could not load it: ' + esc(err.message) + '</div>';
   }
 }
+
+function paintFav(){
+  const on = current && favs.has(current.id);
+  const b = $('favBtn');
+  b.classList.toggle('on', !!on);
+  b.innerHTML = on ? '&#9733; Saved' : '&#9734; Save';
+}
+
+$('favBtn').onclick = () => { if (current) toggleFav(current.id); };
+
+$('fsBtn').onclick = () => {
+  const stage = $('stage');
+  if (document.fullscreenElement) document.exitFullscreen();
+  else if (stage.requestFullscreen) stage.requestFullscreen().catch(err =>
+    alert('Fullscreen was refused: ' + err.message));
+  else alert('This browser has no fullscreen support.');
+};
+document.addEventListener('fullscreenchange', () => {
+  $('fsBtn').innerHTML = document.fullscreenElement ? '&#9974; Exit fullscreen' : '&#9974; Fullscreen';
+});
+
+$('editBtn').onclick = () => { if (current) openEdit(current); };
 
 $('backBtn').onclick = showBrowse;
 function showBrowse(){
@@ -650,24 +766,50 @@ async function removeGame(g){
 
 /* ---------------- publishing ---------------- */
 const sheet = $('sheet'), drop = $('drop'), htmlFile = $('htmlFile');
-let pendingHtml = null, pendingThumb = null;
+let pendingHtml = null, pendingThumb = null, clearedThumb = false;
+
+let editing = null;   // the game being edited, or null when publishing new
 
 $('createBtn').onclick = () => {
   if (!me) { alert('Sign in on the portal first — games are published under your name.'); return; }
+  editing = null;
   resetSheet();
   sheet.classList.add('on');
 };
+
+function openEdit(g){
+  editing = g;
+  resetSheet();
+  $('sheetTitle').textContent = 'Edit game';
+  $('sheetSub').textContent = 'Change the title or thumbnail. Leave the file alone to keep the version already published.';
+  $('gtitle').value = g.title || '';
+  $('dropTitle').textContent = 'Replace the .html file';
+  $('dropSub').textContent = 'optional — leave this to keep the current one';
+  $('doUp').textContent = 'Save changes';
+  $('doUp').disabled = false;
+
+  if (g.hasThumb){
+    rtdb.ref('/playables/thumbs/' + g.id).once('value').then(s => {
+      const url = safeImg(s.val());
+      if (url) $('thumbPrev').innerHTML = '<img src="' + url + '">';
+    }).catch(() => {});
+  }
+  sheet.classList.add('on');
+}
 $('cancelUp').onclick = () => sheet.classList.remove('on');
 sheet.onclick = e => { if (e.target === sheet) sheet.classList.remove('on'); };
 
 function resetSheet(){
-  pendingHtml = null; pendingThumb = null;
+  pendingHtml = null; pendingThumb = null; clearedThumb = false;
   $('gtitle').value = '';
+  $('sheetTitle').textContent = 'Publish a game';
+  $('sheetSub').textContent = 'A single self-contained .html file, up to 50MB. Everything it needs — script, style, images — has to be inside that one file, since nothing else gets uploaded alongside it.';
   $('dropTitle').textContent = 'Choose an .html file';
   $('dropSub').textContent = 'or drag it here';
   $('thumbPrev').innerHTML = 'Live preview of the game';
   $('upNote').textContent = '';
   $('upNote').className = 'note';
+  $('doUp').textContent = 'Publish';
   $('doUp').disabled = true;
 }
 
@@ -690,7 +832,7 @@ function takeHtml(file){
     const text = ev.target.result;
     if (text.length > MAX_HTML){
       note('That file is ' + kb(text.length) + '. The ceiling is ' + kb(MAX_HTML) +
-           ' — a single value in the database cannot hold more than that.', true);
+           ' — that is as much as this can store.', true);
       return;
     }
     pendingHtml = text;
@@ -698,7 +840,12 @@ function takeHtml(file){
     $('dropSub').textContent = kb(text.length) + ' — ready';
     if (!$('gtitle').value.trim()) $('gtitle').value = file.name.replace(/\.html?$/i,'').slice(0,60);
 
-    if (text.length > PREVIEW_MAX)
+    if (text.length > 8000000)
+      note(kb(text.length) + ' is a lot. Every play downloads the whole thing, and the ' +
+           'free tier allows 10GB a month across the site — that is roughly ' +
+           Math.floor(10000000000 / text.length) + ' plays of this one game. ' +
+           'Add a thumbnail too, since the card cannot preview it.', true);
+    else if (text.length > PREVIEW_MAX)
       note('Over ' + kb(PREVIEW_MAX) + ', so the card can\'t preview the game itself — ' +
            'pick a thumbnail image or it shows a plain placeholder. Big games also eat ' +
            'the monthly download allowance fast.', true);
@@ -710,7 +857,11 @@ function takeHtml(file){
 }
 
 $('gtitle').addEventListener('input', check);
-function check(){ $('doUp').disabled = !(pendingHtml && $('gtitle').value.trim()); }
+function check(){
+  $('doUp').disabled = editing
+    ? !$('gtitle').value.trim()                       // editing: file is optional
+    : !(pendingHtml && $('gtitle').value.trim());
+}
 function note(msg, warn){
   $('upNote').textContent = msg || '';
   $('upNote').className = 'note' + (warn ? ' warn' : '');
@@ -719,6 +870,7 @@ function note(msg, warn){
 $('pickThumb').onclick = () => $('thumbFile').click();
 $('clearThumb').onclick = () => {
   pendingThumb = null;
+  clearedThumb = true;
   $('thumbPrev').innerHTML = 'Live preview of the game';
 };
 
@@ -749,8 +901,48 @@ $('thumbFile').onchange = e => {
 };
 
 $('doUp').onclick = async () => {
-  if (!pendingHtml || !me) return;
+  if (!me) return;
   const title = $('gtitle').value.trim().slice(0,60);
+  if (!title) return;
+
+  /* ---- editing an existing game ---- */
+  if (editing){
+    $('doUp').disabled = true;
+    note(pendingHtml ? 'Uploading ' + kb(pendingHtml.length) + '…' : 'Saving…');
+    try{
+      const id = editing.id;
+
+      if (pendingThumb){
+        await rtdb.ref('/playables/thumbs/' + id).set(pendingThumb);
+      } else if (clearedThumb){
+        await rtdb.ref('/playables/thumbs/' + id).remove();
+      }
+
+      if (pendingHtml) await writeHtml(id, pendingHtml);
+
+      const patch = { title };
+      if (pendingThumb) patch.hasThumb = true;
+      if (clearedThumb && !pendingThumb) patch.hasThumb = false;
+      if (pendingHtml) patch.size = pendingHtml.length;
+      await rtdb.ref('/playables/meta/' + id).update(patch);
+
+      // keep the open player in step
+      if (current && current.id === id){
+        current.title = title;
+        $('playTitle').textContent = title;
+      }
+      sheet.classList.remove('on');
+      editing = null;
+    }catch(err){
+      console.error(err);
+      note('Failed: ' + err.message, true);
+      $('doUp').disabled = false;
+    }
+    return;
+  }
+
+  /* ---- publishing a new one ---- */
+  if (!pendingHtml) return;
 
   $('doUp').disabled = true;
   note('Publishing ' + kb(pendingHtml.length) + '… large files take a moment.');
@@ -773,7 +965,7 @@ $('doUp').onclick = async () => {
     });
 
     try{
-      await rtdb.ref('/playables/html/' + id).set(pendingHtml);
+      await writeHtml(id, pendingHtml);
       if (pendingThumb) await rtdb.ref('/playables/thumbs/' + id).set(pendingThumb);
     }catch(inner){
       // don't leave a listing pointing at a game that never uploaded
