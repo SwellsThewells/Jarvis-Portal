@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JarvisGPT</title>
+<link rel="icon" href="jarvis-logo.png">
+
+<style>
+  /* Palette sampled from the logo: skin #694f50, hair #141218 */
+  :root{
+    --bg:      #0E0C11;
+    --bar:     #141119;
+    --raise:   #201C28;
+    --line:    #2B2632;
+    --text:    #ECE7EA;
+    --dim:     #8E8590;
+    --faint:   #5E5764;
+
+    --warm:    #C89882;
+    --rose:    #8A6260;
+    --deep:    #3A2E40;
+    --grad:    linear-gradient(135deg, #C89882 0%, #8A6260 52%, #3A2E40 100%);
+
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; margin:0; }
+
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font);
+    -webkit-font-smoothing:antialiased;
+    display:flex; flex-direction:column;
+    overflow:hidden;
+  }
+
+  /* ---------- menu strip ---------- */
+  .menubar{
+    display:flex; align-items:center; gap:2px;
+    padding:6px 10px;
+    background:var(--bg);
+    font-size:13px; color:var(--dim);
+    flex:none;
+    border-bottom:1px solid transparent;
+  }
+  .menubar .home{
+    width:22px; height:22px; margin-right:8px;
+    border:1.5px solid var(--faint); border-radius:5px;
+    display:grid; place-items:center;
+    cursor:pointer; color:var(--dim); text-decoration:none;
+    font-size:11px; line-height:1;
+  }
+  .menubar .home:hover{ border-color:var(--warm); color:var(--warm); }
+  .menuitem{ padding:3px 9px; border-radius:5px; cursor:default; }
+  .menuitem:hover{ background:var(--raise); color:var(--text); }
+
+  /* ---------- toolbar ---------- */
+  .toolbar{
+    position:relative;
+    display:flex; align-items:center;
+    padding:8px 14px 14px;
+    flex:none;
+  }
+  .tool-left, .tool-right{ display:flex; align-items:center; gap:10px; }
+  .tool-right{ margin-left:auto; }
+
+  .icon{
+    width:26px; height:26px;
+    display:grid; place-items:center;
+    border-radius:6px; cursor:pointer;
+    color:var(--dim);
+  }
+  .icon:hover{ background:var(--raise); color:var(--text); }
+  .icon svg{ width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+
+  .plus-pill{
+    display:flex; align-items:center; gap:6px;
+    padding:5px 11px 5px 9px;
+    border-radius:999px;
+    background:rgba(200,152,130,.14);
+    color:var(--warm);
+    font-size:12.5px; font-weight:500;
+    cursor:pointer;
+  }
+  .plus-pill:hover{ background:rgba(200,152,130,.22); }
+  .plus-pill .spark{
+    width:11px; height:11px; border-radius:2px;
+    background:var(--grad);
+  }
+
+  .segment{
+    position:absolute; left:50%; top:8px; transform:translateX(-50%);
+    display:flex; padding:3px;
+    background:var(--raise);
+    border-radius:999px;
+  }
+  .segment button{
+    border:0; background:none; cursor:pointer;
+    padding:6px 24px; border-radius:999px;
+    font-family:inherit; font-size:13px; font-weight:500;
+    color:var(--dim);
+    transition:background .15s ease, color .15s ease;
+  }
+  .segment button.on{ background:#37313F; color:var(--text); }
+
+  /* ---------- main ---------- */
+  main{
+    flex:1; min-height:0;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    padding:0 20px;
+  }
+  main.chatting{ justify-content:flex-start; }
+
+  .hero{ text-align:center; margin-bottom:34px; }
+  .hero img{
+    width:62px; height:62px; border-radius:50%;
+    object-fit:cover; object-position:center 22%;
+    margin-bottom:22px;
+    background:var(--grad);
+    border:1px solid var(--line);
+  }
+  .hero h1{
+    margin:0;
+    font-size:clamp(26px,3.6vw,34px);
+    font-weight:400; letter-spacing:-.015em;
+  }
+  main.chatting .hero{ display:none; }
+
+  /* ---------- thread ---------- */
+  .thread{
+    display:none;
+    width:100%; max-width:720px;
+    flex:1; min-height:0;
+    overflow-y:auto;
+    padding:26px 0 14px;
+    scrollbar-width:thin; scrollbar-color:var(--line) transparent;
+  }
+  main.chatting .thread{ display:block; }
+  .thread::-webkit-scrollbar{ width:8px; }
+  .thread::-webkit-scrollbar-thumb{ background:var(--line); border-radius:4px; }
+
+  .turn{ margin-bottom:24px; display:flex; gap:12px; }
+  .turn.you{ justify-content:flex-end; }
+  .turn.you .body{
+    background:var(--raise);
+    padding:11px 15px; border-radius:17px 17px 4px 17px;
+    max-width:78%;
+  }
+  .av{
+    width:27px; height:27px; border-radius:50%; flex:none;
+    object-fit:cover; object-position:center 22%;
+    border:1px solid var(--line);
+  }
+  .body{ font-size:15px; line-height:1.65; white-space:pre-wrap; padding-top:2px; }
+  .body a{ color:var(--warm); }
+
+  .dots{ display:flex; gap:4px; padding:9px 2px; }
+  .dots i{
+    width:6px; height:6px; border-radius:50%;
+    background:var(--faint);
+    animation:blink 1.3s ease-in-out infinite;
+  }
+  .dots i:nth-child(2){ animation-delay:.18s; }
+  .dots i:nth-child(3){ animation-delay:.36s; }
+  @keyframes blink{ 0%,60%,100%{ opacity:.28; } 30%{ opacity:1; } }
+
+  /* ---------- composer ---------- */
+  .composer{
+    width:100%; max-width:720px;
+    flex:none;
+    margin-bottom:26px;
+  }
+  .box{
+    display:flex; align-items:center; gap:8px;
+    padding:8px 8px 8px 12px;
+    background:var(--raise);
+    border:1px solid transparent;
+    border-radius:999px;
+    transition:border-color .18s ease;
+  }
+  .box:focus-within{ border-color:var(--rose); }
+
+  .box textarea{
+    flex:1; min-width:0;
+    border:0; outline:none; resize:none;
+    background:none; color:var(--text);
+    font-family:inherit; font-size:15px; line-height:22px;
+    max-height:132px; padding:6px 2px;
+  }
+  .box textarea::placeholder{ color:var(--faint); }
+
+  .mode{
+    border:0; background:none; cursor:pointer;
+    color:var(--dim); font-family:inherit; font-size:13px;
+    padding:4px 2px; outline:none;
+  }
+  .mode option{ background:var(--raise); color:var(--text); }
+
+  .send{
+    width:30px; height:30px; flex:none;
+    border:0; border-radius:50%;
+    background:var(--grad);
+    display:grid; place-items:center;
+    cursor:pointer;
+    transition:opacity .15s ease;
+  }
+  .send:disabled{ opacity:.32; cursor:default; }
+  .send svg{ width:15px; height:15px; stroke:#1A1418; stroke-width:2.2; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+
+  .disclaimer{
+    margin:11px 0 0; text-align:center;
+    font-size:11.5px; color:var(--faint);
+  }
+
+  @media (max-width:640px){
+    .segment{ position:static; transform:none; margin:0 auto; }
+    .toolbar{ flex-wrap:wrap; gap:10px; }
+    .menubar .menuitem:nth-child(n+4){ display:none; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition-duration:.01ms !important; }
+  }
+</style>
+</head>
+
+<body>
+
+<div class="menubar">
+  <a class="home" href="index.html" title="Back to the portal">&#8592;</a>
+  <span class="menuitem">File</span>
+  <span class="menuitem">Edit</span>
+  <span class="menuitem">View</span>
+  <span class="menuitem">Help</span>
+</div>
+
+<div class="toolbar">
+  <div class="tool-left">
+    <div class="icon" id="newChat" title="New chat">
+      <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+    </div>
+    <div class="plus-pill"><span class="spark"></span>Get Plus</div>
+  </div>
+
+  <div class="segment">
+    <button class="on" data-tab="chat">Chat</button>
+    <button data-tab="work">Work</button>
+  </div>
+
+  <div class="tool-right">
+    <div class="icon" title="Search">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+    </div>
+    <div class="icon" title="Panel">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16"/></svg>
+    </div>
+  </div>
+</div>
+
+<main id="main">
+  <div class="hero">
+    <img src="jarvis-logo.png" alt="">
+    <h1 id="greeting">Ready when you are.</h1>
+  </div>
+
+  <div class="thread" id="thread"></div>
+
+  <div class="composer">
+    <div class="box">
+      <div class="icon" title="Attach">
+        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      </div>
+      <textarea id="input" rows="1" placeholder="Message JarvisGPT"></textarea>
+      <select class="mode" id="mode" title="Response mode">
+        <option value="auto">Auto</option>
+        <option value="fast">Fast</option>
+        <option value="long">Thinking</option>
+      </select>
+      <div class="icon" title="Voice">
+        <svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+      </div>
+      <button class="send" id="send" disabled title="Send">
+        <svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+      </button>
+    </div>
+    <p class="disclaimer">JarvisGPT runs on canned answers. It isn't a real model and won't know anything current.</p>
+  </div>
+</main>
+
+<script>
+/* ================================================================
+   JarvisGPT
+
+   There's no language model behind this. A real one needs an API
+   key, and a key in a public repo gets scraped and drained within
+   hours — so everything below is pattern matching and canned
+   replies. It reads convincingly for a few turns and then starts
+   repeating, which is exactly what you'd expect.
+   ================================================================ */
+
+const $ = id => document.getElementById(id);
+const main = $('main'), thread = $('thread'), input = $('input'), send = $('send');
+
+/* ---------- greeting matches the clock ---------- */
+(() => {
+  const h = new Date().getHours();
+  $('greeting').textContent =
+    h < 5  ? 'Still up?' :
+    h < 12 ? 'Ready when you are.' :
+    h < 18 ? 'What are we working on?' :
+             'Ready when you are.';
+})();
+
+/* ---------- segmented control ---------- */
+document.querySelectorAll('.segment button').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('.segment button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    input.placeholder = b.dataset.tab === 'work'
+      ? 'Describe a task for JarvisGPT'
+      : 'Message JarvisGPT';
+  };
+});
+
+$('newChat').onclick = () => {
+  thread.innerHTML = '';
+  main.classList.remove('chatting');
+  input.value = '';
+  resize();
+  send.disabled = true;
+};
+
+/* ---------- composer ---------- */
+function resize(){
+  input.style.height = 'auto';
+  input.style.height = Math.min(input.scrollHeight, 132) + 'px';
+}
+input.addEventListener('input', () => { resize(); send.disabled = !input.value.trim(); });
+input.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); }
+});
+send.onclick = submit;
+
+function bubble(who, text){
+  const turn = document.createElement('div');
+  turn.className = 'turn ' + who;
+
+  if (who === 'bot') {
+    const av = document.createElement('img');
+    av.className = 'av';
+    av.src = 'jarvis-logo.png';
+    av.alt = '';
+    turn.appendChild(av);
+  }
+
+  const body = document.createElement('div');
+  body.className = 'body';
+  body.textContent = text;
+  turn.appendChild(body);
+
+  thread.appendChild(turn);
+  thread.scrollTop = thread.scrollHeight;
+  return body;
+}
+
+function thinking(){
+  const turn = document.createElement('div');
+  turn.className = 'turn bot';
+  turn.innerHTML = '<img class="av" src="jarvis-logo.png" alt="">' +
+                   '<div class="dots"><i></i><i></i><i></i></div>';
+  thread.appendChild(turn);
+  thread.scrollTop = thread.scrollHeight;
+  return turn;
+}
+
+async function submit(){
+  const text = input.value.trim();
+  if (!text) return;
+
+  main.classList.add('chatting');
+  bubble('you', text);
+  input.value = ''; resize(); send.disabled = true;
+
+  const mode = $('mode').value;
+  const wait = mode === 'fast' ? 260 : mode === 'long' ? 1500 : 700;
+
+  const dots = thinking();
+  await sleep(wait + Math.random() * 400);
+  dots.remove();
+
+  await type(bubble('bot', ''), reply(text, mode));
+}
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+/* letter-by-letter, so it reads like it's being written */
+async function type(node, text){
+  const speed = $('mode').value === 'fast' ? 6 : 14;
+  for (let i = 0; i < text.length; i++){
+    node.textContent += text[i];
+    if (i % 3 === 0){
+      thread.scrollTop = thread.scrollHeight;
+      await sleep(speed);
+    }
+  }
+  thread.scrollTop = thread.scrollHeight;
+}
+
+/* ================================================================
+   THE ANSWERS
+   Add your own: put a regex and some replies in the list below.
+   First match wins, so keep specific patterns above general ones.
+   ================================================================ */
+
+const pick = a => a[Math.floor(Math.random() * a.length)];
+
+const RULES = [
+  [/^(hi|hey|hello|yo|sup|hiya)\b/i, [
+    'Hey. What do you need?',
+    'Hi. What are we doing?',
+    'Hey — go ahead.'
+  ]],
+  [/how are you|how's it going|hows it going/i, [
+    'Fine, as far as I can tell. What about you?',
+    'Running. What did you want to look at?'
+  ]],
+  [/your name|who are you|what are you/i, [
+    "JarvisGPT. I'm a stand-in — canned answers, no model behind me.",
+    "JarvisGPT. Not a real one, to be clear. Everything I say was written ahead of time."
+  ]],
+  [/who (made|built|created) you/i, [
+    'Dylan built this page. I just live in it.'
+  ]],
+  [/are you (real|conscious|alive|sentient|an ai)/i, [
+    "No. I'm a lookup table with a typing animation.",
+    "Not remotely. Pattern matching in a text file."
+  ]],
+  [/what time|what.s the time/i, [
+    () => 'It\'s ' + new Date().toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}) + '.'
+  ]],
+  [/what.s? (the )?date|what day is it/i, [
+    () => 'Today is ' + new Date().toLocaleDateString([], {weekday:'long', month:'long', day:'numeric'}) + '.'
+  ]],
+  [/flip a coin/i, [ () => Math.random() < .5 ? 'Heads.' : 'Tails.' ]],
+  [/roll (a )?(dice|die|d6)/i, [ () => 'You rolled a ' + (1 + Math.floor(Math.random()*6)) + '.' ]],
+  [/(tell me a )?joke/i, [
+    'A programmer\'s wife says: buy a loaf of bread, and if they have eggs, get a dozen. He comes home with twelve loaves.',
+    'There are two hard problems in computing: cache invalidation, naming things, and off-by-one errors.'
+  ]],
+  [/\b(thanks|thank you|ty|cheers)\b/i, [
+    'Any time.', 'No problem.'
+  ]],
+  [/\b(bye|goodbye|cya|see ya|gn|goodnight)\b/i, [
+    'See you.', 'Later.'
+  ]],
+  [/weather/i, [
+    "I can't see the weather — no connection to anything out there. A real forecast site will do better."
+  ]],
+  [/help|what can you do/i, [
+    'Not much, honestly. I can do arithmetic, flip a coin, roll a die, tell you the time, and hold a conversation for about four turns before I start repeating. The answers are all written into the page.'
+  ]]
+];
+
+const FALLBACK = [
+  "I don't have an answer for that — I'm working from a fixed list.",
+  'That one\'s past me. Try asking about the time, or ask me to do some arithmetic.',
+  "Nothing on file for that. Ask me something smaller.",
+  'No idea. I only know what was written into this page.'
+];
+
+/* small arithmetic evaluator — no eval(), so a pasted expression
+   can never run as code */
+function arithmetic(s){
+  const m = s.match(/^[\s\d+\-*/().]+$/);
+  if (!m || !/\d/.test(s) || !/[+\-*/]/.test(s)) return null;
+
+  const tokens = s.match(/\d+\.?\d*|[+\-*/()]/g);
+  if (!tokens) return null;
+
+  let i = 0;
+  const peek = () => tokens[i];
+  const eat  = () => tokens[i++];
+
+  function expr(){
+    let v = term();
+    while (peek() === '+' || peek() === '-') v = eat() === '+' ? v + term() : v - term();
+    return v;
+  }
+  function term(){
+    let v = factor();
+    while (peek() === '*' || peek() === '/') v = eat() === '*' ? v * factor() : v / factor();
+    return v;
+  }
+  function factor(){
+    if (peek() === '(') { eat(); const v = expr(); if (peek() === ')') eat(); return v; }
+    if (peek() === '-') { eat(); return -factor(); }
+    const n = parseFloat(eat());
+    return isNaN(n) ? 0 : n;
+  }
+
+  try{
+    const out = expr();
+    if (i !== tokens.length || !isFinite(out)) return null;
+    return Math.round(out * 1e10) / 1e10;
+  }catch(e){ return null; }
+}
+
+let turns = 0;
+
+function reply(text, mode){
+  turns++;
+  const q = text.trim();
+
+  const sum = arithmetic(q);
+  if (sum !== null) return q.replace(/=$/,'').trim() + ' = ' + sum;
+
+  for (const [pattern, answers] of RULES){
+    if (pattern.test(q)){
+      const a = pick(answers);
+      return typeof a === 'function' ? a() : a;
+    }
+  }
+
+  if (q.endsWith('?') && turns > 2)
+    return "I'd be guessing, and a guess dressed up as an answer is worse than nothing. That one needs a real source.";
+
+  let out = pick(FALLBACK);
+  if (mode === 'long')
+    out += ' If you want this to actually answer things, it needs a server holding an API key — a key in the page source gets scraped within hours.';
+  return out;
+}
+
+resize();
+</script>
+
+<script src="privacy-screen.js"></script>
+</body>
+</html>
