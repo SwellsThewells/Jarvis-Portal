@@ -388,7 +388,7 @@
     <button class="keybtn" id="keyBtn" type="button">Click, then press a key</button>
   </div>
 
-  <p class="note">The panic key hides the page behind a cover screen. Three fast taps of Shift also works. Click the cover's logo three times to come back.</p>
+  <p class="note">The panic key hides the page behind a cover screen, and applies to every page on this site. Three fast taps of Shift always works too. Click the cover's logo three times to come back.</p>
 </div>
 
 <button class="sound" id="soundBtn" type="button" aria-pressed="false">
@@ -725,6 +725,7 @@ function applySettings(){
   volVal.textContent = settings.volume + '%';
   keyVal.textContent = prettyKey(settings.hotkey);
   if (window.portalAudio) window.portalAudio.setVolume(settings.volume / 100);
+  // setHotkey also mirrors the key so pages without Firebase pick it up
   if (window.privacyScreen) window.privacyScreen.setHotkey(settings.hotkey);
 }
 
