@@ -142,6 +142,25 @@
   .shot .fav.on{ color:#FFD24A; }
   .shot .fav:hover{ background:rgba(0,0,0,.8); }
 
+  /* Big screen: drop the side rail and give the stage the full width
+     and most of the window height. Still the same page, no new tab. */
+  .player.wide{ grid-template-columns:minmax(0,1fr); }
+  .player.wide .rail{ display:none; }
+  .player.wide .stage{ height:calc(100vh - 150px); }
+
+  /* Solo: opened in its own tab. Nothing but the game. */
+  body.solo .mast, body.solo #browse, body.solo .rail,
+  body.solo .playbar, body.solo .who, body.solo #backBtn{ display:none !important; }
+  body.solo{ overflow:hidden; }
+  body.solo .player{ padding:0; max-width:none; }
+  body.solo .player.on{ display:block; }
+  body.solo .stage{ height:100vh; border-radius:0; }
+  body.solo .stagebar{
+    position:fixed; top:10px; right:12px; z-index:20; margin:0;
+    opacity:.25; transition:opacity .2s ease;
+  }
+  body.solo .stagebar:hover{ opacity:1; }
+
   .stagebar{ display:flex; gap:8px; margin-top:10px; }
   .sbtn{
     height:34px; padding:0 14px; border:0; border-radius:17px;
@@ -340,6 +359,8 @@
       <div class="loading" id="stageMsg">Loading…</div>
     </div>
     <div class="stagebar">
+      <button class="sbtn" id="wideBtn">&#8596; Big screen</button>
+      <button class="sbtn" id="tabBtn">&#8599; New tab</button>
       <button class="sbtn" id="fsBtn">&#9974; Fullscreen</button>
       <button class="sbtn" id="favBtn">&#9734; Save</button>
       <button class="sbtn" id="editBtn" style="display:none">Edit</button>
@@ -490,6 +511,7 @@ auth.onAuthStateChanged(async user => {
   }
   listen();
   listenFavs();
+  openDeepLink();
 });
 
 function listenFavs(){
@@ -512,6 +534,38 @@ $('me').onclick = () => { if (!me) location.href = 'index.html'; };
 
 function safeImg(u){
   return (typeof u === 'string' && /^(data:image\/(png|jpe?g|gif|webp);base64,|https:\/\/)/i.test(u)) ? u : '';
+}
+
+/* ---------------- opening straight into a game ----------------
+   ?game=<id>         opens that game, rest of the site intact
+   ?game=<id>&solo=1  opens it alone, for a dedicated tab
+   Also makes any game linkable. */
+const params = new URLSearchParams(location.search);
+const soloId = params.get('game');
+const isSolo = params.get('solo') === '1';
+let deepLinked = false;
+
+if (isSolo) document.body.classList.add('solo');
+
+async function openDeepLink(){
+  if (!soloId || deepLinked) return;
+  deepLinked = true;
+  try{
+    const snap = await rtdb.ref('/playables/meta/' + soloId).once('value');
+    const meta = snap.val();
+    if (!meta){
+      $('stage').innerHTML = '<div class="loading">That game no longer exists.</div>';
+      $('player').classList.add('on');
+      $('browse').style.display = 'none';
+      return;
+    }
+    play({ id: soloId, ...meta });
+    if (isSolo) $('player').classList.add('wide');
+  }catch(err){
+    $('player').classList.add('on');
+    $('browse').style.display = 'none';
+    $('stage').innerHTML = '<div class="loading">Could not open it: ' + esc(err.message) + '</div>';
+  }
 }
 
 /* ---------------- the library ---------------- */
@@ -773,6 +827,24 @@ function paintFav(){
 
 $('favBtn').onclick = () => { if (current) toggleFav(current.id); };
 
+/* ---- big screen: same tab, rail hidden, stage takes the window ---- */
+$('wideBtn').onclick = () => {
+  const on = $('player').classList.toggle('wide');
+  $('wideBtn').classList.toggle('on', on);
+  $('wideBtn').innerHTML = on ? '&#8596; Normal size' : '&#8596; Big screen';
+};
+
+/* ---- new tab ----
+   NOT a blob: URL and NOT document.write. Both of those would give the
+   game this site's origin, handing it your Firebase session and storage.
+   Instead the tab loads this same page in solo mode, where the game is
+   still inside the sandboxed frame it belongs in. */
+$('tabBtn').onclick = () => {
+  if (!current) return;
+  const url = location.pathname + '?game=' + encodeURIComponent(current.id) + '&solo=1';
+  window.open(url, '_blank', 'noopener');
+};
+
 $('fsBtn').onclick = () => {
   const stage = $('stage');
   if (document.fullscreenElement) document.exitFullscreen();
@@ -788,6 +860,7 @@ $('editBtn').onclick = () => { if (current) openEdit(current); };
 
 $('backBtn').onclick = showBrowse;
 function showBrowse(){
+  if (soloId && !isSolo) history.replaceState(null, '', location.pathname);
   $('player').classList.remove('on');
   $('stage').innerHTML = '';          // stop the game dead
   $('browse').style.display = '';
