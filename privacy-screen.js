@@ -45,6 +45,7 @@
     startCovered:  false,     // true = cover first, reveal on demand
 
     // ---- what the cover page says ----
+    coverTitle: 'HotelNT',    // browser tab title while covered
     company: 'The Harrowgate Hotel',
     tagline: 'A quiet forty-two room house on the north shore, open year round. Rooms, rates and reservations below.',
   };
@@ -230,6 +231,62 @@
     if (CONFIG.idleSeconds > 0) armIdle();
   }
 
+  /* ---- tab disguise ----
+     The cover is useless if the tab still says "iMessage — Jarvis
+     Portal" in the strip along the top. Title and favicon both get
+     swapped while it's up, and put back exactly as they were. */
+
+  const HOTEL_ICON = 'data:image/svg+xml,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">' +
+      '<rect width="64" height="64" rx="12" fill="#6b5b3e"/>' +
+      '<rect x="16" y="16" width="32" height="36" rx="2" fill="#f3ede3"/>' +
+      '<rect x="21" y="22" width="7" height="7" fill="#6b5b3e"/>' +
+      '<rect x="36" y="22" width="7" height="7" fill="#6b5b3e"/>' +
+      '<rect x="21" y="33" width="7" height="7" fill="#6b5b3e"/>' +
+      '<rect x="36" y="33" width="7" height="7" fill="#6b5b3e"/>' +
+      '<rect x="27" y="44" width="10" height="8" rx="1" fill="#6b5b3e"/>' +
+    '</svg>'
+  );
+
+  let realTitle = null;
+  let realIcons = null;
+
+  function disguiseTab(){
+    if (realTitle !== null) return;         // already disguised
+    realTitle = document.title;
+    document.title = CONFIG.coverTitle;
+
+    // keep the originals so they can be put back untouched
+    realIcons = Array.from(document.querySelectorAll('link[rel~="icon"]'));
+    realIcons.forEach(l => l.remove());
+
+    const link = document.createElement('link');
+    link.rel = 'icon';
+    link.id = 'ps-favicon';
+    link.href = HOTEL_ICON;
+    document.head.appendChild(link);
+  }
+
+  function restoreTab(){
+    if (realTitle === null) return;
+    document.title = realTitle;
+    realTitle = null;
+
+    const fake = document.getElementById('ps-favicon');
+    if (fake) fake.remove();
+
+    if (realIcons) realIcons.forEach(l => document.head.appendChild(l));
+    else {
+      // page had no icon of its own — nudge the browser to drop ours
+      const blank = document.createElement('link');
+      blank.rel = 'icon';
+      blank.href = 'favicon.ico';
+      document.head.appendChild(blank);
+      setTimeout(() => blank.remove(), 60);
+    }
+    realIcons = null;
+  }
+
   /* ---- raising and lowering ---- */
 
   let up = false;
@@ -238,6 +295,7 @@
   function cover() {
     if (up || !enabled) return;
     up = true;
+    disguiseTab();
     el.classList.add('up');
     el.scrollTop = 0;
     document.documentElement.style.overflow = 'hidden';
@@ -257,6 +315,7 @@
   function uncover() {
     if (!up) return;
     up = false;
+    restoreTab();
     el.classList.remove('up');
     document.documentElement.style.overflow = '';
     paused.forEach(m => m.play().catch(() => {}));
