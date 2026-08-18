@@ -320,6 +320,9 @@
     letter-spacing:.18em; text-transform:uppercase; cursor:pointer;
   }
   .keybtn:hover{ border-color:var(--white); }
+  .keybtn.off{ color:var(--dim); }
+  .keybtn.off:hover{ color:var(--white); }
+  .keybtn:disabled{ opacity:.45; cursor:default; }
   .keybtn.listening{ border-color:var(--white); color:var(--dim); }
 
   .panel .note{
@@ -384,6 +387,11 @@
   </div>
 
   <div class="set">
+    <label for="onBtn">Privacy screen <b id="onVal">On</b></label>
+    <button class="keybtn" id="onBtn" type="button">Turn off</button>
+  </div>
+
+  <div class="set" id="keyRow">
     <label for="keyBtn">Panic key <b id="keyVal">Escape</b></label>
     <button class="keybtn" id="keyBtn" type="button">Click, then press a key</button>
   </div>
@@ -709,7 +717,7 @@ const cogBtn = $('cogBtn'), panel = $('panel');
 const vol = $('vol'), volVal = $('volVal');
 const keyBtn = $('keyBtn'), keyVal = $('keyVal');
 
-let settings = { volume: 10, hotkey: 'Escape' };
+let settings = { volume: 10, hotkey: 'Escape', privacyOn: true };
 
 cogBtn.onclick = (e) => {
   e.stopPropagation();
@@ -725,9 +733,32 @@ function applySettings(){
   volVal.textContent = settings.volume + '%';
   keyVal.textContent = prettyKey(settings.hotkey);
   if (window.portalAudio) window.portalAudio.setVolume(settings.volume / 100);
-  // setHotkey also mirrors the key so pages without Firebase pick it up
-  if (window.privacyScreen) window.privacyScreen.setHotkey(settings.hotkey);
+  paintPrivacy();
+  // these also mirror into browser storage, which is how pages without
+  // Firebase (the games, etc.) pick up the same settings
+  if (window.privacyScreen) {
+    window.privacyScreen.setHotkey(settings.hotkey);
+    window.privacyScreen.setEnabled(settings.privacyOn !== false);
+  }
 }
+
+const onBtn = $('onBtn'), onVal = $('onVal'), keyRow = $('keyRow');
+
+function paintPrivacy(){
+  const on = settings.privacyOn !== false;
+  onVal.textContent = on ? 'On' : 'Off';
+  onBtn.textContent = on ? 'Turn off' : 'Turn on';
+  onBtn.classList.toggle('off', !on);
+  keyRow.style.opacity = on ? '1' : '.4';
+  keyBtn.disabled = !on;
+}
+
+onBtn.onclick = () => {
+  settings.privacyOn = settings.privacyOn === false;   // flip
+  paintPrivacy();
+  if (window.privacyScreen) window.privacyScreen.setEnabled(settings.privacyOn);
+  saveSettings();
+};
 
 function prettyKey(k){
   if (!k) return 'None';
@@ -763,6 +794,7 @@ keyBtn.onclick = () => {
 
 document.addEventListener('keydown', (e) => {
   if (!listening) return;
+  if (settings.privacyOn === false) { listening = false; return; }
   e.preventDefault();
   // stopPropagation isn't enough: the privacy script listens on this same
   // node, so binding Escape would trigger the cover as you set it.
@@ -779,7 +811,9 @@ document.addEventListener('keydown', (e) => {
 
 // the cover script is the last tag on the page, so it may not exist yet
 addEventListener('load', () => {
-  if (window.privacyScreen) window.privacyScreen.setHotkey(settings.hotkey);
+  if (!window.privacyScreen) return;
+  window.privacyScreen.setHotkey(settings.hotkey);
+  window.privacyScreen.setEnabled(settings.privacyOn !== false);
 });
 
 async function loadSettings(user){
