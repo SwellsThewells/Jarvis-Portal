@@ -123,9 +123,9 @@
   .card:hover .shot{ border-color:#4a4a4a; }
   .shot img{ width:100%; height:100%; object-fit:cover; display:block; }
   .shot iframe{
-    width:800px; height:800px; border:0;
+    width:1100px; height:1100px; border:0;
     transform-origin:top left; pointer-events:none;
-    background:#fff;
+    background:#111;          /* transparent srcdoc would show the card behind */
   }
   .shot .letter{
     position:absolute; inset:0; display:grid; place-items:center;
@@ -151,7 +151,7 @@
   .sbtn:hover{ background:var(--hover); }
   .sbtn.on{ background:var(--text); color:#0F0F0F; }
   .stage:fullscreen{ border-radius:0; }
-  .stage:fullscreen iframe{ width:100%; height:100%; }
+  .stage:fullscreen iframe{ width:100vw; height:100vh; }
 
   .badge{
     position:absolute; top:7px; left:7px;
@@ -182,12 +182,23 @@
   .player.on{ display:grid; grid-template-columns:minmax(0,1fr) 330px; gap:24px; }
   @media (max-width:1100px){ .player.on{ grid-template-columns:1fr; } }
 
+  /* Sized to the window rather than a fixed ratio, so a game gets as
+     much room as the screen allows instead of being squeezed into 16:10. */
   .stage{
-    aspect-ratio:16 / 10;
-    background:linear-gradient(150deg,#1b2a1b,#0d140d);
+    width:100%;
+    height:calc(100vh - 230px);
+    min-height:340px;
+    background:#000;
     border-radius:12px; overflow:hidden; position:relative;
   }
-  .stage iframe{ width:100%; height:100%; border:0; display:block; }
+  /* A srcdoc document with no background of its own is TRANSPARENT — the
+     stage behind it shows through anywhere the game doesn't paint. That's
+     what the coloured border was. Both layers are black now. */
+  .stage iframe{
+    width:100%; height:100%; border:0; display:block;
+    background:#000;
+  }
+  .stage:fullscreen{ height:100vh; min-height:0; }
   .stage .loading{
     position:absolute; inset:0; display:grid; place-items:center;
     color:var(--dim); font-size:14px; text-align:center;
@@ -648,7 +659,7 @@ const seen = new IntersectionObserver(entries => {
       frame.onload = () => { const l = e.target.querySelector('.letter'); if (l) l.remove(); };
       frame.srcdoc = html;
       e.target.appendChild(frame);
-      const scale = e.target.clientWidth / 800;
+      const scale = e.target.clientWidth / 1100;
       frame.style.transform = 'scale(' + scale + ')';
     }).catch(() => {});
   });
