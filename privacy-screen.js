@@ -32,7 +32,8 @@
     // ---- triggers ----
     hotkey:        'Escape',  // tap to cover, tap again to return
     panicChord:    true,      // three rapid taps of Shift also covers
-    coverOnBlur:   true,      // clicking away to another window covers
+    coverOnBlur:   false,     // clicking to another window/monitor covers (off: it
+                              // fires constantly on a multi-monitor setup)
     coverOnHide:   true,      // switching tabs covers
     idleSeconds:   0,         // cover after N seconds untouched (0 = off)
 
@@ -64,6 +65,7 @@
 
   const KEY_STORE = 'jarvis.panicKey';
   const ON_STORE  = 'jarvis.panicEnabled';
+  const BLUR_STORE = 'jarvis.panicOnBlur';
 
   function readStoredKey() {
     try {
@@ -91,9 +93,18 @@
     try { window.localStorage.setItem(ON_STORE, on ? 'on' : 'off'); } catch (e) {}
   }
 
+  function readBlur() {
+    try { return window.localStorage.getItem(BLUR_STORE) === 'on'; }
+    catch (e) { return false; }
+  }
+  function writeBlur(on) {
+    try { window.localStorage.setItem(BLUR_STORE, on ? 'on' : 'off'); } catch (e) {}
+  }
+
   const stored = readStoredKey();
   if (stored) CONFIG.hotkey = stored;
   enabled = readEnabled();
+  CONFIG.coverOnBlur = readBlur();
 
   // another tab changed something — follow along without a reload
   window.addEventListener('storage', e => {
@@ -102,6 +113,7 @@
       enabled = e.newValue !== 'off';
       if (!enabled) uncover();
     }
+    if (e.key === BLUR_STORE) CONFIG.coverOnBlur = e.newValue === 'on';
   });
 
   /* ---------------------------------------------------------- */
@@ -275,9 +287,26 @@
     });
   }
 
-  if (CONFIG.coverOnBlur) {
-    window.addEventListener('blur', cover);
-  }
+  /* 'blur' is a blunt instrument. It also fires when focus moves into an
+     iframe on this very page — a map preview, an embedded player — and on
+     a multi-monitor setup it fires every time you glance at the other
+     screen. So: wait a moment, then only cover if the document genuinely
+     lost focus. Focus landing in one of our own iframes leaves
+     document.hasFocus() true, which is exactly the case we want to skip. */
+  let blurTimer = null;
+
+  window.addEventListener('blur', () => {
+    if (!CONFIG.coverOnBlur || !enabled) return;
+    clearTimeout(blurTimer);
+    blurTimer = setTimeout(() => {
+      if (document.hasFocus()) return;                       // iframe, not another app
+      if (document.activeElement &&
+          document.activeElement.tagName === 'IFRAME') return;
+      cover();
+    }, 220);
+  });
+
+  window.addEventListener('focus', () => clearTimeout(blurTimer));
 
   function armIdle() {
     let t;
@@ -320,6 +349,12 @@
       if (remember !== false) writeStoredKey(k);
     },
     getHotkey() { return CONFIG.hotkey; },
+
+    setCoverOnBlur(on, remember) {
+      CONFIG.coverOnBlur = !!on;
+      if (remember !== false) writeBlur(CONFIG.coverOnBlur);
+    },
+    getCoverOnBlur() { return CONFIG.coverOnBlur; },
 
     setEnabled(on, remember) {
       enabled = !!on;
