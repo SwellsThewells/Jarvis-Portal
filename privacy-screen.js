@@ -48,6 +48,62 @@
     tagline: 'A quiet forty-two room house on the north shore, open year round. Rooms, rates and reservations below.',
   };
 
+  /* ----------------------------------------------------------
+     SHARING THE KEYBIND ACROSS PAGES
+
+     The portal saves your settings to your account, but a page
+     like a game has no Firebase on it and can't read that. So
+     the portal also mirrors the key into browser storage, which
+     every page on the same site can see. That makes the binding
+     work everywhere on this device the moment you set it once.
+
+     Signing in on another device and opening the portal there
+     re-mirrors it, so it follows you without each page needing
+     an account.
+     ---------------------------------------------------------- */
+
+  const KEY_STORE = 'jarvis.panicKey';
+  const ON_STORE  = 'jarvis.panicEnabled';
+
+  function readStoredKey() {
+    try {
+      const k = window.localStorage.getItem(KEY_STORE);
+      return k || null;
+    } catch (e) {
+      return null;   // private mode, or storage blocked
+    }
+  }
+
+  function writeStoredKey(k) {
+    try { window.localStorage.setItem(KEY_STORE, k); } catch (e) {}
+  }
+
+  let enabled = true;
+
+  function readEnabled() {
+    try {
+      const v = window.localStorage.getItem(ON_STORE);
+      return v === null ? true : v !== 'off';   // default on
+    } catch (e) { return true; }
+  }
+
+  function writeEnabled(on) {
+    try { window.localStorage.setItem(ON_STORE, on ? 'on' : 'off'); } catch (e) {}
+  }
+
+  const stored = readStoredKey();
+  if (stored) CONFIG.hotkey = stored;
+  enabled = readEnabled();
+
+  // another tab changed something — follow along without a reload
+  window.addEventListener('storage', e => {
+    if (e.key === KEY_STORE && e.newValue) CONFIG.hotkey = e.newValue;
+    if (e.key === ON_STORE) {
+      enabled = e.newValue !== 'off';
+      if (!enabled) uncover();
+    }
+  });
+
   /* ---------------------------------------------------------- */
 
   const el = document.createElement('div');
@@ -168,7 +224,7 @@
   let paused = [];
 
   function cover() {
-    if (up) return;
+    if (up || !enabled) return;
     up = true;
     el.classList.add('up');
     el.scrollTop = 0;
@@ -258,7 +314,21 @@
     cover, uncover, toggle,
     get isUp() { return up; },
     // used by the portal's settings panel
-    setHotkey(k) { if (k) CONFIG.hotkey = k; },
-    getHotkey() { return CONFIG.hotkey; }
+    setHotkey(k, remember) {
+      if (!k) return;
+      CONFIG.hotkey = k;
+      if (remember !== false) writeStoredKey(k);
+    },
+    getHotkey() { return CONFIG.hotkey; },
+
+    setEnabled(on, remember) {
+      enabled = !!on;
+      if (remember !== false) writeEnabled(enabled);
+      if (!enabled) uncover();
+    },
+    isEnabled() { return enabled; },
+
+    // still works from the console even when switched off
+    forceCover() { const was = enabled; enabled = true; cover(); enabled = was; }
   };
 })();
