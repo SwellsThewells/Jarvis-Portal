@@ -657,7 +657,7 @@ const seen = new IntersectionObserver(entries => {
       frame.setAttribute('tabindex', '-1');
       // same stacking problem as thumbnails — drop the placeholder
       frame.onload = () => { const l = e.target.querySelector('.letter'); if (l) l.remove(); };
-      frame.srcdoc = html;
+      frame.srcdoc = muted(html);
       e.target.appendChild(frame);
       const scale = e.target.clientWidth / 1100;
       frame.style.transform = 'scale(' + scale + ')';
@@ -668,6 +668,33 @@ const seen = new IntersectionObserver(entries => {
 function queuePreview(id, shot){
   shot.dataset.game = id;
   seen.observe(shot);
+}
+
+/* ---------------- silencing previews ----------------
+   Card previews run the real game, so a game with music starts playing
+   from the browse screen — several at once, with no player in sight.
+   A sandboxed frame can't be reached into from out here, but we own the
+   HTML string going in, so this shim goes ahead of the game's own
+   scripts and takes out both ways audio gets made: media elements and
+   the Web Audio API. Player frames never get it. */
+
+const MUTE_SHIM =
+  '<script>(function(){' +
+    'try{var M=HTMLMediaElement.prototype,p=M.play;' +
+      'M.play=function(){try{this.muted=true;this.volume=0;}catch(e){}return p.apply(this,arguments);};' +
+    '}catch(e){}' +
+    'try{var A=window.AudioContext||window.webkitAudioContext;' +
+      'if(A){var W=function(){var c=new A();try{c.suspend();}catch(e){}' +
+        'c.resume=function(){return Promise.resolve();};return c;};' +
+      'W.prototype=A.prototype;window.AudioContext=W;window.webkitAudioContext=W;}' +
+    '}catch(e){}' +
+  '})();<\/script>';
+
+function muted(html){
+  // must land inside <head> so it runs before anything the game loads
+  if (/<head[^>]*>/i.test(html)) return html.replace(/<head[^>]*>/i, m => m + MUTE_SHIM);
+  if (/<html[^>]*>/i.test(html)) return html.replace(/<html[^>]*>/i, m => m + MUTE_SHIM);
+  return MUTE_SHIM + html;
 }
 
 /* ---------------- storing big files ---------------- */
