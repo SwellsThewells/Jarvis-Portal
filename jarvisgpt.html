@@ -609,24 +609,30 @@ resize();
 /* ================================================================
    THE ACTUAL MODEL
 
-   This runs a real language model in your browser using WebLLM.
-   No server, no API key, nothing leaves your machine — the weights
-   download once, cache, and generate on your GPU.
+   A real language model, running in your browser on WebGPU. No
+   server, no API key, nothing leaves your machine. The weights
+   download once and cache.
 
-   The trade: it is genuinely small. A 0.5B model gets simple things
-   right and confidently invents the rest. That is what half a
-   billion parameters buys. Swap MODEL below for a bigger one if
-   your machine can take it.
-
-   Requires WebGPU: Chrome or Edge 113+, or Safari 18+. The chip in
-   the toolbar says so plainly when it can't run.
+   Everything here is written to survive the ways this usually
+   fails: a CDN that won't resolve, a GPU without half-precision
+   support, a model id that isn't in the build you got, and a
+   download that dies partway. Each has its own message rather
+   than one generic "load failed".
    ================================================================ */
 
-const MODEL = 'Qwen2.5-0.5B-Instruct-q4f16_1-MLC';
-// heavier, noticeably better, ~900MB:
-// const MODEL = 'Llama-3.2-1B-Instruct-q4f16_1-MLC';
-// lighter, ~300MB:
-// const MODEL = 'SmolLM2-360M-Instruct-q4f16_1-MLC';
+const VERSION = '0.2.84';   // checked against npm; unpinned resolves to
+                            // whatever is newest, which is how builds break
+
+const SOURCES = [
+  'https://esm.run/@mlc-ai/web-llm@' + VERSION,
+  'https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@' + VERSION + '/+esm',
+  'https://esm.run/@mlc-ai/web-llm'          // last resort: newest
+];
+
+/* Preference order. Whichever of these the build actually offers wins,
+   so a renamed or dropped model can't take the whole thing down. */
+const WANTED = ['Qwen2.5-0.5B-Instruct', 'SmolLM2-360M-Instruct',
+                'Llama-3.2-1B-Instruct', 'TinyLlama-1.1B-Chat-v1.0'];
 
 const SYSTEM = "You are JarvisGPT, a small assistant on Dylan's personal website. " +
                "Keep answers short — two or three sentences unless asked for more. " +
@@ -634,73 +640,133 @@ const SYSTEM = "You are JarvisGPT, a small assistant on Dylan's personal website
 
 const chip  = document.getElementById('modelChip');
 const label = document.getElementById('modelLabel');
-const led   = chip.querySelector('.led');
 const bar   = document.getElementById('bar');
 const fill  = document.getElementById('barFill');
 const disclaimer = document.getElementById('disclaimer');
 
-let engine = null;
-let loading = false;
+let engine = null, loading = false;
 let history = [{ role: 'system', content: SYSTEM }];
 
-function setChip(state, text){
+function setChip(state, text, tip){
   chip.classList.remove('loading','ready','failed');
   if (state) chip.classList.add(state);
   label.textContent = text;
+  if (tip) chip.title = tip;
 }
 
 if (!navigator.gpu) {
-  setChip('failed', 'No WebGPU — canned answers');
-  chip.title = 'This browser has no WebGPU, so a local model cannot run. ' +
-               'Chrome or Edge on desktop will.';
+  setChip('failed', 'No WebGPU — canned answers',
+    'This browser has no WebGPU, so a local model cannot run. Chrome or Edge on desktop will.');
 } else {
-  setChip('', 'Load local model (~400MB)');
-  chip.title = 'Downloads once, then caches. Runs entirely on your machine.';
+  setChip('', 'Load local model', 'Downloads once, then caches. Runs entirely on your machine.');
+}
+
+/* ---- what can this GPU actually do? ---- */
+async function inspectGpu(){
+  let adapter;
+  try {
+    adapter = await navigator.gpu.requestAdapter();
+  } catch (e) {
+    throw new Error('WebGPU could not start: ' + e.message);
+  }
+  if (!adapter) {
+    throw new Error('No GPU adapter available. On a laptop this usually means ' +
+                    'hardware acceleration is switched off in browser settings.');
+  }
+  return { f16: adapter.features.has('shader-f16') };
+}
+
+/* ---- load the library, trying each source ---- */
+async function loadLib(){
+  const problems = [];
+  for (const url of SOURCES){
+    try {
+      setChip('loading', 'Fetching library…');
+      return await import(/* @vite-ignore */ url);
+    } catch (e) {
+      console.warn('Source failed:', url, e);
+      problems.push(url.split('/').slice(2,3)[0] + ': ' + e.message);
+    }
+  }
+  throw new Error('Could not load WebLLM from any CDN. ' + problems.join(' | '));
+}
+
+/* ---- pick a model id that genuinely exists in this build ---- */
+function chooseModel(webllm, f16){
+  const available = (webllm.prebuiltAppConfig?.model_list || []).map(m => m.model_id);
+  console.log('Models offered by this build:', available);
+  if (!available.length) throw new Error('This build shipped no model list.');
+
+  const quant = f16 ? 'q4f16_1' : 'q4f32_1';
+  const other = f16 ? 'q4f32_1' : 'q4f16_1';
+
+  for (const q of [quant, other]){
+    for (const want of WANTED){
+      const hit = available.find(id => id.startsWith(want) && id.includes(q));
+      if (hit) return hit;
+    }
+  }
+  // nothing matched — take the smallest-sounding thing on offer
+  const small = available.find(id => /0\.5B|360M|135M/.test(id));
+  return small || available[0];
 }
 
 chip.onclick = async () => {
-  if (engine || loading || !navigator.gpu) return;
+  if (engine || loading) return;
+  if (!navigator.gpu) return;
+
   loading = true;
   bar.classList.add('on');
-  setChip('loading', 'Loading…');
+  fill.style.width = '0%';
+  setChip('loading', 'Starting…');
+
+  let stallTimer = null;
+  const nudge = (msg) => {
+    clearTimeout(stallTimer);
+    stallTimer = setTimeout(() => {
+      setChip('loading', 'Still downloading…',
+        'Large download. It resumes from cache if you reload, so a retry is never wasted.');
+    }, 45000);
+    if (msg) setChip('loading', msg);
+  };
 
   try {
-    const webllm = await import('https://esm.run/@mlc-ai/web-llm');
+    const { f16 } = await inspectGpu();
+    const webllm  = await loadLib();
+    const modelId = chooseModel(webllm, f16);
 
-    engine = await webllm.CreateMLCEngine(MODEL, {
+    console.log('Loading', modelId, '(shader-f16:', f16 + ')');
+    nudge('Loading ' + (f16 ? '' : 'f32 ') + 'weights…');
+
+    engine = await webllm.CreateMLCEngine(modelId, {
       initProgressCallback: (p) => {
         const pct = Math.round((p.progress || 0) * 100);
         fill.style.width = pct + '%';
-        setChip('loading', p.text && p.text.length < 40 ? p.text : ('Loading ' + pct + '%'));
+        nudge(pct > 0 ? 'Loading ' + pct + '%' : 'Preparing…');
       }
     });
 
+    clearTimeout(stallTimer);
     bar.classList.remove('on');
-    setChip('ready', 'Local model');
+    setChip('ready', 'Local model', modelId);
     disclaimer.textContent =
-      'Running ' + MODEL.split('-').slice(0,2).join(' ') +
-      ' on your GPU. Small models get things wrong — check anything that matters.';
+      'Running ' + modelId.replace(/-MLC$/,'') + ' on your GPU. ' +
+      'Small models get things wrong — check anything that matters.';
 
-    /* handed to the page's submit() */
     window.jgptGenerate = async (text, onChunk) => {
       history.push({ role: 'user', content: text });
 
       const stream = await engine.chat.completions.create({
-        messages: history,
-        stream: true,
-        temperature: 0.7,
-        max_tokens: 400
+        messages: history, stream: true, temperature: 0.7, max_tokens: 400
       });
 
       let full = '';
-      for await (const part of stream) {
+      for await (const part of stream){
         const bit = part.choices?.[0]?.delta?.content || '';
         if (bit) { full += bit; onChunk(bit); }
       }
 
       history.push({ role: 'assistant', content: full });
-
-      // keep the context from growing without bound on a small model
       if (history.length > 13) history = [history[0], ...history.slice(-12)];
       return full;
     };
@@ -708,11 +774,22 @@ chip.onclick = async () => {
     window.jgptReset = () => { history = [{ role: 'system', content: SYSTEM }]; };
 
   } catch (err) {
+    clearTimeout(stallTimer);
     console.error('Model load failed:', err);
     bar.classList.remove('on');
     engine = null;
-    setChip('failed', 'Load failed — canned answers');
-    chip.title = String(err.message || err);
+
+    const m = String(err.message || err);
+    const friendly =
+      /quota|storage|QuotaExceeded/i.test(m)
+        ? 'Out of browser storage — clear site data and retry'
+      : /adapter|acceleration/i.test(m)
+        ? 'GPU unavailable — click to retry'
+      : /CDN|import|fetch|network|Failed to fetch/i.test(m)
+        ? 'Network blocked the library — click to retry'
+      : 'Load failed — click to retry';
+
+    setChip('failed', friendly, m);
   } finally {
     loading = false;
   }
