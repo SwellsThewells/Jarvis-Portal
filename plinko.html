@@ -118,7 +118,10 @@
   .hint{
     margin-left:auto; font-family:var(--mono);
     font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint);
+    cursor:default;
   }
+  .hint.synced{ color:var(--cool); }
+  .hint.saving{ color:var(--hot); }
 
   /* ============ right: the ledger ============ */
   .ledger{
@@ -186,6 +189,10 @@
   }
   .pbtn:hover:not(:disabled){ background:var(--cool); color:var(--card); }
   .pbtn:disabled{ border-color:var(--rule); color:var(--faint); cursor:default; }
+  .cBtn{ border-color:var(--hot); color:var(--hot); }
+  .cBtn:hover:not(:disabled){ background:var(--hot); color:var(--paper); }
+  .up.sp .cost{ color:var(--hot); }
+  .up.sp:hover:not(:disabled){ background:rgba(198,64,42,.05); }
   .pnote{ margin:10px 0 0; font-size:11px; color:var(--muted); line-height:1.6; }
 
   .foot2{ display:flex; border-top:1px solid var(--rule); flex:none; }
@@ -197,6 +204,50 @@
   }
   .foot2 button:last-child{ border-right:0; }
   .foot2 button:hover{ color:var(--hot); }
+
+  /* ---- bulk buy ---- */
+  .bulk{ display:flex; gap:0; padding:10px 20px; border-bottom:1px solid var(--rule); }
+  .bulk button{
+    flex:1; padding:6px 0; background:none;
+    border:1px solid var(--rule); border-right:0;
+    font-family:var(--mono); font-size:9.5px; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--muted); cursor:pointer;
+  }
+  .bulk button:last-child{ border-right:1px solid var(--rule); }
+  .bulk button.on{ background:var(--ink); border-color:var(--ink); color:var(--paper); }
+
+  /* ---- prisms ---- */
+  .prismhead{
+    padding:16px 20px; border-bottom:1px solid var(--rule);
+    display:flex; align-items:baseline; gap:10px;
+  }
+  .prismhead .n{
+    font-family:var(--mono); font-variant-numeric:tabular-nums;
+    font-size:22px; font-weight:500; color:var(--cool);
+  }
+  .prismhead .k{
+    font-family:var(--mono); font-size:9px; letter-spacing:.22em;
+    text-transform:uppercase; color:var(--faint);
+  }
+  .up.pr .cost{ color:var(--cool); }
+  .up.pr:hover:not(:disabled){ background:rgba(44,92,134,.06); }
+
+  /* ---- milestones ---- */
+  .ms{
+    display:flex; align-items:center; gap:10px;
+    padding:10px 20px; border-bottom:1px solid var(--rule2);
+    font-size:12.5px;
+  }
+  .ms .dot{
+    width:7px; height:7px; border-radius:50%; flex:none;
+    border:1px solid var(--faint);
+  }
+  .ms.done .dot{ background:var(--hot); border-color:var(--hot); }
+  .ms.done .lbl{ color:var(--muted); text-decoration:line-through; }
+  .ms .req{
+    margin-left:auto; font-family:var(--mono);
+    font-variant-numeric:tabular-nums; font-size:10.5px; color:var(--faint);
+  }
 
   /* ---- settings ---- */
   .sect{ padding:16px 20px 6px; }
@@ -273,24 +324,33 @@
         <div class="g"><div class="v" id="ballCount">0</div><div class="k">in play</div></div>
         <div class="g"><div class="v" id="best">0</div><div class="k">best hit</div></div>
       </div>
-      <div class="hint">space to drop</div>
+      <div class="hint" id="cloud" title="Cloud save">local only</div>
     </div>
   </div>
 
   <div class="ledger">
     <div class="tabs">
       <button class="on" data-tab="up">Upgrades</button>
+      <button data-tab="prism">Prisms</button>
       <button data-tab="stats">Record</button>
       <button data-tab="set">Settings</button>
     </div>
 
+    <div class="bulk" id="bulk">
+      <button class="on" data-buy="1">Buy ×1</button>
+      <button data-buy="10">×10</button>
+      <button data-buy="max">Max</button>
+    </div>
+
     <div class="scroll" id="upList"></div>
+    <div class="scroll" id="prismList" style="display:none"></div>
     <div class="scroll stats" id="statList" style="display:none"></div>
     <div class="scroll" id="setList" style="display:none"></div>
 
     <div class="prestige">
       <div class="meter"><i id="pMeter"></i></div>
       <button class="pbtn" id="pBtn" disabled>Recalibrate</button>
+      <button class="pbtn cBtn" id="cBtn" style="display:none;margin-top:8px">Collapse</button>
       <p class="pnote" id="pNote"></p>
     </div>
 
@@ -302,6 +362,11 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
 
 <script>
 /* ================================================================
@@ -389,7 +454,12 @@ const FRESH = () => ({
   prisms:0, prismsEarned:0,
   started: Date.now(), lastSeen: Date.now(),
   opt: Object.assign({}, DEFAULT_OPT),
-  lv:{ value:0, auto:0, multi:0, slots:0, luck:0, rows:0, bounce:0 }
+  lv:{ value:0, auto:0, multi:0, slots:0, luck:0, rows:0, bounce:0 },
+  pv:{ gain:0, gold:0, boost:0, head:0 },   // prism shop — lost on collapse
+  sv:{ res:0, yield:0, found:0, spark:0 },  // spectra shop — permanent
+  spectra:0, spectraEarned:0,
+  flux:0, surgeUntil:0,
+  ms:{}                                      // milestones already claimed
 });
 let S = FRESH();
 
@@ -449,14 +519,146 @@ const eff  = id => U[id].eff(lvl(id));
 const cost = id => U[id].cost(lvl(id));
 const maxed = id => U[id].max !== undefined && lvl(id) >= U[id].max;
 
-const prismMult = () => 1 + S.prisms * 0.5;
+const prismMult = () =>
+  (1 + S.prisms * 0.5) * peff('boost') * msMult() *
+  seff('res') * (surgeActive() ? SURGE_MULT : 1);
 
 /* Exponent below 1 on purpose. At 1 or above each prestige feeds the
    next and it runs away. At 0.4 numbers climb forever, watchably. */
 const PRISM_EXP = 0.4;
 const prismsAvailable = () => Math.floor(Math.pow(Math.max(0, S.earned) / 1e6, PRISM_EXP));
-const prismsOnReset = () => Math.max(0, prismsAvailable() - S.prismsEarned);
+const prismsOnReset = () => Math.max(0, Math.floor((prismsAvailable() - S.prismsEarned) * peff('gain')));
 const nextPrismAt = () => 1e6 * Math.pow(S.prismsEarned + 1, 1 / PRISM_EXP);
+
+/* ---------------- the prism shop ----------------
+   Bought with prisms, kept through every recalibration. This is the
+   layer that makes the second hour different from the first rather
+   than just larger. */
+const PRISM_UP = [
+  { id:'boost', name:'Refraction',
+    desc:'Multiplies every payout. Straightforward, and never stops.',
+    cost: l => Math.ceil(2 * Math.pow(3, l)),
+    eff:  l => Math.pow(1.4, l),
+    show: v => '×' + fmt(v) },
+  { id:'gold', name:'Gilding',
+    desc:'Chance for a ball to come out golden and pay twenty-five times.',
+    cost: l => Math.ceil(4 * Math.pow(2.6, l)),
+    eff:  l => Math.min(0.25, l * 0.015),
+    show: v => (v*100).toFixed(1) + '% golden',
+    max: 17 },
+  { id:'gain', name:'Clarity',
+    desc:'More prisms from each recalibration.',
+    cost: l => Math.ceil(6 * Math.pow(3.4, l)),
+    eff:  l => 1 + l * 0.15,
+    show: v => '×' + (Math.round(v*100)/100) + ' prisms' },
+  { id:'head', name:'Momentum',
+    desc:'Start every run with free levels of Chip Weight and Auto Dropper.',
+    cost: l => Math.ceil(5 * Math.pow(2.8, l)),
+    eff:  l => l * 3,
+    show: v => v + ' free levels' }
+];
+const PU = {};
+PRISM_UP.forEach(u => PU[u.id] = u);
+const plvl = id => (S.pv && S.pv[id]) || 0;
+const peff = id => PU[id].eff(plvl(id));
+const pcost = id => PU[id].cost(plvl(id));
+const pmaxed = id => PU[id].max !== undefined && plvl(id) >= PU[id].max;
+
+/* ================================================================
+   LAYER TWO — COLLAPSE
+
+   Prisms reset chips. Collapsing resets the prisms themselves, and
+   pays out in SPECTRA. Same shape one level up: the prism shop goes,
+   the spectra shop stays, and every run afterwards starts richer.
+   ================================================================ */
+const COLLAPSE_AT = 500;          // prisms earned before it unlocks
+const SPECTRA_EXP = 0.5;
+
+const spectraAvailable = () =>
+  Math.floor(Math.pow(Math.max(0, S.prismsEarned) / COLLAPSE_AT, SPECTRA_EXP) * sYield());
+const spectraOnCollapse = () => Math.max(0, spectraAvailable() - S.spectraEarned);
+const collapseUnlocked = () => S.prismsEarned >= COLLAPSE_AT || S.spectraEarned > 0;
+
+const SPECTRA_UP = [
+  { id:'res', name:'Resonance',
+    desc:'A flat multiplier on everything you earn. Endless.',
+    cost: l => Math.ceil(1 * Math.pow(2.8, l)),
+    eff:  l => Math.pow(1.8, l),
+    show: v => '×' + fmt(v) },
+  { id:'yield', name:'Refinement',
+    desc:'More spectra from each collapse.',
+    cost: l => Math.ceil(3 * Math.pow(4, l)),
+    eff:  l => 1 + l * 0.35,
+    show: v => '×' + (Math.round(v*100)/100) + ' spectra' },
+  { id:'found', name:'Foundation',
+    desc:'Begin every collapse with free levels in each prism upgrade.',
+    cost: l => Math.ceil(4 * Math.pow(3.2, l)),
+    eff:  l => l,
+    show: v => v + ' free levels' },
+  { id:'spark', name:'Conduction',
+    desc:'Golden balls yield more flux, and rim landings start yielding it too.',
+    cost: l => Math.ceil(2 * Math.pow(2.4, l)),
+    eff:  l => l,
+    show: v => v > 0 ? '+' + v + ' flux' : 'none' }
+];
+const SU = {};
+SPECTRA_UP.forEach(u => SU[u.id] = u);
+const slvl = id => (S.sv && S.sv[id]) || 0;
+const seff = id => SU[id].eff(slvl(id));
+const scost = id => SU[id].cost(slvl(id));
+const sYield = () => SU.yield.eff(slvl('yield'));
+
+/* ---------------- flux ----------------
+   A small active currency. Golden balls pay it out; you spend it on a
+   short surge, so there's a reason to actually watch the board. */
+const SURGE_COST = 12;
+const SURGE_SECS = 90;
+const SURGE_MULT = 5;
+const surgeActive = () => Date.now() < (S.surgeUntil || 0);
+const surgeLeft = () => Math.max(0, Math.ceil(((S.surgeUntil || 0) - Date.now())/1000));
+
+function startSurge(){
+  if (S.flux < SURGE_COST) return;
+  S.flux -= SURGE_COST;
+  S.surgeUntil = Math.max(Date.now(), S.surgeUntil || 0) + SURGE_SECS * 1000;
+  save(); paintHud();
+  toast('Surge · ×' + SURGE_MULT + ' for ' + SURGE_SECS + 's');
+}
+
+/* ---------------- milestones ----------------
+   Small permanent bonuses, mostly there to give the early hours a
+   shape. Each one is +4% to everything, forever. */
+const MILESTONES = [
+  { id:'d100',  label:'Drop 100 balls',            test: () => S.drops >= 100 },
+  { id:'d10k',  label:'Drop 10,000 balls',         test: () => S.drops >= 1e4 },
+  { id:'d1m',   label:'Drop a million balls',      test: () => S.drops >= 1e6 },
+  { id:'e1k',   label:'Earn 1K chips',             test: () => S.earned >= 1e3 },
+  { id:'e1m',   label:'Earn 1M chips',             test: () => S.earned >= 1e6 },
+  { id:'e1b',   label:'Earn 1B chips',             test: () => S.earned >= 1e9 },
+  { id:'e1t',   label:'Earn 1T chips',             test: () => S.earned >= 1e12 },
+  { id:'e1qa',  label:'Earn 1Qa chips',            test: () => S.earned >= 1e15 },
+  { id:'p1',    label:'Recalibrate once',          test: () => S.prismsEarned >= 1 },
+  { id:'p25',   label:'Hold 25 prisms',            test: () => S.prisms >= 25 },
+  { id:'p1k',   label:'Hold 1,000 prisms',         test: () => S.prisms >= 1000 },
+  { id:'rows',  label:'Fill the board to 16 rows', test: () => eff('rows') >= 16 },
+  { id:'rim',   label:'Land a rim slot',           test: () => S.rimHits >= 1 },
+  { id:'rim1k', label:'Land 1,000 rim slots',      test: () => S.rimHits >= 1000 },
+  { id:'gold',  label:'Catch a golden ball',       test: () => S.goldHits >= 1 }
+];
+
+const msDone = () => MILESTONES.filter(m => S.ms && S.ms[m.id]).length;
+const msMult = () => 1 + msDone() * 0.04;
+
+function checkMilestones(){
+  let got = 0;
+  MILESTONES.forEach(m => {
+    if (!S.ms[m.id] && m.test()){ S.ms[m.id] = 1; got++; }
+  });
+  if (got){
+    toast(got === 1 ? 'Milestone reached · +4% forever' : got + ' milestones · +' + (got*4) + '% forever');
+    if (currentTab === 'stats') paintStats();
+  }
+}
 
 /* ---------------- board ---------------- */
 let W = 0, H = 0, DPR = 1;
@@ -514,7 +716,11 @@ const GRAV = 0.42;
 
 function dropBall(){
   if (balls.length >= (S.opt.maxBalls || 420)) return;
-  balls.push({ x: W/2 + (Math.random()-0.5)*14, y: 16, vx:(Math.random()-0.5)*1.2, vy:0, life:0 });
+  balls.push({
+    x: W/2 + (Math.random()-0.5)*14, y: 16,
+    vx:(Math.random()-0.5)*1.2, vy:0, life:0,
+    gold: Math.random() < peff('gold')
+  });
   S.drops++;
 }
 function dropSet(){ const n = eff('multi'); for (let i=0;i<n;i++) dropBall(); }
@@ -562,10 +768,20 @@ function physics(){
       }
       if (idx < 0) idx = b.x < W/2 ? 0 : slots.length - 1;
 
-      const won = slotMult(slots[idx]);
+      let won = slotMult(slots[idx]);
+      if (b.gold){
+        won *= 25;
+        S.goldHits = (S.goldHits||0) + 1;
+        S.flux = (S.flux||0) + 1 + seff('spark');
+      }
+      if (idx === 0 || idx === slots.length - 1){
+        S.rimHits = (S.rimHits||0) + 1;
+        if (seff('spark') > 0) S.flux = (S.flux||0) + seff('spark') * 0.25;
+      }
+
       S.cash += won; S.earned += won;
       if (won > S.best) S.best = won;
-      slots[idx].flash = 1;
+      slots[idx].flash = b.gold ? 1.6 : 1;
       landed[idx]++;
       balls.splice(i, 1);
       continue;
@@ -605,11 +821,17 @@ function draw(){
     p.hit *= 0.9;
   }
 
-  ctx.fillStyle = TH.ball;
   for (const b of balls){
     ctx.beginPath();
-    ctx.arc(b.x, b.y, ballR, 0, 6.2832);
+    ctx.arc(b.x, b.y, b.gold ? ballR * 1.35 : ballR, 0, 6.2832);
+    ctx.fillStyle = b.gold ? '#E8A72C' : TH.ball;
     ctx.fill();
+    if (b.gold){
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, ballR * 2.2, 0, 6.2832);
+      ctx.fillStyle = 'rgba(232,167,44,.18)';
+      ctx.fill();
+    }
   }
 }
 
@@ -642,36 +864,59 @@ function frame(now){
   draw();
 
   acc += dt;
-  if (acc > 0.12){ acc = 0; paintHud(); paintDist(); }
+  if (acc > 0.12){ acc = 0; paintHud(); paintDist(); checkMilestones(); }
   requestAnimationFrame(frame);
 }
 
 /* ---------------- interface ---------------- */
+let lastEarned = 0, lastRateAt = 0, shownRate = 0;
+
 function paintHud(){
+  // actual chips/sec, measured rather than predicted
+  const now = performance.now();
+  if (lastRateAt && now > lastRateAt){
+    const inst = (S.earned - lastEarned) / ((now - lastRateAt) / 1000);
+    shownRate = shownRate * 0.8 + inst * 0.2;      // smoothed
+  }
+  lastEarned = S.earned; lastRateAt = now;
+
   $('cash').textContent = fmt(S.cash);
-  $('perSec').textContent = fmt(eff('auto') * eff('multi'));
+  $('perSec').textContent = fmt(shownRate);
   $('ballCount').textContent = balls.length;
   $('best').textContent = fmt(S.best);
 
-  document.querySelectorAll('.up').forEach(btn => {
-    const id = btn.dataset.id, isMax = maxed(id), c = cost(id);
-    btn.disabled = isMax || S.cash < c;
-    btn.classList.toggle('afford', !isMax && S.cash >= c);
-    btn.querySelector('.cost').textContent = isMax ? 'Maxed' : fmt(c) + ' chips';
+  document.querySelectorAll('.up:not(.pr)').forEach(btn => {
+    const id = btn.dataset.id, isMax = maxed(id);
+    const { n, spend } = affordable(id, buyAmount);
+    const single = cost(id);
+    btn.disabled = isMax || n < 1;
+    btn.classList.toggle('afford', !isMax && n >= 1);
+    btn.querySelector('.cost').textContent = isMax ? 'Maxed'
+      : n > 1 ? fmt(spend) + ' chips · ' + n + ' levels'
+      : fmt(single) + ' chips';
     btn.querySelector('.lv').textContent = isMax ? 'lv ' + lvl(id) + ' · max' : 'lv ' + lvl(id);
     btn.querySelector('.eff').textContent = U[id].show(eff(id));
   });
+  paintPrisms();
 
   const gain = prismsOnReset();
   $('pBtn').disabled = gain < 1;
   $('pBtn').textContent = gain > 0 ? 'Recalibrate · ' + fmt(gain) + ' prisms' : 'Recalibrate';
-  $('pNote').textContent = gain > 0
-    ? 'Chips and upgrades reset. Prisms are permanent: ×' +
-      (Math.round((1 + (S.prisms+gain)*0.5)*10)/10) + ' on every payout.'
+
+  const cGain = spectraOnCollapse();
+  const cb = $('cBtn');
+  cb.style.display = collapseUnlocked() ? '' : 'none';
+  cb.disabled = cGain < 1;
+  cb.textContent = cGain > 0 ? 'Collapse · ' + fmt(cGain) + ' spectra' : 'Collapse';
+
+  $('pNote').textContent =
+      surgeActive() ? 'Surge active · ×' + SURGE_MULT + ' for ' + surgeLeft() + 's'
+    : gain > 0 ? 'Recalibrating resets chips and upgrades. Prisms are kept.'
+    : collapseUnlocked() && cGain > 0 ? 'Collapse resets prisms too, and pays spectra.'
+    : !collapseUnlocked() ? 'Next prism at ' + fmt(nextPrismAt()) + ' lifetime chips. Collapse unlocks at ' + COLLAPSE_AT + ' lifetime prisms.'
     : 'Next prism at ' + fmt(nextPrismAt()) + ' lifetime chips.';
 
-  const need = nextPrismAt();
-  $('pMeter').style.width = Math.min(100, (S.earned / need) * 100) + '%';
+  $('pMeter').style.width = Math.min(100, (S.earned / nextPrismAt()) * 100) + '%';
 }
 
 function buildList(){
@@ -691,14 +936,138 @@ function buildList(){
   });
 }
 
+let buyAmount = 1;   // 1, 10, or 'max'
+
+/* How many levels are affordable right now, capped so a Max click on a
+   cheap upgrade can't lock the tab up counting to a million. */
+function affordable(id, want){
+  let n = 0, spend = 0, lv = lvl(id);
+  const cap = want === 'max' ? 500 : want;
+  while (n < cap){
+    if (U[id].max !== undefined && lv + n >= U[id].max) break;
+    const c = U[id].cost(lv + n);
+    if (spend + c > S.cash) break;
+    spend += c; n++;
+  }
+  return { n, spend };
+}
+
 function buy(id){
   if (maxed(id)) return;
-  const c = cost(id);
-  if (S.cash < c) return;
-  S.cash -= c;
-  S.lv[id] = lvl(id) + 1;
+  const { n, spend } = affordable(id, buyAmount);
+  if (n < 1) return;
+  S.cash -= spend;
+  S.lv[id] = lvl(id) + n;
   if (id === 'rows') buildBoard();
+  checkMilestones();
   paintHud();
+}
+
+document.querySelectorAll('#bulk button').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('#bulk button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    buyAmount = b.dataset.buy === 'max' ? 'max' : parseInt(b.dataset.buy, 10);
+    paintHud();
+  };
+});
+
+/* ---------------- prism shop ---------------- */
+function shopRow(u, kind, onclick){
+  const b = document.createElement('button');
+  b.className = 'up ' + kind;
+  b.dataset.pid = u.id;
+  b.innerHTML = '<div class="r"><span class="nm"></span><span class="eff"></span></div>' +
+                '<div class="ds"></div>' +
+                '<div class="foot"><span class="cost"></span><span class="lv"></span></div>';
+  b.querySelector('.nm').textContent = u.name;
+  b.querySelector('.ds').textContent = u.desc;
+  b.onclick = onclick;
+  return b;
+}
+
+function buildVault(){
+  const box = $('prismList');
+  box.innerHTML = '<div class="prismhead"><span class="n" id="prismN">0</span>' +
+                  '<span class="k">prisms</span>' +
+                  '<span class="n" id="fluxN" style="margin-left:auto;color:var(--hot)">0</span>' +
+                  '<span class="k">flux</span></div>';
+
+  // flux: the active spend
+  const surge = document.createElement('div');
+  surge.className = 'opt';
+  surge.innerHTML = '<div class="t"><b>Surge</b><span>×' + SURGE_MULT + ' on everything for ' +
+    SURGE_SECS + ' seconds. Golden balls pay flux.</span></div>';
+  const sBtn = document.createElement('button');
+  sBtn.className = 'sw'; sBtn.id = 'surgeBtn';
+  sBtn.style.minWidth = '76px';
+  sBtn.onclick = startSurge;
+  surge.appendChild(sBtn);
+  box.appendChild(surge);
+
+  const h1 = document.createElement('div');
+  h1.className = 'sect';
+  h1.innerHTML = '<h4>Prism shop · reset on collapse</h4>';
+  box.appendChild(h1);
+  PRISM_UP.forEach(u => box.appendChild(shopRow(u, 'pr', () => buyPrism(u.id))));
+
+  if (collapseUnlocked()){
+    const h2 = document.createElement('div');
+    h2.className = 'sect';
+    h2.innerHTML = '<h4 id="spectraHead">Spectra shop · permanent</h4>';
+    box.appendChild(h2);
+    SPECTRA_UP.forEach(u => box.appendChild(shopRow(u, 'sp', () => buySpectra(u.id))));
+  }
+}
+
+function buySpectra(id){
+  const c = scost(id);
+  if (S.spectra < c) return;
+  S.spectra -= c;
+  S.sv[id] = slvl(id) + 1;
+  save(); buildVault(); paintHud();
+  toast(SU[id].name + ' → level ' + slvl(id));
+}
+
+function buyPrism(id){
+  if (pmaxed(id)) return;
+  const c = pcost(id);
+  if (S.prisms < c) return;
+  S.prisms -= c;
+  S.pv[id] = plvl(id) + 1;
+  save();
+  paintHud();
+  toast(PU[id].name + ' → level ' + plvl(id));
+}
+
+function paintPrisms(){
+  const n = $('prismN'); if (n) n.textContent = fmt(S.prisms);
+  const f = $('fluxN');  if (f) f.textContent = fmt(Math.floor(S.flux || 0));
+
+  const sb = $('surgeBtn');
+  if (sb){
+    if (surgeActive()){ sb.textContent = surgeLeft() + 's'; sb.classList.add('on'); sb.disabled = true; }
+    else { sb.textContent = SURGE_COST + ' flux'; sb.classList.remove('on'); sb.disabled = S.flux < SURGE_COST; }
+  }
+
+  document.querySelectorAll('.up.pr').forEach(btn => {
+    const id = btn.dataset.pid, isMax = pmaxed(id), c = pcost(id);
+    btn.disabled = isMax || S.prisms < c;
+    btn.querySelector('.cost').textContent = isMax ? 'Maxed' : fmt(c) + ' prisms';
+    btn.querySelector('.lv').textContent = isMax ? 'lv ' + plvl(id) + ' · max' : 'lv ' + plvl(id);
+    btn.querySelector('.eff').textContent = PU[id].show(peff(id));
+  });
+
+  document.querySelectorAll('.up.sp').forEach(btn => {
+    const id = btn.dataset.pid, c = scost(id);
+    btn.disabled = S.spectra < c;
+    btn.querySelector('.cost').textContent = fmt(c) + ' spectra';
+    btn.querySelector('.lv').textContent = 'lv ' + slvl(id);
+    btn.querySelector('.eff').textContent = SU[id].show(seff(id));
+  });
+
+  const head = $('spectraHead');
+  if (head) head.textContent = 'Spectra shop · permanent · ' + fmt(S.spectra) + ' held';
 }
 
 function paintStats(){
@@ -710,16 +1079,29 @@ function paintStats(){
     ['Best single slot', fmt(S.best)],
     ['Landed this board', fmt(totalLanded)],
     ['Prisms held', fmt(S.prisms)],
-    ['Prism multiplier', '×' + (Math.round(prismMult()*10)/10)],
+    ['Global multiplier', '×' + fmt(prismMult())],
+    ['Spectra held', fmt(S.spectra || 0)],
+    ['Lifetime spectra', fmt(S.spectraEarned || 0)],
+    ['Flux', fmt(Math.floor(S.flux || 0))],
+    ['Golden balls caught', fmt(S.goldHits || 0)],
+    ['Rim landings', fmt(S.rimHits || 0)],
     ['Rows', eff('rows')],
     ['Slots', slots.length],
     ['Rim slot pays', '×' + fmt(slots.length ? slotMult(slots[0]) : 0)],
     ['Centre slot pays', '×' + fmt(slots.length ? slotMult(slots[Math.floor(slots.length/2)]) : 0)],
     ['Session', mins < 60 ? Math.floor(mins) + ' min' : (mins/60).toFixed(1) + ' hr']
   ];
-  $('statList').innerHTML = rows.map(([k,v]) =>
-    '<div class="row"><span class="k">' + k + '</span><span class="dots"></span><span class="v">' + v + '</span></div>'
-  ).join('');
+  $('statList').innerHTML =
+    rows.map(([k,v]) =>
+      '<div class="row"><span class="k">' + k + '</span><span class="dots"></span><span class="v">' + v + '</span></div>'
+    ).join('') +
+    '<div class="sect" style="padding-left:0;padding-right:0"><h4>Milestones · ' +
+      msDone() + ' of ' + MILESTONES.length + ' · ×' + (Math.round(msMult()*100)/100) + '</h4></div>' +
+    MILESTONES.map(m =>
+      '<div class="ms' + (S.ms[m.id] ? ' done' : '') + '">' +
+      '<span class="dot"></span><span class="lbl">' + m.label + '</span>' +
+      '<span class="req">' + (S.ms[m.id] ? 'done' : '') + '</span></div>'
+    ).join('');
 }
 
 /* ---------------- settings ---------------- */
@@ -868,18 +1250,38 @@ document.querySelectorAll('.tabs button').forEach(t => {
     document.querySelectorAll('.tabs button').forEach(x => x.classList.remove('on'));
     t.classList.add('on');
     const tab = t.dataset.tab;
-    $('upList').style.display   = tab === 'up'    ? '' : 'none';
-    $('statList').style.display = tab === 'stats' ? '' : 'none';
-    $('setList').style.display  = tab === 'set'   ? '' : 'none';
+    currentTab = tab;
+    $('upList').style.display    = tab === 'up'    ? '' : 'none';
+    $('prismList').style.display = tab === 'prism' ? '' : 'none';
+    $('statList').style.display  = tab === 'stats' ? '' : 'none';
+    $('setList').style.display   = tab === 'set'   ? '' : 'none';
+    $('bulk').style.display      = tab === 'up'    ? '' : 'none';
     if (tab === 'stats') paintStats();
     if (tab === 'set') buildSettings();
+    if (tab === 'prism') paintPrisms();
   };
 });
 
+let currentTab = 'up';
+
 $('dropBtn').onclick = dropSet;
+
+/* hold space to keep dropping — saves your finger in the early game */
+let holding = false, holdTimer = null;
+function startHold(){
+  if (holding) return;
+  holding = true;
+  dropSet();
+  holdTimer = setInterval(dropSet, 110);
+}
+function stopHold(){ holding = false; clearInterval(holdTimer); }
+$('dropBtn').addEventListener('pointerdown', startHold);
+['pointerup','pointerleave','pointercancel'].forEach(e =>
+  $('dropBtn').addEventListener(e, stopHold));
 document.addEventListener('keydown', e => {
-  if (e.code === 'Space' && e.target === document.body){ e.preventDefault(); dropSet(); }
+  if (e.code === 'Space' && e.target === document.body){ e.preventDefault(); startHold(); }
 });
+document.addEventListener('keyup', e => { if (e.code === 'Space') stopHold(); });
 
 $('pBtn').onclick = () => {
   const gain = prismsOnReset();
@@ -888,14 +1290,40 @@ $('pBtn').onclick = () => {
       !confirm('Recalibrate for ' + fmt(gain) + ' prisms?\n\nChips and every upgrade reset. Prisms and their multiplier are kept forever.')) return;
   S.prisms += gain; S.prismsEarned += gain;
   S.cash = 0; S.lv = FRESH().lv;
+  const head = peff('head');
+  if (head > 0){ S.lv.value = head; S.lv.auto = head; }   // Momentum
   balls.length = 0;
   buildBoard(); save();
   toast('Recalibrated — ×' + (Math.round(prismMult()*10)/10) + ' on everything');
 };
 
+$('cBtn').onclick = () => {
+  const gain = spectraOnCollapse();
+  if (gain < 1) return;
+  if (S.opt.confirmReset &&
+      !confirm('Collapse for ' + fmt(gain) + ' spectra?\n\nChips, upgrades, prisms AND the prism shop all reset. ' +
+               'Spectra, the spectra shop, milestones and flux are kept.')) return;
+
+  S.spectra += gain; S.spectraEarned += gain;
+  S.cash = 0; S.prisms = 0; S.prismsEarned = 0;
+  S.lv = FRESH().lv;
+  S.pv = FRESH().pv;
+
+  // Foundation hands back some of the prism shop immediately
+  const found = seff('found');
+  if (found > 0) Object.keys(S.pv).forEach(k => S.pv[k] = found);
+
+  balls.length = 0;
+  buildBoard(); buildVault(); save(); paintHud();
+  toast('Collapsed · ' + fmt(S.spectra) + ' spectra held');
+};
+
 /* ---------------- saving ---------------- */
 const KEY = 'jarvis.plinko';
-function save(){ try{ S.lastSeen = Date.now(); localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+function save(){
+  try{ S.lastSeen = Date.now(); localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){}
+  cloudDirty = true;
+}
 function load(){
   try{
     const raw = localStorage.getItem(KEY);
@@ -904,6 +1332,9 @@ function load(){
     S = Object.assign(FRESH(), d);
     S.lv  = Object.assign(FRESH().lv, d.lv || {});
     S.opt = Object.assign({}, DEFAULT_OPT, d.opt || {});   // new options get defaults
+    S.pv  = Object.assign(FRESH().pv, d.pv || {});
+    S.sv  = Object.assign(FRESH().sv, d.sv || {});
+    S.ms  = d.ms || {};
   }catch(e){ /* corrupt save: start clean rather than break */ }
 }
 
@@ -914,7 +1345,104 @@ $('wipeBtn').onclick = () => {
   S = FRESH(); balls.length = 0; buildBoard(); toast('Wiped');
 };
 setInterval(save, 15000);
-addEventListener('beforeunload', save);
+addEventListener('beforeunload', () => { save(); if (cloudReady) cloudSave(); });
+// tab hidden is the reliable moment on mobile, where beforeunload often never fires
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden){ save(); if (cloudReady && cloudDirty) cloudSave(); }
+});
+
+/* ================================================================
+   CLOUD SAVE
+
+   Ties into the same Firebase account the portal signs you into, so
+   progress follows you between machines. The browser copy stays the
+   working save; the cloud is a mirror that syncs every 45 seconds
+   and whenever you leave.
+
+   Conflicts resolve by lifetime chips. Progress only ever goes up,
+   so the bigger number is the newer one — no clock comparison, which
+   would go wrong the moment a device has the wrong time.
+   ================================================================ */
+let cloudReady = false, cloudUser = null, cloudTimer = null, cloudDirty = false;
+
+function cloudChip(text, cls){
+  const el = $('cloud');
+  el.className = 'hint' + (cls ? ' ' + cls : '');
+  el.textContent = text;
+}
+
+function initCloud(){
+  if (typeof firebaseConfig === 'undefined' || firebaseConfig.apiKey === 'PASTE_YOURS'){
+    cloudChip('local only');
+    return;
+  }
+  try{ firebase.initializeApp(firebaseConfig); }
+  catch(e){ /* another script on the page already did it */ }
+
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  auth.onAuthStateChanged(async user => {
+    cloudUser = user;
+    if (!user){
+      cloudReady = false;
+      cloudChip('sign in to sync');
+      $('cloud').title = 'Open the portal and sign in — progress will then follow your account.';
+      return;
+    }
+
+    cloudChip('syncing…', 'saving');
+    try{
+      const doc = await db.collection('users').doc(user.uid).collection('games').doc('plinko').get();
+      const remote = doc.exists ? doc.data().save : null;
+
+      if (remote && typeof remote === 'string'){
+        const d = JSON.parse(remote);
+        // whichever save has earned more is the one further along
+        if ((d.earned || 0) > (S.earned || 0)){
+          S = Object.assign(FRESH(), d);
+          S.lv  = Object.assign(FRESH().lv, d.lv || {});
+          S.pv  = Object.assign(FRESH().pv, d.pv || {});
+          S.sv  = Object.assign(FRESH().sv, d.sv || {});
+          S.opt = Object.assign({}, DEFAULT_OPT, d.opt || {});
+          S.ms  = d.ms || {};
+          balls.length = 0;
+          applyTheme(S.opt.theme);
+          buildBoard(); buildSettings(); buildVault(); paintHud();
+          toast('Loaded the further-along save from your account');
+        }
+      }
+
+      cloudReady = true;
+      cloudChip('synced', 'synced');
+      $('cloud').title = 'Saving to your Jarvis Portal account';
+      cloudSave();
+      if (cloudTimer) clearInterval(cloudTimer);
+      cloudTimer = setInterval(() => { if (cloudDirty) cloudSave(); }, 45000);
+    }catch(err){
+      console.warn('Cloud save unavailable:', err);
+      cloudReady = false;
+      cloudChip('sync failed');
+      $('cloud').title = String(err.message || err);
+    }
+  });
+}
+
+async function cloudSave(){
+  if (!cloudReady || !cloudUser) return;
+  cloudDirty = false;
+  try{
+    await firebase.firestore()
+      .collection('users').doc(cloudUser.uid)
+      .collection('games').doc('plinko')
+      .set({ save: JSON.stringify(S), at: Date.now() });
+    cloudChip('synced', 'synced');
+  }catch(err){
+    cloudDirty = true;
+    cloudChip('sync failed');
+    console.warn('Cloud save failed:', err);
+  }
+}
 
 let toastTimer;
 function toast(msg){
@@ -944,9 +1472,11 @@ function offline(){
 
 load();
 applyTheme(S.opt.theme);
+initCloud();
 $('dist').style.display = S.opt.showDist ? '' : 'none';
 layout();
 buildList();
+buildVault();
 buildSettings();
 offline();
 paintHud();
