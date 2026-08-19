@@ -556,14 +556,12 @@
    image — OPTIONAL screenshot path instead of a live preview
    ========================================================= */
 const SITES = [
+  { name: "Jarvis Plinko", file: "plinko.html" },
   { name: "Jarvis Playables", file: "playables.html" },
   { name: "JarvisGPT", file: "jarvisgpt.html" },
   { name: "Jarvia",   file: "Jarvia.html" },
-  { name: "iMessage", file: "imessage.html" },
   { name: "Siamese Clicker",   file: "siameseclicker.html" },
-  { name: "Jarvis Plinko", file: "plinko.html" },
-  { name: "Idle Dice",   file: "dice/dice.html" },
-  { name: "Antimatter Jarvmentis", file: "antimatter/anti.html" },
+  { name: "iMessage", file: "imessage.html" },
 ];
 
 /* =========================================================
@@ -743,7 +741,10 @@ function build(){
       frame.setAttribute('aria-hidden', 'true');
       frame.setAttribute('loading', 'lazy');
       frame.setAttribute('sandbox', 'allow-same-origin allow-scripts');
-      frame.addEventListener('load', () => a.classList.add('ready'));
+      // deny autoplay outright; a same-origin frame would otherwise inherit
+      // this page's permission and start playing the moment it loads
+      frame.setAttribute('allow', "autoplay 'none'");
+      frame.addEventListener('load', () => { a.classList.add('ready'); hush(frame); });
       setTimeout(() => a.classList.add('ready'), LOAD_TIMEOUT);
       shot.appendChild(frame);
     }
@@ -757,6 +758,62 @@ function build(){
     a.append(shot, stub, meta);
     grid.appendChild(a);
   });
+}
+
+/* ---------------------------------------------------------
+   Tile previews are the real pages, so a page with music starts
+   playing from the menu. These frames are same-origin, so rather
+   than guessing we can reach in and silence them properly.
+   --------------------------------------------------------- */
+function hush(frame){
+  let w, d;
+  try{ w = frame.contentWindow; d = frame.contentDocument; }catch(e){ return; }
+  if (!w || !d) return;
+
+  const quiet = () => {
+    try{
+      d.querySelectorAll('audio, video').forEach(m => {
+        m.muted = true; m.volume = 0;
+        if (!m.paused) m.pause();
+      });
+    }catch(e){}
+  };
+
+  try{
+    // anything created later gets muted as it tries to play
+    const M = w.HTMLMediaElement && w.HTMLMediaElement.prototype;
+    if (M && !M.__hushed){
+      const play = M.play;
+      M.play = function(){
+        try{ this.muted = true; this.volume = 0; }catch(e){}
+        return play.apply(this, arguments);
+      };
+      M.__hushed = true;
+    }
+
+    // and the Web Audio route
+    const A = w.AudioContext || w.webkitAudioContext;
+    if (A && !w.__hushedAudio){
+      const Wrapped = function(){
+        const c = new A();
+        try{ c.suspend(); }catch(e){}
+        c.resume = function(){ return Promise.resolve(); };
+        return c;
+      };
+      Wrapped.prototype = A.prototype;
+      w.AudioContext = Wrapped;
+      w.webkitAudioContext = Wrapped;
+      w.__hushedAudio = true;
+    }
+  }catch(e){}
+
+  quiet();
+  // a few sweeps catch anything that starts a beat after load
+  let n = 0;
+  const timer = setInterval(() => {
+    quiet();
+    if (++n > 12 || !frame.isConnected) clearInterval(timer);
+  }, 700);
 }
 
 function fitThumbnails(){
