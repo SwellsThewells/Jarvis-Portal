@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jarvis Plinko</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --paper:  #F2EFE7;
+    --card:   #FBF9F4;
+    --ink:    #16130E;
+    --muted:  #6C665B;
+    --faint:  #A39C8E;
+    --rule:   rgba(22,19,14,.13);
+    --rule2:  rgba(22,19,14,.07);
+    --hot:    #C6402A;
+    --cool:   #2C5C86;
+
+    --serif: "Instrument Serif", Georgia, serif;
+    --sans:  "IBM Plex Sans", system-ui, sans-serif;
+    --mono:  "IBM Plex Mono", ui-monospace, monospace;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; height:100%; }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:14px;
+    -webkit-font-smoothing:antialiased;
+    overflow:hidden;
+  }
+  button{ font:inherit; color:inherit; }
+
+  .wrap{ display:grid; grid-template-columns:minmax(0,1fr) 336px; height:100vh; }
+  @media (max-width:920px){
+    body{ overflow:auto; }
+    .wrap{ grid-template-columns:1fr; height:auto; }
+  }
+
+  /* ============ left: the machine ============ */
+  .machine{
+    display:flex; flex-direction:column; min-width:0;
+    border-right:1px solid var(--rule);
+  }
+
+  .head{
+    display:flex; align-items:flex-end; gap:16px;
+    padding:20px 26px 15px;
+    border-bottom:1px solid var(--rule);
+    flex:none;
+  }
+  .back{
+    font-family:var(--mono); font-size:15px; line-height:1;
+    color:var(--faint); text-decoration:none; padding-bottom:5px;
+  }
+  .back:hover{ color:var(--hot); }
+  .wordmark{ font-family:var(--serif); font-size:31px; line-height:.9; letter-spacing:-.01em; }
+  .wordmark i{ font-style:italic; color:var(--hot); }
+  .sub{
+    font-family:var(--mono); font-size:9.5px; letter-spacing:.2em;
+    text-transform:uppercase; color:var(--faint);
+    padding-bottom:6px;
+  }
+
+  .readout{ margin-left:auto; text-align:right; }
+  .readout .n{
+    font-family:var(--mono); font-variant-numeric:tabular-nums;
+    font-size:29px; font-weight:500; line-height:1; letter-spacing:-.02em;
+  }
+  .readout .l{
+    font-family:var(--mono); font-size:9px; letter-spacing:.24em;
+    text-transform:uppercase; color:var(--faint); margin-top:5px;
+  }
+
+  canvas{ display:block; width:100%; flex:1; min-height:0; }
+  @media (max-width:920px){ canvas{ height:58vh; flex:none; } }
+
+  /* live landing distribution — the shape the physics actually makes */
+  .dist{
+    display:flex; align-items:flex-end; gap:1px;
+    height:26px; padding:0 26px;
+    flex:none; opacity:.6;
+  }
+  .dist i{ flex:1; background:var(--ink); min-height:1px; transition:height .25s ease; }
+
+  .deck{
+    display:flex; align-items:center; gap:18px;
+    padding:13px 26px 16px;
+    border-top:1px solid var(--rule);
+    flex:none;
+  }
+  .drop{
+    padding:11px 30px;
+    background:var(--ink); color:var(--paper);
+    border:0; border-radius:2px;
+    font-family:var(--mono); font-size:11px; font-weight:500;
+    letter-spacing:.18em; text-transform:uppercase; cursor:pointer;
+  }
+  .drop:hover{ background:var(--hot); }
+  .drop:active{ transform:translateY(1px); }
+
+  .gauges{ display:flex; gap:24px; }
+  .g .v{
+    font-family:var(--mono); font-variant-numeric:tabular-nums;
+    font-size:14px; font-weight:500;
+  }
+  .g .k{
+    font-family:var(--mono); font-size:8.5px; letter-spacing:.2em;
+    text-transform:uppercase; color:var(--faint); margin-top:3px;
+  }
+  .hint{
+    margin-left:auto; font-family:var(--mono);
+    font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint);
+  }
+
+  /* ============ right: the ledger ============ */
+  .ledger{
+    display:flex; flex-direction:column; min-height:0;
+    background:var(--card);
+  }
+  .tabs{ display:flex; flex:none; border-bottom:1px solid var(--rule); }
+  .tabs button{
+    flex:1; padding:15px 0; background:none; border:0;
+    border-bottom:1px solid transparent; margin-bottom:-1px;
+    font-family:var(--mono); font-size:9.5px; font-weight:500;
+    letter-spacing:.22em; text-transform:uppercase;
+    color:var(--faint); cursor:pointer;
+  }
+  .tabs button.on{ color:var(--ink); border-bottom-color:var(--hot); }
+
+  .scroll{ overflow-y:auto; flex:1; min-height:0; }
+  .scroll::-webkit-scrollbar{ width:9px; }
+  .scroll::-webkit-scrollbar-thumb{ background:var(--rule); }
+
+  /* upgrades as ledger rows, not boxes */
+  .up{
+    display:block; width:100%; text-align:left;
+    padding:14px 20px;
+    background:none; border:0; border-bottom:1px solid var(--rule2);
+    cursor:pointer;
+  }
+  .up:hover:not(:disabled){ background:rgba(198,64,42,.05); }
+  .up:disabled{ cursor:default; }
+  .up:disabled .nm, .up:disabled .cost{ color:var(--faint); }
+  .up .r{ display:flex; align-items:baseline; gap:10px; }
+  .up .nm{ font-size:14px; font-weight:600; letter-spacing:-.005em; }
+  .up .eff{
+    margin-left:auto; font-family:var(--mono);
+    font-variant-numeric:tabular-nums; font-size:11px; color:var(--cool);
+  }
+  .up .ds{ font-size:11.5px; color:var(--muted); line-height:1.5; margin:5px 0 8px; }
+  .up .foot{ display:flex; align-items:baseline; }
+  .up .cost{
+    font-family:var(--mono); font-variant-numeric:tabular-nums;
+    font-size:11.5px; font-weight:500;
+  }
+  .up.afford .cost{ color:var(--hot); }
+  .up .lv{
+    margin-left:auto; font-family:var(--mono); font-size:9.5px;
+    letter-spacing:.14em; text-transform:uppercase; color:var(--faint);
+  }
+
+  /* stats with dotted leaders */
+  .stats{ padding:18px 20px; }
+  .row{ display:flex; align-items:baseline; gap:6px; padding:7px 0; font-size:12.5px; }
+  .row .k{ color:var(--muted); white-space:nowrap; }
+  .row .dots{ flex:1; border-bottom:1px dotted var(--rule); transform:translateY(-3px); }
+  .row .v{ font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:12px; }
+
+  /* prestige */
+  .prestige{ padding:18px 20px; border-top:1px solid var(--rule); flex:none; }
+  .meter{ height:2px; background:var(--rule); margin-bottom:13px; }
+  .meter i{ display:block; height:100%; background:var(--cool); width:0; transition:width .4s ease; }
+  .pbtn{
+    width:100%; padding:12px;
+    background:none; border:1px solid var(--cool); border-radius:2px;
+    color:var(--cool); font-family:var(--mono); font-size:10px; font-weight:500;
+    letter-spacing:.18em; text-transform:uppercase; cursor:pointer;
+  }
+  .pbtn:hover:not(:disabled){ background:var(--cool); color:var(--card); }
+  .pbtn:disabled{ border-color:var(--rule); color:var(--faint); cursor:default; }
+  .pnote{ margin:10px 0 0; font-size:11px; color:var(--muted); line-height:1.6; }
+
+  .foot2{ display:flex; border-top:1px solid var(--rule); flex:none; }
+  .foot2 button{
+    flex:1; padding:11px; background:none; border:0;
+    border-right:1px solid var(--rule);
+    font-family:var(--mono); font-size:9px; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--faint); cursor:pointer;
+  }
+  .foot2 button:last-child{ border-right:0; }
+  .foot2 button:hover{ color:var(--hot); }
+
+  /* ---- settings ---- */
+  .sect{ padding:16px 20px 6px; }
+  .sect h4{
+    margin:0 0 2px; font-family:var(--mono); font-size:9px; font-weight:500;
+    letter-spacing:.24em; text-transform:uppercase; color:var(--faint);
+  }
+  .opt{
+    display:flex; align-items:center; gap:12px;
+    padding:12px 20px; border-bottom:1px solid var(--rule2);
+  }
+  .opt .t{ min-width:0; flex:1; }
+  .opt .t b{ display:block; font-size:13px; font-weight:600; }
+  .opt .t span{ display:block; font-size:11px; color:var(--muted); line-height:1.45; margin-top:2px; }
+  .sw{
+    flex:none; min-width:62px; padding:6px 0;
+    background:none; border:1px solid var(--rule); border-radius:2px;
+    font-family:var(--mono); font-size:9px; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--muted); cursor:pointer;
+  }
+  .sw:hover{ border-color:var(--faint); color:var(--ink); }
+  .sw.on{ background:var(--ink); border-color:var(--ink); color:var(--paper); }
+
+  .swatches{ display:flex; gap:8px; padding:4px 20px 16px; flex-wrap:wrap; }
+  .sws{
+    width:60px; padding:0; cursor:pointer;
+    background:none; border:1px solid var(--rule); border-radius:2px;
+    overflow:hidden;
+  }
+  .sws.on{ border-color:var(--hot); }
+  .sws .bar{ display:flex; height:24px; }
+  .sws .bar i{ flex:1; }
+  .sws .nm{
+    display:block; padding:4px 0 5px;
+    font-family:var(--mono); font-size:8px; letter-spacing:.12em;
+    text-transform:uppercase; color:var(--muted);
+  }
+  .sws.on .nm{ color:var(--ink); }
+
+  .toast{
+    position:fixed; left:50%; bottom:24px; transform:translateX(-50%);
+    background:var(--ink); color:var(--paper);
+    padding:10px 20px; border-radius:2px;
+    font-family:var(--mono); font-size:11px; letter-spacing:.06em;
+    opacity:0; pointer-events:none; transition:opacity .3s ease;
+  }
+  .toast.show{ opacity:1; }
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+  <div class="machine">
+    <div class="head">
+      <a class="back" href="index.html" title="Back to the portal">&#8592;</a>
+      <div>
+        <div class="wordmark">Jarvis <i>Plinko</i></div>
+      </div>
+      <div class="sub">Probability<br>Engine</div>
+      <div class="readout">
+        <div class="n" id="cash">0</div>
+        <div class="l">Chips</div>
+      </div>
+    </div>
+
+    <canvas id="board"></canvas>
+    <div class="dist" id="dist"></div>
+
+    <div class="deck">
+      <button class="drop" id="dropBtn">Drop</button>
+      <div class="gauges">
+        <div class="g"><div class="v" id="perSec">0</div><div class="k">per sec</div></div>
+        <div class="g"><div class="v" id="ballCount">0</div><div class="k">in play</div></div>
+        <div class="g"><div class="v" id="best">0</div><div class="k">best hit</div></div>
+      </div>
+      <div class="hint">space to drop</div>
+    </div>
+  </div>
+
+  <div class="ledger">
+    <div class="tabs">
+      <button class="on" data-tab="up">Upgrades</button>
+      <button data-tab="stats">Record</button>
+      <button data-tab="set">Settings</button>
+    </div>
+
+    <div class="scroll" id="upList"></div>
+    <div class="scroll stats" id="statList" style="display:none"></div>
+    <div class="scroll" id="setList" style="display:none"></div>
+
+    <div class="prestige">
+      <div class="meter"><i id="pMeter"></i></div>
+      <button class="pbtn" id="pBtn" disabled>Recalibrate</button>
+      <p class="pnote" id="pNote"></p>
+    </div>
+
+    <div class="foot2">
+      <button id="saveBtn">Save</button>
+      <button id="wipeBtn">Wipe</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================================================================
+   JARVIS PLINKO
+
+   The balls genuinely bounce. Every peg contact is a circle collision
+   with reflection, restitution and a little jitter — which slot a ball
+   ends in is emergent, not rolled. The bell curve under the board is
+   the real landing distribution, filling in as you play.
+   ================================================================ */
+
+const C = document.getElementById('board');
+const ctx = C.getContext('2d');
+const $ = id => document.getElementById(id);
+
+/* ---------------- numbers ----------------
+   Idle games outrun every built-in formatter: suffixes while they
+   last, then scientific. Doubles give out around 1e308. */
+const SUF = ['','K','M','B','T','Qa','Qi','Sx','Sp','Oc','No','Dc','Ud','Dd','Td','Qad','Qid'];
+
+function fmt(n){
+  if (!isFinite(n)) return '∞';
+  if (n < 0) return '-' + fmt(-n);
+  if (n < 1000) return n < 10 ? (Math.round(n*10)/10).toString() : Math.floor(n).toString();
+  if (S && S.opt && S.opt.sci) return n.toExponential(2).replace('e+','e');
+  const tier = Math.floor(Math.log10(n) / 3);
+  if (tier < SUF.length){
+    const s = n / Math.pow(1000, tier);
+    return (s < 10 ? s.toFixed(2) : s < 100 ? s.toFixed(1) : Math.floor(s)) + SUF[tier];
+  }
+  return n.toExponential(2).replace('e+','e');
+}
+
+/* ---------------- themes ----------------
+   Each one carries both the CSS variables and the canvas colours, so
+   the board repaints in the same palette as the panel around it. */
+const THEMES = {
+  paper: { name:'Paper', vars:{
+      paper:'#F2EFE7', card:'#FBF9F4', ink:'#16130E', muted:'#6C665B', faint:'#A39C8E',
+      rule:'rgba(22,19,14,.13)', rule2:'rgba(22,19,14,.07)', hot:'#C6402A', cool:'#2C5C86' },
+    peg:'rgba(22,19,14,.20)', ball:'#C6402A', slotInk:'#16130E', slotHot:'#C6402A',
+    label:'rgba(22,19,14,.5)' },
+
+  ink: { name:'Ink', vars:{
+      paper:'#111010', card:'#191817', ink:'#EDE9E0', muted:'#9A948A', faint:'#645F58',
+      rule:'rgba(237,233,224,.15)', rule2:'rgba(237,233,224,.08)', hot:'#E4614A', cool:'#7FB4DC' },
+    peg:'rgba(237,233,224,.22)', ball:'#E4614A', slotInk:'#EDE9E0', slotHot:'#E4614A',
+    label:'rgba(237,233,224,.55)' },
+
+  blueprint: { name:'Blueprint', vars:{
+      paper:'#0D1B26', card:'#122430', ink:'#DCE9F2', muted:'#8AA6BA', faint:'#54728A',
+      rule:'rgba(220,233,242,.16)', rule2:'rgba(220,233,242,.08)', hot:'#FFB845', cool:'#5FD0E0' },
+    peg:'rgba(220,233,242,.24)', ball:'#FFB845', slotInk:'#DCE9F2', slotHot:'#FFB845',
+    label:'rgba(220,233,242,.55)' },
+
+  sepia: { name:'Sepia', vars:{
+      paper:'#EDE2CE', card:'#F6EEDF', ink:'#2E2417', muted:'#6F6046', faint:'#A8977A',
+      rule:'rgba(46,36,23,.16)', rule2:'rgba(46,36,23,.08)', hot:'#8C5A2B', cool:'#3D6B63' },
+    peg:'rgba(46,36,23,.22)', ball:'#8C5A2B', slotInk:'#2E2417', slotHot:'#8C5A2B',
+    label:'rgba(46,36,23,.55)' }
+};
+
+let TH = THEMES.paper;
+
+function applyTheme(key){
+  TH = THEMES[key] || THEMES.paper;
+  const root = document.documentElement.style;
+  for (const k in TH.vars) root.setProperty('--' + k, TH.vars[k]);
+  document.querySelectorAll('.sws').forEach(b => b.classList.toggle('on', b.dataset.theme === key));
+}
+
+/* ---------------- state ---------------- */
+const DEFAULT_OPT = {
+  theme: 'paper',
+  showDist: true,      // landing histogram under the board
+  showLabels: true,    // × multiplier printed in each slot
+  confirmReset: true,  // ask before prestiging
+  offline: true,       // credit time away
+  sci: false,          // scientific notation instead of suffixes
+  maxBalls: 420        // hard cap on balls in flight
+};
+
+const FRESH = () => ({
+  cash:0, earned:0, best:0, drops:0,
+  prisms:0, prismsEarned:0,
+  started: Date.now(), lastSeen: Date.now(),
+  opt: Object.assign({}, DEFAULT_OPT),
+  lv:{ value:0, auto:0, multi:0, slots:0, luck:0, rows:0, bounce:0 }
+});
+let S = FRESH();
+
+/* ---------------- upgrades ----------------
+   Costs deliberately outgrow their effects, so each level buys
+   proportionally less. Without that the whole thing runs away to
+   Infinity inside an afternoon. */
+const MAX_ROW_LV = 8;      // 8 base rows + 8. Deeper than 16 is both
+                           // undrawable and mathematically fatal, since
+                           // payout scales exponentially with rows.
+
+const UPGRADES = [
+  { id:'value', name:'Chip Weight',
+    desc:'Every ball is worth more before its slot multiplier applies.',
+    cost: l => 10 * Math.pow(1.16, l),
+    eff:  l => 1 + l * 0.5,
+    show: v => '×' + fmt(v) },
+  { id:'auto', name:'Auto Dropper',
+    desc:'Drops balls for you, without the clicking.',
+    cost: l => 60 * Math.pow(1.30, l),
+    eff:  l => l === 0 ? 0 : 0.5 * Math.pow(1.12, l - 1),
+    show: v => fmt(v) + '/s' },
+  { id:'multi', name:'Extra Balls',
+    desc:'Each drop releases more than one ball.',
+    cost: l => 500 * Math.pow(2.2, l),
+    eff:  l => 1 + l,
+    show: v => v + ' per drop' },
+  { id:'slots', name:'Slot Payouts',
+    desc:'Raises every slot multiplier across the board.',
+    cost: l => 300 * Math.pow(1.34, l),
+    eff:  l => 1 + l * 0.22,
+    show: v => '×' + (Math.round(v*100)/100) },
+  { id:'luck', name:'Edge Bias',
+    desc:'Nudges balls outward, where the big multipliers live.',
+    cost: l => 900 * Math.pow(1.45, l),
+    eff:  l => Math.min(0.5, l * 0.05),
+    show: v => '+' + Math.round(v*100) + '% drift',
+    max: 10 },
+  { id:'rows', name:'Deeper Board',
+    desc:'Another row of pegs. More rows, richer extremes.',
+    cost: l => 4000 * Math.pow(3.6, l),
+    eff:  l => 8 + Math.min(l, MAX_ROW_LV),
+    show: v => v + ' rows',
+    max: MAX_ROW_LV },
+  { id:'bounce', name:'Livelier Pegs',
+    desc:'Bouncier collisions. Balls scatter further from centre.',
+    cost: l => 1500 * Math.pow(1.6, l),
+    eff:  l => Math.min(0.86, 0.45 + l * 0.03),
+    show: v => Math.round(v*100) + '% bounce',
+    max: 14 }
+];
+
+const U = {};
+UPGRADES.forEach(u => U[u.id] = u);
+const lvl  = id => S.lv[id] || 0;
+const eff  = id => U[id].eff(lvl(id));
+const cost = id => U[id].cost(lvl(id));
+const maxed = id => U[id].max !== undefined && lvl(id) >= U[id].max;
+
+const prismMult = () => 1 + S.prisms * 0.5;
+
+/* Exponent below 1 on purpose. At 1 or above each prestige feeds the
+   next and it runs away. At 0.4 numbers climb forever, watchably. */
+const PRISM_EXP = 0.4;
+const prismsAvailable = () => Math.floor(Math.pow(Math.max(0, S.earned) / 1e6, PRISM_EXP));
+const prismsOnReset = () => Math.max(0, prismsAvailable() - S.prismsEarned);
+const nextPrismAt = () => 1e6 * Math.pow(S.prismsEarned + 1, 1 / PRISM_EXP);
+
+/* ---------------- board ---------------- */
+let W = 0, H = 0, DPR = 1;
+let pegs = [], slots = [], pegR = 5, ballR = 5;
+let landed = [];          // histogram of where balls actually finish
+
+function layout(){
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  const r = C.getBoundingClientRect();
+  W = r.width; H = r.height;
+  C.width = Math.floor(W * DPR);
+  C.height = Math.floor(H * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  buildBoard();
+}
+
+function buildBoard(){
+  const rows = eff('rows');
+  const top = 44, slotH = 40;
+  const gapY = (H - top - slotH - 14) / rows;
+  const gapX = Math.min(gapY * 1.15, (W - 70) / (rows + 1));
+
+  pegR = Math.max(2.5, Math.min(5, gapX * 0.13));
+  ballR = Math.max(3, pegR * 1.05);
+
+  pegs = [];
+  for (let r = 0; r < rows; r++){
+    const count = r + 3, y = top + r * gapY;
+    const spread = (count - 1) * gapX;
+    for (let i = 0; i < count; i++) pegs.push({ x: W/2 - spread/2 + i*gapX, y, hit:0 });
+  }
+
+  const lastY = top + (rows-1) * gapY;
+  const bottom = pegs.filter(p => Math.abs(p.y - lastY) < 0.5);
+  slots = [];
+  const n = bottom.length - 1;
+  for (let i = 0; i < n; i++){
+    const mid = (i - (n-1)/2) / ((n-1)/2 || 1);
+    slots.push({ x0:bottom[i].x, x1:bottom[i+1].x, y:H - slotH - 6, h:slotH, edge:Math.abs(mid), flash:0 });
+  }
+  landed = new Array(slots.length).fill(0);
+  buildDist();
+}
+
+/* Payout climbs steeply toward the rim; the exponent scales with row
+   count, so a deeper board makes the outer slots dramatically richer. */
+function slotMult(slot){
+  const peak = Math.pow(1.75, eff('rows') / 2.4);
+  return (0.2 + Math.pow(slot.edge, 3.1) * peak) * eff('slots') * prismMult() * eff('value');
+}
+
+/* ---------------- balls ---------------- */
+const balls = [];
+const GRAV = 0.42;
+
+function dropBall(){
+  if (balls.length >= (S.opt.maxBalls || 420)) return;
+  balls.push({ x: W/2 + (Math.random()-0.5)*14, y: 16, vx:(Math.random()-0.5)*1.2, vy:0, life:0 });
+  S.drops++;
+}
+function dropSet(){ const n = eff('multi'); for (let i=0;i<n;i++) dropBall(); }
+
+function physics(){
+  const rest = eff('bounce'), drift = eff('luck');
+
+  for (let i = balls.length - 1; i >= 0; i--){
+    const b = balls[i];
+    b.vy += GRAV;
+
+    if (drift > 0){
+      const off = (b.x - W/2) / (W/2);
+      b.vx += Math.sign(off || (Math.random()-0.5)) * drift * 0.5;
+    }
+
+    b.x += b.vx; b.y += b.vy; b.life++;
+
+    for (let p = 0; p < pegs.length; p++){
+      const peg = pegs[p];
+      const dx = b.x - peg.x, dy = b.y - peg.y, min = pegR + ballR;
+      if (dx*dx + dy*dy < min*min){
+        const d = Math.sqrt(dx*dx + dy*dy) || 0.01;
+        const nx = dx/d, ny = dy/d;
+        b.x = peg.x + nx*min; b.y = peg.y + ny*min;
+        const dot = b.vx*nx + b.vy*ny;
+        b.vx = (b.vx - 2*dot*nx) * rest;
+        b.vy = (b.vy - 2*dot*ny) * rest;
+        b.vx += (Math.random()-0.5) * 1.1;    // the jitter that makes a distribution
+        peg.hit = 1;
+        break;
+      }
+    }
+
+    if (b.x < ballR){ b.x = ballR; b.vx = Math.abs(b.vx)*rest; }
+    if (b.x > W - ballR){ b.x = W - ballR; b.vx = -Math.abs(b.vx)*rest; }
+
+    const sp = Math.hypot(b.vx, b.vy);
+    if (sp > 14){ b.vx *= 14/sp; b.vy *= 14/sp; }   // no tunnelling through a row
+
+    if (slots.length && b.y > slots[0].y){
+      let idx = -1;
+      for (let k = 0; k < slots.length; k++){
+        if (b.x >= slots[k].x0 && b.x < slots[k].x1){ idx = k; break; }
+      }
+      if (idx < 0) idx = b.x < W/2 ? 0 : slots.length - 1;
+
+      const won = slotMult(slots[idx]);
+      S.cash += won; S.earned += won;
+      if (won > S.best) S.best = won;
+      slots[idx].flash = 1;
+      landed[idx]++;
+      balls.splice(i, 1);
+      continue;
+    }
+
+    if (b.life > 1200) balls.splice(i, 1);
+  }
+}
+
+/* ---------------- drawing ---------------- */
+function draw(){
+  ctx.clearRect(0, 0, W, H);
+
+  for (const s of slots){
+    const t = s.edge;
+    ctx.globalAlpha = 0.10 + t*0.30 + s.flash*0.55;
+    ctx.fillStyle = t > 0.55 ? TH.slotHot : TH.slotInk;
+    ctx.fillRect(s.x0 + 1, s.y + s.h - 3 - t*10, s.x1 - s.x0 - 2, 3 + t*10);
+    ctx.globalAlpha = 1;
+
+    if (S.opt.showLabels){
+      ctx.fillStyle = s.flash > 0.2 ? TH.slotHot : TH.label;
+      ctx.font = '500 9px "IBM Plex Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('×' + fmt(slotMult(s)), (s.x0+s.x1)/2, s.y + 13);
+    }
+    s.flash *= 0.86;
+  }
+
+  for (const p of pegs){
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, pegR, 0, 6.2832);
+    ctx.fillStyle = p.hit > 0.05 ? TH.slotHot : TH.peg;
+    ctx.globalAlpha = p.hit > 0.05 ? (0.4 + p.hit*0.6) : 1;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    p.hit *= 0.9;
+  }
+
+  ctx.fillStyle = TH.ball;
+  for (const b of balls){
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, ballR, 0, 6.2832);
+    ctx.fill();
+  }
+}
+
+/* ---------------- the distribution strip ---------------- */
+function buildDist(){
+  $('dist').innerHTML = slots.map(() => '<i></i>').join('');
+}
+function paintDist(){
+  const bars = $('dist').children;
+  const top = Math.max(1, ...landed);
+  for (let i = 0; i < bars.length; i++){
+    bars[i].style.height = Math.max(1, (landed[i] / top) * 100) + '%';
+  }
+}
+
+/* ---------------- loop ---------------- */
+let carry = 0, last = performance.now(), acc = 0;
+
+function frame(now){
+  const dt = Math.min((now - last)/1000, 0.25);
+  last = now;
+
+  const rate = eff('auto');
+  if (rate > 0){
+    carry += rate * dt * eff('multi');
+    while (carry >= 1){ dropBall(); carry--; }
+  }
+
+  physics();
+  draw();
+
+  acc += dt;
+  if (acc > 0.12){ acc = 0; paintHud(); paintDist(); }
+  requestAnimationFrame(frame);
+}
+
+/* ---------------- interface ---------------- */
+function paintHud(){
+  $('cash').textContent = fmt(S.cash);
+  $('perSec').textContent = fmt(eff('auto') * eff('multi'));
+  $('ballCount').textContent = balls.length;
+  $('best').textContent = fmt(S.best);
+
+  document.querySelectorAll('.up').forEach(btn => {
+    const id = btn.dataset.id, isMax = maxed(id), c = cost(id);
+    btn.disabled = isMax || S.cash < c;
+    btn.classList.toggle('afford', !isMax && S.cash >= c);
+    btn.querySelector('.cost').textContent = isMax ? 'Maxed' : fmt(c) + ' chips';
+    btn.querySelector('.lv').textContent = isMax ? 'lv ' + lvl(id) + ' · max' : 'lv ' + lvl(id);
+    btn.querySelector('.eff').textContent = U[id].show(eff(id));
+  });
+
+  const gain = prismsOnReset();
+  $('pBtn').disabled = gain < 1;
+  $('pBtn').textContent = gain > 0 ? 'Recalibrate · ' + fmt(gain) + ' prisms' : 'Recalibrate';
+  $('pNote').textContent = gain > 0
+    ? 'Chips and upgrades reset. Prisms are permanent: ×' +
+      (Math.round((1 + (S.prisms+gain)*0.5)*10)/10) + ' on every payout.'
+    : 'Next prism at ' + fmt(nextPrismAt()) + ' lifetime chips.';
+
+  const need = nextPrismAt();
+  $('pMeter').style.width = Math.min(100, (S.earned / need) * 100) + '%';
+}
+
+function buildList(){
+  const box = $('upList');
+  box.innerHTML = '';
+  UPGRADES.forEach(u => {
+    const b = document.createElement('button');
+    b.className = 'up';
+    b.dataset.id = u.id;
+    b.innerHTML = '<div class="r"><span class="nm"></span><span class="eff"></span></div>' +
+                  '<div class="ds"></div>' +
+                  '<div class="foot"><span class="cost"></span><span class="lv"></span></div>';
+    b.querySelector('.nm').textContent = u.name;
+    b.querySelector('.ds').textContent = u.desc;
+    b.onclick = () => buy(u.id);
+    box.appendChild(b);
+  });
+}
+
+function buy(id){
+  if (maxed(id)) return;
+  const c = cost(id);
+  if (S.cash < c) return;
+  S.cash -= c;
+  S.lv[id] = lvl(id) + 1;
+  if (id === 'rows') buildBoard();
+  paintHud();
+}
+
+function paintStats(){
+  const mins = (Date.now() - S.started) / 60000;
+  const totalLanded = landed.reduce((a,b) => a+b, 0);
+  const rows = [
+    ['Lifetime chips', fmt(S.earned)],
+    ['Balls dropped', fmt(S.drops)],
+    ['Best single slot', fmt(S.best)],
+    ['Landed this board', fmt(totalLanded)],
+    ['Prisms held', fmt(S.prisms)],
+    ['Prism multiplier', '×' + (Math.round(prismMult()*10)/10)],
+    ['Rows', eff('rows')],
+    ['Slots', slots.length],
+    ['Rim slot pays', '×' + fmt(slots.length ? slotMult(slots[0]) : 0)],
+    ['Centre slot pays', '×' + fmt(slots.length ? slotMult(slots[Math.floor(slots.length/2)]) : 0)],
+    ['Session', mins < 60 ? Math.floor(mins) + ' min' : (mins/60).toFixed(1) + ' hr']
+  ];
+  $('statList').innerHTML = rows.map(([k,v]) =>
+    '<div class="row"><span class="k">' + k + '</span><span class="dots"></span><span class="v">' + v + '</span></div>'
+  ).join('');
+}
+
+/* ---------------- settings ---------------- */
+function opt(k){ return S.opt[k]; }
+
+function setOpt(k, v){
+  S.opt[k] = v;
+  if (k === 'theme') applyTheme(v);
+  if (k === 'showDist') $('dist').style.display = v ? '' : 'none';
+  save();
+  buildSettings();
+}
+
+const TOGGLES = [
+  ['showDist',   'Distribution strip', 'The live histogram under the board showing where balls actually land.'],
+  ['showLabels', 'Slot multipliers',   'Print the × value inside each slot. Off is cleaner at high row counts.'],
+  ['confirmReset','Confirm recalibrate','Ask before wiping chips and upgrades for prisms.'],
+  ['offline',    'Offline earnings',   'Credit time away at a reduced rate when you come back.'],
+  ['sci',        'Scientific notation', 'Show 1.23e15 instead of 1.23Qa. Useful once names run out.']
+];
+
+const BALL_CAPS = [150, 420, 900];
+
+function buildSettings(){
+  const box = $('setList');
+  box.innerHTML = '';
+
+  // theme swatches
+  const sect = document.createElement('div');
+  sect.className = 'sect';
+  sect.innerHTML = '<h4>Theme</h4>';
+  box.appendChild(sect);
+
+  const sw = document.createElement('div');
+  sw.className = 'swatches';
+  Object.keys(THEMES).forEach(key => {
+    const t = THEMES[key];
+    const b = document.createElement('button');
+    b.className = 'sws' + (opt('theme') === key ? ' on' : '');
+    b.dataset.theme = key;
+    b.innerHTML =
+      '<span class="bar">' +
+        '<i style="background:' + t.vars.paper + '"></i>' +
+        '<i style="background:' + t.vars.ink + '"></i>' +
+        '<i style="background:' + t.vars.hot + '"></i>' +
+        '<i style="background:' + t.vars.cool + '"></i>' +
+      '</span><span class="nm">' + t.name + '</span>';
+    b.onclick = () => setOpt('theme', key);
+    sw.appendChild(b);
+  });
+  box.appendChild(sw);
+
+  // toggles
+  const s2 = document.createElement('div');
+  s2.className = 'sect';
+  s2.innerHTML = '<h4>Display</h4>';
+  box.appendChild(s2);
+
+  TOGGLES.forEach(([k, label, note]) => {
+    const row = document.createElement('div');
+    row.className = 'opt';
+    row.innerHTML = '<div class="t"><b></b><span></span></div>';
+    row.querySelector('b').textContent = label;
+    row.querySelector('span').textContent = note;
+    const btn = document.createElement('button');
+    btn.className = 'sw' + (opt(k) ? ' on' : '');
+    btn.textContent = opt(k) ? 'On' : 'Off';
+    btn.onclick = () => setOpt(k, !opt(k));
+    row.appendChild(btn);
+    box.appendChild(row);
+  });
+
+  // performance
+  const s3 = document.createElement('div');
+  s3.className = 'sect';
+  s3.innerHTML = '<h4>Performance</h4>';
+  box.appendChild(s3);
+
+  const perf = document.createElement('div');
+  perf.className = 'opt';
+  perf.innerHTML = '<div class="t"><b>Balls on screen</b>' +
+    '<span>Lower this if the board stutters. Payouts are unaffected — ' +
+    'balls over the cap simply are not spawned.</span></div>';
+  BALL_CAPS.forEach(n => {
+    const b = document.createElement('button');
+    b.className = 'sw' + (opt('maxBalls') === n ? ' on' : '');
+    b.style.minWidth = '46px';
+    b.textContent = n;
+    b.onclick = () => setOpt('maxBalls', n);
+    perf.appendChild(b);
+  });
+  box.appendChild(perf);
+
+  // save data
+  const s4 = document.createElement('div');
+  s4.className = 'sect';
+  s4.innerHTML = '<h4>Save data</h4>';
+  box.appendChild(s4);
+
+  const io = document.createElement('div');
+  io.className = 'opt';
+  io.innerHTML = '<div class="t"><b>Export or import</b>' +
+    '<span>Your save lives in this browser only. Export before clearing site data, ' +
+    'or to carry progress to another machine.</span></div>';
+  const ex = document.createElement('button');
+  ex.className = 'sw'; ex.textContent = 'Copy';
+  ex.onclick = exportSave;
+  const im = document.createElement('button');
+  im.className = 'sw'; im.textContent = 'Load';
+  im.onclick = importSave;
+  io.append(ex, im);
+  box.appendChild(io);
+}
+
+function exportSave(){
+  const code = btoa(unescape(encodeURIComponent(JSON.stringify(S))));
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(code)
+      .then(() => toast('Save copied to clipboard'))
+      .catch(() => window.prompt('Copy this:', code));
+  } else {
+    window.prompt('Copy this:', code);
+  }
+}
+
+function importSave(){
+  const code = window.prompt('Paste a save code. This replaces everything you have now.');
+  if (!code) return;
+  try{
+    const d = JSON.parse(decodeURIComponent(escape(atob(code.trim()))));
+    if (typeof d !== 'object' || !d.lv) throw new Error('not a save');
+    S = Object.assign(FRESH(), d);
+    S.lv  = Object.assign(FRESH().lv, d.lv || {});
+    S.opt = Object.assign({}, DEFAULT_OPT, d.opt || {});
+    balls.length = 0;
+    applyTheme(S.opt.theme);
+    buildBoard(); buildSettings(); paintHud(); save();
+    toast('Save loaded');
+  }catch(e){
+    toast('That save code is not valid');
+  }
+}
+
+document.querySelectorAll('.tabs button').forEach(t => {
+  t.onclick = () => {
+    document.querySelectorAll('.tabs button').forEach(x => x.classList.remove('on'));
+    t.classList.add('on');
+    const tab = t.dataset.tab;
+    $('upList').style.display   = tab === 'up'    ? '' : 'none';
+    $('statList').style.display = tab === 'stats' ? '' : 'none';
+    $('setList').style.display  = tab === 'set'   ? '' : 'none';
+    if (tab === 'stats') paintStats();
+    if (tab === 'set') buildSettings();
+  };
+});
+
+$('dropBtn').onclick = dropSet;
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space' && e.target === document.body){ e.preventDefault(); dropSet(); }
+});
+
+$('pBtn').onclick = () => {
+  const gain = prismsOnReset();
+  if (gain < 1) return;
+  if (S.opt.confirmReset &&
+      !confirm('Recalibrate for ' + fmt(gain) + ' prisms?\n\nChips and every upgrade reset. Prisms and their multiplier are kept forever.')) return;
+  S.prisms += gain; S.prismsEarned += gain;
+  S.cash = 0; S.lv = FRESH().lv;
+  balls.length = 0;
+  buildBoard(); save();
+  toast('Recalibrated — ×' + (Math.round(prismMult()*10)/10) + ' on everything');
+};
+
+/* ---------------- saving ---------------- */
+const KEY = 'jarvis.plinko';
+function save(){ try{ S.lastSeen = Date.now(); localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    S = Object.assign(FRESH(), d);
+    S.lv  = Object.assign(FRESH().lv, d.lv || {});
+    S.opt = Object.assign({}, DEFAULT_OPT, d.opt || {});   // new options get defaults
+  }catch(e){ /* corrupt save: start clean rather than break */ }
+}
+
+$('saveBtn').onclick = () => { save(); toast('Saved'); };
+$('wipeBtn').onclick = () => {
+  if (!confirm('Wipe everything, prisms included? There is no undo.')) return;
+  try{ localStorage.removeItem(KEY); }catch(e){}
+  S = FRESH(); balls.length = 0; buildBoard(); toast('Wiped');
+};
+setInterval(save, 15000);
+addEventListener('beforeunload', save);
+
+let toastTimer;
+function toast(msg){
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1900);
+}
+
+/* ---------------- offline ----------------
+   Credited at a poor rate on purpose. Away time should be worth
+   something, never more than playing. */
+function offline(){
+  if (!S.opt.offline) return;
+  const rate = eff('auto') * eff('multi');
+  if (!S.lastSeen || rate <= 0) return;
+  const away = Math.min((Date.now() - S.lastSeen)/1000, 8*3600);
+  if (away < 60) return;
+  const mid = slots.length ? slotMult(slots[Math.floor(slots.length/2)]) * 2.4 : 0;
+  const got = away * rate * mid * 0.35;
+  if (got > 0){
+    S.cash += got; S.earned += got;
+    toast('Away ' + Math.floor(away/60) + ' min · +' + fmt(got) + ' chips');
+  }
+}
+
+load();
+applyTheme(S.opt.theme);
+$('dist').style.display = S.opt.showDist ? '' : 'none';
+layout();
+buildList();
+buildSettings();
+offline();
+paintHud();
+addEventListener('resize', layout);
+requestAnimationFrame(frame);
+</script>
+
+<script src="privacy-screen.js"></script>
+</body>
+</html>
