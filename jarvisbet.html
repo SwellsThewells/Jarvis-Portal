@@ -767,7 +767,7 @@ function save(){ clearTimeout(saveTimer); saveTimer=setTimeout(()=>{ try{localSt
    would corrupt progress the moment a device had the wrong time.
 ========================================================== */
 const Cloud = {
-  ready:false, uid:null, name:'', dirty:false, timer:null, status:'off',
+  ready:false, uid:null, name:'', pic:'', dirty:false, timer:null, status:'off',
 
   on(){ return this.ready && this.uid; },
 
@@ -792,9 +792,9 @@ const Cloud = {
 
     firebase.auth().onAuthStateChanged(async user => {
       if (!user){
-        this.ready = false; this.uid = null;
-        this.setStatus('signedout');
-        if (currentView === 'leaderboard') navigate('leaderboard');
+        this.ready = false; this.uid = null; this.pic = ''; this.name = '';
+        this.setStatus('signedout'); paintAvatar();
+        if (currentView === 'leaderboard' || currentView === 'profile') navigate(currentView);
         return;
       }
       this.uid = user.uid;
@@ -803,8 +803,11 @@ const Cloud = {
       // display name comes from the portal account
       try{
         const doc = await firebase.firestore().collection('users').doc(user.uid).get();
-        this.name = (doc.exists && doc.data().username) || (user.email||'').split('@')[0];
-      }catch(e){ this.name = (user.email||'').split('@')[0]; }
+        const d = doc.exists ? doc.data() : {};
+        this.name = d.username || (user.email||'').split('@')[0];
+        this.pic  = safePic(d.profilePic);
+      }catch(e){ this.name = (user.email||'').split('@')[0]; this.pic=''; }
+      paintAvatar();
       if (!state.player) { state.player = this.name; save(); }
 
       await this.pull();
@@ -815,7 +818,7 @@ const Cloud = {
       clearInterval(this.timer);
       this.timer = setInterval(() => { if (Cloud.dirty) Cloud.push(); }, 30000);
 
-      if (currentView === 'leaderboard') navigate('leaderboard');
+      if (currentView === 'leaderboard' || currentView === 'profile') navigate(currentView);
     });
   },
 
@@ -864,6 +867,31 @@ const Cloud = {
     }
   }
 };
+
+/* A profile picture is a value from the database like any other, so it is
+   checked before it ever reaches an src attribute. */
+function safePic(u){
+  return (typeof u==='string' && /^(data:image\/(png|jpe?g|gif|webp);base64,[A-Za-z0-9+/=]+$|https:\/\/[^"'<>\s]+$)/i.test(u)) ? u : '';
+}
+
+function avatarHTML(size){
+  const px=size||40;
+  const initial=(Cloud.name||'?').slice(0,1).toUpperCase();
+  return Cloud.pic
+    ? `<img src="${Cloud.pic}" alt="" style="width:${px}px;height:${px}px;border-radius:50%;object-fit:cover;display:block">`
+    : `<div style="width:${px}px;height:${px}px;border-radius:50%;display:grid;place-items:center;
+         background:linear-gradient(150deg,#4a9fd8,#1f5f80);color:#08121a;font-weight:800;
+         font-size:${Math.round(px*0.42)}px">${initial}</div>`;
+}
+
+function paintAvatar(){
+  document.querySelectorAll('[data-avatar]').forEach(n=>{
+    n.innerHTML=avatarHTML(parseInt(n.dataset.avatar)||40);
+  });
+  document.querySelectorAll('[data-cloud-name]').forEach(n=>{
+    n.textContent = Cloud.on() ? (Cloud.name||'Signed in') : 'Not signed in';
+  });
+}
 
 /* every local save marks the mirror stale */
 const _save = save;
@@ -1211,6 +1239,7 @@ const MAIN_NAV=[
   {v:'jarvsino',label:'Jarvsino',ic:'jarvsino'},
   {v:'manager',label:'Autobet Manager',ic:'manager'},
   {v:'upgrades',label:'Jarvis Upgrades',ic:'upgrades'},
+  {v:'profile',label:'Profile',ic:'stats'},
   {v:'leaderboard',label:'Leaderboard',ic:'leaderboard'},
   {v:'dailywheel',label:'Daily Wheel',ic:'wheel'},
   {v:'stats',label:'Statistics',ic:'stats'}
@@ -1245,6 +1274,7 @@ function navigate(view){
   if(view==='jarvsino') return renderList(content,'Classic Jarvsino',GAMES.filter(g=>g.cat==='classic'));
   if(view==='manager') return renderManager(content);
   if(view==='upgrades') return renderUpgrades(content);
+  if(view==='profile') return renderProfile(content);
   if(view==='leaderboard') return renderLeaderboard(content);
   if(view==='dailywheel') return renderWheel(content);
   if(view==='stats') return renderStats(content);
@@ -1400,6 +1430,7 @@ function mountGame(content,id){
   }));
 
   if(mod.optsHTML) $('#opts-slot').innerHTML=mod.optsHTML(saved.opts||{});
+  wrap.querySelectorAll('.auto-only').forEach(n=>n.classList.add('hidden'));
   /* one wiring path for every option group, whatever it looks like */
   wrap.querySelectorAll('#opts-slot [data-seg]').forEach(group=>{
     group.addEventListener('click',e=>{
@@ -1417,6 +1448,9 @@ function mountGame(content,id){
       const auto=b.dataset.mode==='auto';
       $('#auto-slot').classList.toggle('hidden',!auto);
       $('#manual-slot').classList.toggle('hidden',auto);
+      /* these settings only ever feed autobet — in manual you tap
+         Cash out yourself, so showing them was just noise */
+      wrap.querySelectorAll('.auto-only').forEach(n=>n.classList.toggle('hidden',!auto));
       sfx.tick();
     }));
     if(Auto.running(id)||saved.openAuto) wrap.querySelector('[data-mode="auto"]').click();
@@ -1621,13 +1655,23 @@ MODULES.slots={
     </div>`;
     ctx.manual.innerHTML='<button class="act" id="spin">Spin</button>';
     const reels=[...ctx.qa('.reel')], stripEls=[...ctx.qa('.reel .strip')];
-    function measure(){ cellH=reels[0].clientHeight/3; stripEls.forEach(el=>el.querySelectorAll('.cell').forEach(c=>c.style.height=cellH+'px')); }
+    function measure(){
+      const h=reels[0].clientHeight/3;
+      /* a hidden or not-yet-laid-out stage reports 0, which poisons every
+         offset below — keep the last good value instead */
+      if(h>2) cellH=h;
+      if(!cellH) cellH=70;
+      stripEls.forEach(el=>el.querySelectorAll('.cell').forEach(c=>c.style.height=cellH+'px'));
+    }
     function fill(r,finalSym){
       /* strip runs top→bottom; the middle of the last three cells is the result */
       const arr=Array.from({length:STRIP},()=>randSym());
       if(finalSym){ arr[STRIP-2]=finalSym; }
       strips[r]=arr;
-      stripEls[r].innerHTML=arr.map(k=>`<div class="cell" style="height:${cellH||70}px">${ART.sym(k)}</div>`).join('');
+      /* doubled: the reel wraps by one strip length mid-spin, and without
+         a second copy underneath the window shows blank at the seam */
+      const cells=arr.concat(arr);
+      stripEls[r].innerHTML=cells.map(k=>`<div class="cell" style="height:${cellH||70}px">${ART.sym(k)}</div>`).join('');
     }
     function setOffset(r,px){ offset[r]=px; stripEls[r].style.transform=`translateY(${-px}px)`; }
     const restPx=()=>(STRIP-3)*cellH;      /* lands with arr[STRIP-2] on the payline */
@@ -1645,23 +1689,26 @@ MODULES.slots={
       const durs=[1500,1900,2350];
       [0,1,2].forEach(r=>fill(r,finals[r]));
       measure();
-      const startPx=[0,0,0].map(()=>0);
-      [0,1,2].forEach(r=>setOffset(r,0));
       const end=restPx();
-      let done=0, clicked=[0,0,0];
+      const cycle=cellH*STRIP;
+      /* Travel a whole number of strip lengths PLUS the landing offset, so
+         when the distance is wrapped the reel comes to rest exactly on the
+         payline. The old version travelled an arbitrary distance and then
+         snapped, which is why the symbols on screen disagreed with the
+         result the game had already decided. */
+      const travel=[3,4,5].map(loops=>loops*cycle+end);
+      [0,1,2].forEach(r=>setOffset(r,0));
+      let clicked=[-1,-1,-1];
       (function frame(now){
         let alive=false;
         for(let r=0;r<3;r++){
           const p=Math.min(1,(now-t0)/durs[r]);
           if(p<1) alive=true;
           const e=1-Math.pow(1-p,3.2);                       /* fast, then settles */
-          const px=startPx[r]+(end+cellH*(STRIP-6))*e;
-          const wrapped=px%(cellH*STRIP);
-          const shown=p<1?wrapped:end;
+          const shown=(travel[r]*e)%cycle;
           setOffset(r,shown);
           const idx=Math.floor(shown/cellH);
           if(idx!==clicked[r]){ clicked[r]=idx; if(r===0&&idx%3===0) sfx.tick(); }
-          if(p>=1&&!done&&r===2) done=1;
         }
         if(alive) requestAnimationFrame(frame);
         else { [0,1,2].forEach(r=>setOffset(r,end)); sfx.step(); if(cb) cb(); }
@@ -1955,8 +2002,8 @@ MODULES.crash={
   edge:'1% edge',
   jewelAt:25,
   optsHTML(o){
-    return `<div class="field">
-      <label>Auto cash out at <span>manual play still lets you tap out early</span></label>
+    return `<div class="field auto-only">
+      <label>Auto cash out at <span>used by autobet only</span></label>
       <div class="inp-row"><input type="number" id="cr-target" min="1.01" step="0.05" value="${o.target||'2.00'}"><span class="unit">×</span></div>
     </div>
     ${segField('Preset','crpreset',[{v:'1.5',t:'1.5×'},{v:'2',t:'2×'},{v:'5',t:'5×'},{v:'10',t:'10×'}],'',
@@ -1979,7 +2026,7 @@ MODULES.crash={
       </div>
       <div class="cr-canvas-wrap"><canvas id="cr-cv"></canvas>
         <div class="cr-rocket hidden" id="cr-rocket">${ART.rocket}</div></div>
-      <div class="cx-hint" id="cr-hint">Set an auto cash out, then launch.</div>
+      <div class="cx-hint" id="cr-hint">Launch, then tap out before it blows.</div>
     </div>`;
     ctx.manual.innerHTML=`<button class="act" id="cr-go">Launch rocket</button>
       <button class="act act-amber hidden" id="cr-cash">Cash out</button>`;
@@ -2483,7 +2530,7 @@ MODULES.tower={
   jewelAt:12,
   optsHTML(o){
     return segField('Difficulty','twmode',[{v:'easy',t:'Easy'},{v:'medium',t:'Medium'},{v:'hard',t:'Hard'}],o.mode||'medium','doors per floor')
-      +`<div class="field">
+      +`<div class="field auto-only">
         <label>Autobet climbs to</label>
         <div class="inp-row"><span class="unit pre">Floor</span><input type="number" id="tw-target" min="1" max="8" value="${o.target||3}"></div>
       </div>`;
@@ -2654,7 +2701,7 @@ MODULES.chicken={
   optsHTML(o){
     const d=o.diff||'easy';
     return segField('Difficulty','cxdiff',Object.entries(CX_DIFF).map(([k,v])=>({v:k,t:v.label})),d,'higher risk, bigger steps')
-      +`<div class="field">
+      +`<div class="field auto-only">
         <label>Autobet hops to</label>
         <div class="inp-row"><span class="unit pre">Lane</span><input type="number" id="cx-target" min="1" max="24" value="${o.target||5}"></div>
       </div>
@@ -3145,9 +3192,9 @@ MODULES.higherlower={
   edge:'1% edge',
   jewelAt:15,
   optsHTML(o){
-    return `<div class="field"><label>Autobet stops after</label>
+    return `<div class="field auto-only"><label>Autobet stops after</label>
       <div class="inp-row"><input type="number" id="hl-target" min="1" max="10" value="${o.target||2}"><span class="unit">correct calls</span></div></div>
-      <div class="note">Autobet always calls the favoured side, then cashes out once it hits that streak.</div>`;
+      <div class="note auto-only">Autobet always calls the favoured side, then cashes out once it hits that streak.</div>`;
   },
   readOpts(w){ return {target:Math.min(10,Math.max(1,parseInt(w.querySelector('#hl-target').value)||2))}; },
   onChange(ctx){ ctx.preview('varies','Typical streak payout',(EDGE*Math.pow(2,ctx.opts().target)).toFixed(2)+'×'); },
@@ -3928,7 +3975,7 @@ MODULES.ridebus={
   edge:'1% edge',
   jewelAt:30,
   optsHTML(o){
-    return `<div class="field"><label>Autobet cashes out</label>
+    return `<div class="field auto-only"><label>Autobet cashes out</label>
       <div class="inp-row"><select id="rb-stop">
         ${[1,2,3,4].map(n=>`<option value="${n}"${(o.stop||3)==n?' selected':''}>after ${n} correct call${n>1?'s':''}</option>`).join('')}
         <option value="5"${(o.stop||3)==5?' selected':''}>only after riding the bus</option>
@@ -4233,6 +4280,50 @@ const Leaderboard={
   }
 };
 
+function renderProfile(content){
+  const s=state.stats;
+  const net=s.returned-s.wagered;
+  const signedIn=Cloud.on();
+  const winRate=s.played?Math.round((s.wins/s.played)*100):0;
+
+  content.innerHTML=`
+    <div class="row-head"><h2>Profile</h2><span>${signedIn?'Jarvis Portal account':'Local play'}</span></div>
+
+    <div class="masthead" style="margin-bottom:16px;align-items:center">
+      <div style="display:flex;align-items:center;gap:16px">
+        <div data-avatar="72"></div>
+        <div>
+          <h1 style="font-size:24px;margin-bottom:2px" data-cloud-name>—</h1>
+          <p style="margin:0" data-cloud-status>${Cloud.label()}</p>
+          ${signedIn?'':'<p style="margin:6px 0 0"><a href="index.html" style="color:var(--accent)">Sign in on the portal</a> to sync this save between browsers and use your picture here.</p>'}
+        </div>
+      </div>
+      <div class="mast-stats">
+        <div><small>Balance</small><b>${fmt(totalBalance())}</b></div>
+        <div><small>Net</small><b class="${net>=0?'pos':'neg'}">${fmtSigned(net)}</b></div>
+        <div><small>Jewels</small><b class="gemc">${state.jewels}</b></div>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat"><b>${(s.played||0).toLocaleString()}</b><small>Bets placed</small></div>
+      <div class="stat"><b class="pos">${(s.wins||0).toLocaleString()}</b><small>Wins</small></div>
+      <div class="stat"><b class="neg">${(s.losses||0).toLocaleString()}</b><small>Losses</small></div>
+      <div class="stat"><b>${winRate}%</b><small>Win rate</small></div>
+      <div class="stat"><b class="gold">${fmt(s.biggestWin||0)}</b><small>Biggest win</small></div>
+      <div class="stat"><b>${fmt(s.wagered||0)}</b><small>Total wagered</small></div>
+      <div class="stat"><b>${fmt(s.returned||0)}</b><small>Total returned</small></div>
+      <div class="stat"><b class="gemc">${fmt(state.ghostBalance||0)}</b><small>Ghost credit</small></div>
+    </div>
+
+    <div class="note" style="margin-top:14px">
+      Ghost credit from the developer menu is tracked separately and never counts towards
+      wagered, returned or your leaderboard position.
+    </div>`;
+
+  paintAvatar();
+}
+
 function renderLeaderboard(content){
   const s=state.stats;
   const net=s.returned-s.wagered;
@@ -4244,7 +4335,7 @@ function renderLeaderboard(content){
       <div>
         <h1 style="font-size:24px">${signedIn?'Signed in as '+String(Cloud.name).replace(/</g,'&lt;'):'Post your run'}</h1>
         <p>${signedIn
-          ? 'Your stats and balance sync to your Jarvis Portal account, so this save follows you between browsers and machines. Your row updates automatically as you play.'
+          ? 'Your stats and balance sync to your Jarvis Portal account, so this save follows you between browsers and machines. Your row here updates by itself as you play — there is nothing to submit.'
           : 'You are not signed in to the Jarvis Portal, so this board and your save live in this browser only. <a href="index.html" style="color:var(--accent)">Sign in on the portal</a> to sync across browsers and join the shared board.'}</p>
         <p style="opacity:.75;font-size:12px" data-cloud-status>${Cloud.label()}</p>
       </div>
@@ -4252,13 +4343,6 @@ function renderLeaderboard(content){
         <div><small>Your net</small><b class="${net>=0?'pos':'neg'}">${fmtSigned(net)}</b></div>
         <div><small>Biggest hit</small><b class="gold">${fmt(s.biggestWin)}</b></div>
         <div><small>Jewels</small><b class="gemc">${state.jewels}</b></div>
-      </div>
-    </div>
-    <div class="field" style="max-width:420px;margin-bottom:16px">
-      <label>Display name</label>
-      <div class="inp-row">
-        <input type="text" id="lb-name" placeholder="Your name" value="${(state.player||Cloud.name||'').replace(/"/g,'&quot;')}" style="font-family:'Inter'">
-        <button class="mini" id="lb-submit">Post score</button>
       </div>
     </div>
     <div id="lb-rows"><div class="empty">Loading the board…</div></div>`;
@@ -4274,7 +4358,10 @@ function renderLeaderboard(content){
         const me = Cloud.on() && r.uid===Cloud.uid;
         return `<tr${me?' style="background:rgba(74,159,216,.10)"':''}>
           <td class="num">${i+1}</td>
-          <td><b>${String(r.name).slice(0,24).replace(/</g,'&lt;')}</b>${me?' <small style="opacity:.7">you</small>':''}</td>
+          <td><span style="display:flex;align-items:center;gap:9px">
+            ${me?`<span data-avatar="26"></span>`:''}
+            <b>${String(r.name).slice(0,24).replace(/</g,'&lt;')}</b>${me?' <small style="opacity:.7">you</small>':''}
+          </span></td>
           <td class="num ${r.profit>=0?'pos':'neg'}">${fmtSigned(r.profit)}</td>
           <td class="num">${(r.played||0).toLocaleString()}</td>
           <td class="num">${fmt(r.wagered||0)}</td>
@@ -4282,6 +4369,7 @@ function renderLeaderboard(content){
         </tr>`;}).join('')}</tbody>
     </table>
     <p style="font-size:11.5px;opacity:.65;margin-top:10px">Ghost credit from the developer menu never counts — the board reads only real wagers and returns.</p>`;
+    paintAvatar();
   }
 
   Leaderboard.read().then(paint).catch(err=>{
@@ -4289,15 +4377,9 @@ function renderLeaderboard(content){
     rowsBox.innerHTML='<div class="empty">Could not load the board. '+String(err.message||err).replace(/</g,'&lt;')+'</div>';
   });
 
-  content.querySelector('#lb-submit').onclick=async ()=>{
-    const name=(content.querySelector('#lb-name').value||'').trim();
-    if(!name) return toast('Enter a display name first.','lose');
-    state.player=name; save();
-    const entry=Leaderboard.entry(); entry.name=name.slice(0,24);
-    const okd=await Leaderboard.submit(entry);
-    toast(okd?'Score posted.':'Could not reach the board.',okd?'win':'lose');
-    Leaderboard.read().then(paint).catch(()=>{});
-  };
+  /* No post button: your row is written on every cloud save, so the board
+     is already current by the time you open it. */
+  if(signedIn) Leaderboard.autoPost().then(()=>Leaderboard.read().then(paint).catch(()=>{}));
 }
 
 /* ==========================================================
