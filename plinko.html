@@ -190,6 +190,8 @@
   .pbtn:hover:not(:disabled){ background:var(--cool); color:var(--card); }
   .pbtn:disabled{ border-color:var(--rule); color:var(--faint); cursor:default; }
   .cBtn{ border-color:var(--hot); color:var(--hot); }
+  .aBtn{ border-color:#7A5EA8; color:#7A5EA8; }
+  .aBtn:hover:not(:disabled){ background:#7A5EA8; color:var(--card); }
   .cBtn:hover:not(:disabled){ background:var(--hot); color:var(--paper); }
   .up.sp .cost{ color:var(--hot); }
   .up.sp:hover:not(:disabled){ background:rgba(198,64,42,.05); }
@@ -248,6 +250,44 @@
     margin-left:auto; font-family:var(--mono);
     font-variant-numeric:tabular-nums; font-size:10.5px; color:var(--faint);
   }
+
+  /* ---- quanta tree ---- */
+  .qhead{
+    padding:16px 20px; border-bottom:1px solid var(--rule);
+    display:flex; align-items:baseline; gap:9px;
+  }
+  .qhead .n{ font-family:var(--mono); font-size:22px; font-weight:500; color:var(--hot); }
+  .qhead .k{ font-family:var(--mono); font-size:9px; letter-spacing:.22em;
+    text-transform:uppercase; color:var(--faint); }
+
+  .trow{ position:relative; padding:0 14px; }
+  .trow .tier{
+    font-family:var(--mono); font-size:8.5px; letter-spacing:.2em;
+    text-transform:uppercase; color:var(--faint); padding:14px 6px 7px;
+  }
+  .tnodes{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .tnode{
+    position:relative; text-align:left; padding:10px 9px;
+    border:1px solid var(--rule); border-radius:8px;
+    background:var(--card); cursor:pointer;
+    transition:border-color .16s, transform .14s, background .16s;
+  }
+  .tnode:hover:not(:disabled){ transform:translateY(-2px); border-color:var(--ink); }
+  .tnode:disabled{ cursor:default; }
+  .tnode.locked{ opacity:.38; }
+  .tnode.owned{ border-color:var(--hot); background:rgba(198,64,42,.06); }
+  .tnode .nm{ font-size:11.5px; font-weight:600; line-height:1.25; }
+  .tnode .lv{ font-family:var(--mono); font-size:9px; color:var(--faint); margin-top:3px; }
+  .tnode .ef{ font-family:var(--mono); font-size:9.5px; color:var(--cool); margin-top:5px; }
+  .tnode .cs{ font-family:var(--mono); font-size:10px; margin-top:5px; color:var(--hot); }
+  .tnode.locked .cs, .tnode:disabled .cs{ color:var(--faint); }
+  /* the connector up to the row above */
+  .tnode.child::before{
+    content:''; position:absolute; left:50%; top:-15px;
+    width:1px; height:15px; background:var(--rule);
+  }
+  .tnode.owned.child::before{ background:var(--hot); }
+  .tdesc{ font-size:10.5px; color:var(--muted); line-height:1.5; margin-top:6px; }
 
   /* ---- settings ---- */
   .sect{ padding:16px 20px 6px; }
@@ -332,6 +372,7 @@
     <div class="tabs">
       <button class="on" data-tab="up">Upgrades</button>
       <button data-tab="prism">Prisms</button>
+      <button data-tab="tree" id="treeTab">Tree</button>
       <button data-tab="stats">Record</button>
       <button data-tab="set">Settings</button>
     </div>
@@ -344,6 +385,7 @@
 
     <div class="scroll" id="upList"></div>
     <div class="scroll" id="prismList" style="display:none"></div>
+    <div class="scroll" id="treeList" style="display:none"></div>
     <div class="scroll stats" id="statList" style="display:none"></div>
     <div class="scroll" id="setList" style="display:none"></div>
 
@@ -351,6 +393,7 @@
       <div class="meter"><i id="pMeter"></i></div>
       <button class="pbtn" id="pBtn" disabled>Recalibrate</button>
       <button class="pbtn cBtn" id="cBtn" style="display:none;margin-top:8px">Collapse</button>
+      <button class="pbtn aBtn" id="aBtn" style="display:none;margin-top:8px">Ascend</button>
       <p class="pnote" id="pNote"></p>
     </div>
 
@@ -458,6 +501,8 @@ const FRESH = () => ({
   pv:{ gain:0, gold:0, boost:0, head:0 },   // prism shop — lost on collapse
   sv:{ res:0, yield:0, found:0, spark:0 },  // spectra shop — permanent
   spectra:0, spectraEarned:0,
+  quanta:0, quantaEarned:0,
+  tree:{},                                   // quanta tree — survives everything
   flux:0, surgeUntil:0,
   ms:{}                                      // milestones already claimed
 });
@@ -501,9 +546,9 @@ const UPGRADES = [
   { id:'rows', name:'Deeper Board',
     desc:'Another row of pegs. More rows, richer extremes.',
     cost: l => 4000 * Math.pow(3.6, l),
-    eff:  l => 8 + Math.min(l, MAX_ROW_LV),
+    eff:  l => 8 + Math.min(l, MAX_ROW_LV + nEff('deep')),
     show: v => v + ' rows',
-    max: MAX_ROW_LV },
+    max: () => MAX_ROW_LV + nEff('deep') },
   { id:'bounce', name:'Livelier Pegs',
     desc:'Bouncier collisions. Balls scatter further from centre.',
     cost: l => 1500 * Math.pow(1.6, l),
@@ -517,17 +562,19 @@ UPGRADES.forEach(u => U[u.id] = u);
 const lvl  = id => S.lv[id] || 0;
 const eff  = id => U[id].eff(lvl(id));
 const cost = id => U[id].cost(lvl(id));
-const maxed = id => U[id].max !== undefined && lvl(id) >= U[id].max;
+const capOf = u => typeof u.max === 'function' ? u.max() : u.max;
+const maxed = id => capOf(U[id]) !== undefined && lvl(id) >= capOf(U[id]);
 
 const prismMult = () =>
   (1 + S.prisms * 0.5) * peff('boost') * msMult() *
-  seff('res') * (surgeActive() ? SURGE_MULT : 1);
+  seff('res') * nEff('density') * nEff('singularity') *
+  (surgeActive() ? SURGE_MULT : 1);
 
 /* Exponent below 1 on purpose. At 1 or above each prestige feeds the
    next and it runs away. At 0.4 numbers climb forever, watchably. */
 const PRISM_EXP = 0.4;
 const prismsAvailable = () => Math.floor(Math.pow(Math.max(0, S.earned) / 1e6, PRISM_EXP));
-const prismsOnReset = () => Math.max(0, Math.floor((prismsAvailable() - S.prismsEarned) * peff('gain')));
+const prismsOnReset = () => Math.max(0, Math.floor((prismsAvailable() - S.prismsEarned) * peff('gain') * nEff('facet')));
 const nextPrismAt = () => 1e6 * Math.pow(S.prismsEarned + 1, 1 / PRISM_EXP);
 
 /* ---------------- the prism shop ----------------
@@ -575,7 +622,7 @@ const COLLAPSE_AT = 500;          // prisms earned before it unlocks
 const SPECTRA_EXP = 0.5;
 
 const spectraAvailable = () =>
-  Math.floor(Math.pow(Math.max(0, S.prismsEarned) / COLLAPSE_AT, SPECTRA_EXP) * sYield());
+  Math.floor(Math.pow(Math.max(0, S.prismsEarned) / COLLAPSE_AT, SPECTRA_EXP) * sYield() * nEff('lens'));
 const spectraOnCollapse = () => Math.max(0, spectraAvailable() - S.spectraEarned);
 const collapseUnlocked = () => S.prismsEarned >= COLLAPSE_AT || S.spectraEarned > 0;
 
@@ -607,6 +654,84 @@ const slvl = id => (S.sv && S.sv[id]) || 0;
 const seff = id => SU[id].eff(slvl(id));
 const scost = id => SU[id].cost(slvl(id));
 const sYield = () => SU.yield.eff(slvl('yield'));
+
+/* ================================================================
+   LAYER THREE — ASCEND
+
+   Chips reset for prisms. Prisms reset for spectra. Spectra reset for
+   QUANTA, which buy nodes on a tree that nothing ever takes away.
+
+   Where the earlier shops are flat lists you grind, the tree is a set
+   of choices: nodes unlock other nodes, so an early Quanta goes down
+   one branch rather than all of them.
+   ================================================================ */
+const ASCEND_AT = 40;             // lifetime spectra before it unlocks
+const QUANTA_EXP = 0.55;
+
+const quantaAvailable = () =>
+  Math.floor(Math.pow(Math.max(0, S.spectraEarned) / ASCEND_AT, QUANTA_EXP) * (1 + node('flux2')*0.25));
+const quantaOnAscend = () => Math.max(0, quantaAvailable() - S.quantaEarned);
+const ascendUnlocked = () => S.spectraEarned >= ASCEND_AT || S.quantaEarned > 0;
+
+/* Each node: cost in quanta, max levels, what it needs first, and the
+   row it sits on so the tree can be drawn without hand-placing anything. */
+const TREE = [
+  { id:'density', row:0, name:'Density',   max:99, cost: l => Math.ceil(1*Math.pow(2.3,l)),
+    desc:'A flat multiplier on everything. Never stops.',
+    eff: l => Math.pow(1.5,l), show: v => '×'+fmt(v) },
+  { id:'cadence', row:0, name:'Cadence',   max:20, cost: l => Math.ceil(1*Math.pow(2.1,l)),
+    desc:'The auto dropper releases faster.',
+    eff: l => 1 + l*0.25, show: v => '×'+v.toFixed(2)+' rate' },
+  { id:'facet',   row:0, name:'Facet',     max:20, cost: l => Math.ceil(2*Math.pow(2.4,l)),
+    desc:'More prisms from every recalibration.',
+    eff: l => 1 + l*0.2, show: v => '×'+v.toFixed(2)+' prisms' },
+
+  { id:'array',   row:1, needs:'density', max:20, name:'Refraction Array',
+    cost: l => Math.ceil(4*Math.pow(2.6,l)),
+    desc:'Every slot on the board pays more.',
+    eff: l => 1 + l*0.35, show: v => '×'+v.toFixed(2)+' slots' },
+  { id:'cascade', row:1, needs:'cadence', max:12, name:'Cascade',
+    cost: l => Math.ceil(5*Math.pow(3,l)),
+    desc:'An extra ball on every drop.',
+    eff: l => l, show: v => '+'+v+' balls' },
+  { id:'lens',    row:1, needs:'facet',   max:20, name:'Clarity Lens',
+    cost: l => Math.ceil(6*Math.pow(2.8,l)),
+    desc:'More spectra from every collapse.',
+    eff: l => 1 + l*0.3, show: v => '×'+v.toFixed(2)+' spectra' },
+
+  { id:'rain',    row:2, needs:'cascade', max:15, name:'Golden Rain',
+    cost: l => Math.ceil(12*Math.pow(2.7,l)),
+    desc:'Raises the golden ball chance beyond the prism cap.',
+    eff: l => l*0.02, show: v => '+'+(v*100).toFixed(0)+'% golden' },
+  { id:'core',    row:2, needs:'lens',    max:10, name:'Momentum Core',
+    cost: l => Math.ceil(15*Math.pow(3.2,l)),
+    desc:'Start every collapse with free prism shop levels.',
+    eff: l => l*2, show: v => v+' free levels' },
+  { id:'deep',    row:2, needs:'array',   max:6,  name:'Deeper Still',
+    cost: l => Math.ceil(20*Math.pow(4,l)),
+    desc:'Raises the board past sixteen rows.',
+    eff: l => l, show: v => '+'+v+' rows' },
+
+  { id:'flux2',   row:3, needs:'rain',    max:12, name:'Conduit',
+    cost: l => Math.ceil(40*Math.pow(3,l)),
+    desc:'More flux per golden ball, and more quanta when you ascend.',
+    eff: l => l, show: v => '+'+v+' flux' },
+  { id:'singularity', row:3, needs:'core', max:99, name:'Singularity',
+    cost: l => Math.ceil(60*Math.pow(3.6,l)),
+    desc:'The heaviest multiplier in the game. Endless, and priced like it.',
+    eff: l => Math.pow(2.2,l), show: v => '×'+fmt(v) },
+  { id:'echo',    row:3, needs:'deep',    max:8,  name:'Echo',
+    cost: l => Math.ceil(50*Math.pow(3.4,l)),
+    desc:'Keep a share of the spectra shop through an ascension.',
+    eff: l => Math.min(0.8, l*0.12), show: v => (v*100).toFixed(0)+'% kept' }
+];
+const TN = {};
+TREE.forEach(t => TN[t.id] = t);
+const node  = id => (S.tree && S.tree[id]) || 0;
+const nEff  = id => TN[id].eff(node(id));
+const nCost = id => TN[id].cost(node(id));
+const nMax  = id => node(id) >= TN[id].max;
+const nOpen = id => !TN[id].needs || node(TN[id].needs) > 0;
 
 /* ---------------- flux ----------------
    A small active currency. Golden balls pay it out; you spend it on a
@@ -707,7 +832,7 @@ function buildBoard(){
    count, so a deeper board makes the outer slots dramatically richer. */
 function slotMult(slot){
   const peak = Math.pow(1.75, eff('rows') / 2.4);
-  return (0.2 + Math.pow(slot.edge, 3.1) * peak) * eff('slots') * prismMult() * eff('value');
+  return (0.2 + Math.pow(slot.edge, 3.1) * peak) * eff('slots') * nEff('array') * prismMult() * eff('value');
 }
 
 /* ---------------- balls ---------------- */
@@ -719,11 +844,11 @@ function dropBall(){
   balls.push({
     x: W/2 + (Math.random()-0.5)*14, y: 16,
     vx:(Math.random()-0.5)*1.2, vy:0, life:0,
-    gold: Math.random() < peff('gold')
+    gold: Math.random() < Math.min(0.75, peff('gold') + nEff('rain'))
   });
   S.drops++;
 }
-function dropSet(){ const n = eff('multi'); for (let i=0;i<n;i++) dropBall(); }
+function dropSet(){ const n = eff('multi') + nEff('cascade'); for (let i=0;i<n;i++) dropBall(); }
 
 function physics(){
   const rest = eff('bounce'), drift = eff('luck');
@@ -772,7 +897,7 @@ function physics(){
       if (b.gold){
         won *= 25;
         S.goldHits = (S.goldHits||0) + 1;
-        S.flux = (S.flux||0) + 1 + seff('spark');
+        S.flux = (S.flux||0) + 1 + seff('spark') + nEff('flux2');
       }
       if (idx === 0 || idx === slots.length - 1){
         S.rimHits = (S.rimHits||0) + 1;
@@ -854,9 +979,9 @@ function frame(now){
   const dt = Math.min((now - last)/1000, 0.25);
   last = now;
 
-  const rate = eff('auto');
+  const rate = eff('auto') * nEff('cadence');
   if (rate > 0){
-    carry += rate * dt * eff('multi');
+    carry += rate * dt * (eff('multi') + nEff('cascade'));
     while (carry >= 1){ dropBall(); carry--; }
   }
 
@@ -864,7 +989,10 @@ function frame(now){
   draw();
 
   acc += dt;
-  if (acc > 0.12){ acc = 0; paintHud(); paintDist(); checkMilestones(); }
+  if (acc > 0.12){
+    acc = 0; paintHud(); paintDist(); checkMilestones();
+    if (currentTab === 'tree') paintTree();
+  }
   requestAnimationFrame(frame);
 }
 
@@ -909,11 +1037,20 @@ function paintHud(){
   cb.disabled = cGain < 1;
   cb.textContent = cGain > 0 ? 'Collapse · ' + fmt(cGain) + ' spectra' : 'Collapse';
 
+  const aGain = quantaOnAscend();
+  const ab = $('aBtn');
+  ab.style.display = ascendUnlocked() ? '' : 'none';
+  ab.disabled = aGain < 1;
+  ab.textContent = aGain > 0 ? 'Ascend · ' + fmt(aGain) + ' quanta' : 'Ascend';
+  $('treeTab').style.display = ascendUnlocked() ? '' : 'none';
+
   $('pNote').textContent =
       surgeActive() ? 'Surge active · ×' + SURGE_MULT + ' for ' + surgeLeft() + 's'
     : gain > 0 ? 'Recalibrating resets chips and upgrades. Prisms are kept.'
     : collapseUnlocked() && cGain > 0 ? 'Collapse resets prisms too, and pays spectra.'
     : !collapseUnlocked() ? 'Next prism at ' + fmt(nextPrismAt()) + ' lifetime chips. Collapse unlocks at ' + COLLAPSE_AT + ' lifetime prisms.'
+    : ascendUnlocked() && aGain > 0 ? 'Ascending resets spectra too, and pays quanta for the tree.'
+    : !ascendUnlocked() ? 'Next prism at ' + fmt(nextPrismAt()) + ' chips. Ascend unlocks at ' + ASCEND_AT + ' lifetime spectra.'
     : 'Next prism at ' + fmt(nextPrismAt()) + ' lifetime chips.';
 
   $('pMeter').style.width = Math.min(100, (S.earned / nextPrismAt()) * 100) + '%';
@@ -944,7 +1081,8 @@ function affordable(id, want){
   let n = 0, spend = 0, lv = lvl(id);
   const cap = want === 'max' ? 500 : want;
   while (n < cap){
-    if (U[id].max !== undefined && lv + n >= U[id].max) break;
+    const cap = capOf(U[id]);
+    if (cap !== undefined && lv + n >= cap) break;
     const c = U[id].cost(lv + n);
     if (spend + c > S.cash) break;
     spend += c; n++;
@@ -1020,6 +1158,69 @@ function buildVault(){
   }
 }
 
+const TIERS = ['Foundation','Refinement','Convergence','Capstone'];
+
+function buildTree(){
+  const box = $('treeList');
+  box.innerHTML = '<div class="qhead"><span class="n" id="quantaN">0</span>' +
+                  '<span class="k">quanta</span></div>';
+
+  for (let row = 0; row < 4; row++){
+    const wrap = document.createElement('div');
+    wrap.className = 'trow';
+    wrap.innerHTML = '<div class="tier">' + TIERS[row] + '</div>';
+    const grid = document.createElement('div');
+    grid.className = 'tnodes';
+
+    TREE.filter(t => t.row === row).forEach(t => {
+      const b = document.createElement('button');
+      b.className = 'tnode' + (t.needs ? ' child' : '');
+      b.dataset.node = t.id;
+      b.innerHTML =
+        '<div class="nm">' + t.name + '</div>' +
+        '<div class="lv"></div>' +
+        '<div class="tdesc">' + t.desc + '</div>' +
+        '<div class="ef"></div>' +
+        '<div class="cs"></div>';
+      b.onclick = () => buyNode(t.id);
+      grid.appendChild(b);
+    });
+
+    wrap.appendChild(grid);
+    box.appendChild(wrap);
+  }
+}
+
+function paintTree(){
+  const q = $('quantaN');
+  if (q) q.textContent = fmt(S.quanta);
+
+  document.querySelectorAll('.tnode').forEach(b => {
+    const id = b.dataset.node, t = TN[id];
+    const open = nOpen(id), max = nMax(id), c = nCost(id);
+    b.classList.toggle('locked', !open);
+    b.classList.toggle('owned', node(id) > 0);
+    b.disabled = !open || max || S.quanta < c;
+    b.querySelector('.lv').textContent =
+      !open ? 'needs ' + TN[t.needs].name
+      : max  ? 'level ' + node(id) + ' · max'
+             : 'level ' + node(id) + ' / ' + t.max;
+    b.querySelector('.ef').textContent = t.show(nEff(id));
+    b.querySelector('.cs').textContent = max ? '' : fmt(c) + ' quanta';
+  });
+}
+
+function buyNode(id){
+  if (!nOpen(id) || nMax(id)) return;
+  const c = nCost(id);
+  if (S.quanta < c) return;
+  S.quanta -= c;
+  S.tree[id] = node(id) + 1;
+  if (id === 'deep') buildBoard();     // the board can physically grow
+  save(); paintTree(); paintHud();
+  toast(TN[id].name + ' → level ' + node(id));
+}
+
 function buySpectra(id){
   const c = scost(id);
   if (S.spectra < c) return;
@@ -1080,6 +1281,9 @@ function paintStats(){
     ['Landed this board', fmt(totalLanded)],
     ['Prisms held', fmt(S.prisms)],
     ['Global multiplier', '×' + fmt(prismMult())],
+    ['Quanta held', fmt(S.quanta || 0)],
+    ['Lifetime quanta', fmt(S.quantaEarned || 0)],
+    ['Tree nodes bought', Object.values(S.tree || {}).reduce((a,b) => a + b, 0)],
     ['Spectra held', fmt(S.spectra || 0)],
     ['Lifetime spectra', fmt(S.spectraEarned || 0)],
     ['Flux', fmt(Math.floor(S.flux || 0))],
@@ -1253,12 +1457,14 @@ document.querySelectorAll('.tabs button').forEach(t => {
     currentTab = tab;
     $('upList').style.display    = tab === 'up'    ? '' : 'none';
     $('prismList').style.display = tab === 'prism' ? '' : 'none';
+    $('treeList').style.display  = tab === 'tree'  ? '' : 'none';
     $('statList').style.display  = tab === 'stats' ? '' : 'none';
     $('setList').style.display   = tab === 'set'   ? '' : 'none';
     $('bulk').style.display      = tab === 'up'    ? '' : 'none';
     if (tab === 'stats') paintStats();
     if (tab === 'set') buildSettings();
     if (tab === 'prism') paintPrisms();
+    if (tab === 'tree') { buildTree(); paintTree(); }
   };
 });
 
@@ -1310,12 +1516,37 @@ $('cBtn').onclick = () => {
   S.pv = FRESH().pv;
 
   // Foundation hands back some of the prism shop immediately
-  const found = seff('found');
+  const found = seff('found') + nEff('core');
   if (found > 0) Object.keys(S.pv).forEach(k => S.pv[k] = found);
 
   balls.length = 0;
   buildBoard(); buildVault(); save(); paintHud();
   toast('Collapsed · ' + fmt(S.spectra) + ' spectra held');
+};
+
+$('aBtn').onclick = () => {
+  const gain = quantaOnAscend();
+  if (gain < 1) return;
+  if (S.opt.confirmReset &&
+      !confirm('Ascend for ' + fmt(gain) + ' quanta?\n\nEverything below this layer resets: chips, upgrades, prisms, ' +
+               'the prism shop, spectra and the spectra shop. The tree, your milestones and flux are kept.')) return;
+
+  S.quanta += gain; S.quantaEarned += gain;
+
+  /* Echo keeps a share of the spectra shop through the reset */
+  const keep = nEff('echo');
+  const carried = {};
+  Object.keys(S.sv).forEach(k => carried[k] = Math.floor(S.sv[k] * keep));
+
+  S.cash = 0; S.prisms = 0; S.prismsEarned = 0;
+  S.spectra = 0; S.spectraEarned = 0;
+  S.lv = FRESH().lv;
+  S.pv = FRESH().pv;
+  S.sv = Object.assign(FRESH().sv, carried);
+
+  balls.length = 0;
+  buildBoard(); buildVault(); buildTree(); paintTree(); save(); paintHud();
+  toast('Ascended · ' + fmt(S.quanta) + ' quanta held');
 };
 
 /* ---------------- saving ---------------- */
@@ -1334,6 +1565,7 @@ function load(){
     S.opt = Object.assign({}, DEFAULT_OPT, d.opt || {});   // new options get defaults
     S.pv  = Object.assign(FRESH().pv, d.pv || {});
     S.sv  = Object.assign(FRESH().sv, d.sv || {});
+    S.tree = d.tree || {};
     S.ms  = d.ms || {};
   }catch(e){ /* corrupt save: start clean rather than break */ }
 }
@@ -1359,9 +1591,11 @@ document.addEventListener('visibilitychange', () => {
    working save; the cloud is a mirror that syncs every 45 seconds
    and whenever you leave.
 
-   Conflicts resolve by lifetime chips. Progress only ever goes up,
-   so the bigger number is the newer one — no clock comparison, which
-   would go wrong the moment a device has the wrong time.
+   Conflicts resolve on lifetime chips. That figure survives every
+   reset — recalibrating, collapsing and ascending all leave it alone —
+   so it only ever climbs, and the bigger number is always the save
+   that has been played further. Comparing clocks instead would
+   corrupt progress the moment a device had the wrong time.
    ================================================================ */
 let cloudReady = false, cloudUser = null, cloudTimer = null, cloudDirty = false;
 
@@ -1401,14 +1635,18 @@ function initCloud(){
         // whichever save has earned more is the one further along
         if ((d.earned || 0) > (S.earned || 0)){
           S = Object.assign(FRESH(), d);
-          S.lv  = Object.assign(FRESH().lv, d.lv || {});
-          S.pv  = Object.assign(FRESH().pv, d.pv || {});
-          S.sv  = Object.assign(FRESH().sv, d.sv || {});
-          S.opt = Object.assign({}, DEFAULT_OPT, d.opt || {});
-          S.ms  = d.ms || {};
+          S.lv   = Object.assign(FRESH().lv, d.lv || {});
+          S.pv   = Object.assign(FRESH().pv, d.pv || {});
+          S.sv   = Object.assign(FRESH().sv, d.sv || {});
+          S.opt  = Object.assign({}, DEFAULT_OPT, d.opt || {});
+          S.tree = d.tree || {};
+          S.ms   = d.ms || {};
           balls.length = 0;
           applyTheme(S.opt.theme);
-          buildBoard(); buildSettings(); buildVault(); paintHud();
+          $('dist').style.display = S.opt.showDist ? '' : 'none';
+          buildBoard(); buildSettings(); buildVault();
+          buildTree(); paintTree();
+          paintHud();
           toast('Loaded the further-along save from your account');
         }
       }
@@ -1477,6 +1715,7 @@ $('dist').style.display = S.opt.showDist ? '' : 'none';
 layout();
 buildList();
 buildVault();
+buildTree();
 buildSettings();
 offline();
 paintHud();
