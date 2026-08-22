@@ -255,6 +255,8 @@ svg{display:block;}
 .pill-status.run{background:rgba(55,214,122,.13);color:var(--accent);}
 .pill-status.pause{background:rgba(240,180,41,.13);color:var(--amber);}
 .row-acts{display:flex;gap:5px;flex-wrap:wrap;}
+.split2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:760px){.split2{grid-template-columns:1fr;}}
 .row-acts button{background:var(--panel-2);border:1px solid var(--line);color:var(--text-2);border-radius:var(--r-sm);font-size:11px;padding:5px 9px;font-weight:600;}
 .row-acts button:hover{background:var(--panel-3);color:#fff;}
 .empty{border:1px dashed var(--line);border-radius:var(--r);padding:26px;text-align:center;color:var(--text-3);font-size:13px;}
@@ -741,6 +743,7 @@ svg{display:block;}
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script>
 /* ==========================================================
@@ -1340,6 +1343,7 @@ const MAIN_NAV=[
   {v:'manager',label:'Autobet Manager',ic:'manager'},
   {v:'upgrades',label:'Jarvis Upgrades',ic:'upgrades'},
   {v:'profile',label:'Profile',ic:'stats'},
+  {v:'versus',label:'Versus',ic:'popular'},
   {v:'leaderboard',label:'Leaderboard',ic:'leaderboard'},
   {v:'dailywheel',label:'Daily Wheel',ic:'wheel'},
   {v:'stats',label:'Statistics',ic:'stats'}
@@ -1375,6 +1379,7 @@ function navigate(view){
   if(view==='manager') return renderManager(content);
   if(view==='upgrades') return renderUpgrades(content);
   if(view==='profile') return renderProfile(content);
+  if(view==='versus') return renderVersus(content);
   if(view==='leaderboard') return renderLeaderboard(content);
   if(view==='dailywheel') return renderWheel(content);
   if(view==='stats') return renderStats(content);
@@ -5017,6 +5022,381 @@ const Leaderboard={
     return true;
   }
 };
+
+/* ==========================================================
+   VERSUS — real-money-free head-to-head lobbies
+
+   Transport is the Realtime Database, because a lobby needs live
+   updates rather than polled documents.
+
+   FAIRNESS: neither client is trusted to roll the dice. Both players
+   pick a secret nonce and publish only its SHA-256 hash. Once both
+   commitments are locked in, each reveals the nonce; the match seed is
+   the hash of the pair. Because you commit before you can see the
+   other nonce, neither side can steer the result, and either side can
+   verify the other's reveal against the commitment it already sent.
+
+   What this does NOT do is stop somebody editing their own balance —
+   the wallet lives in their browser. Between friends that is fine;
+   just know the protection is on the dice, not on the money. Ghost
+   credit from the developer menu is refused outright here.
+========================================================== */
+const MP = {
+  db:null, code:null, ref:null, me:null, unsub:null, lobby:null, busy:false,
+  nonce:null, settled:false,
+
+  games:{
+    limbo:{ name:'Limbo Duel',  blurb:'Highest rolled multiplier takes the pot.',
+      roll:r=>{ const v=Math.max(1,0.99/(1-r())); return {score:v,label:v.toFixed(2)+'×'}; } },
+    dice:{ name:'Dice Duel',    blurb:'Two dice each. Highest total wins.',
+      roll:r=>{ const a=1+Math.floor(r()*6),b=1+Math.floor(r()*6);
+                return {score:a+b,label:a+' + '+b+' = '+(a+b)}; } },
+    card:{ name:'High Card',    blurb:'One card each. Highest rank wins.',
+      roll:r=>{ const R=['2','3','4','5','6','7','8','9','10','J','Q','K','A'],
+                      Sx=['\u2660','\u2665','\u2666','\u2663'];
+                const i=Math.floor(r()*13), s2=Math.floor(r()*4);
+                return {score:i,label:R[i]+Sx[s2]}; } },
+    slots:{ name:'Slots Duel',  blurb:'One spin each. Biggest multiplier wins.',
+      roll:r=>{ const S3=['\u25C6','\u2605','\u25B2','\u25CF','\u2666'];
+                const a=S3[Math.floor(r()*5)],b=S3[Math.floor(r()*5)],c=S3[Math.floor(r()*5)];
+                const m=(a===b&&b===c)?12:(a===b||b===c||a===c)?2:0;
+                return {score:m,label:a+b+c+'  '+m+'×'}; } }
+  },
+
+  ready(){ return !!(this.db && Cloud.on()); },
+
+  init(){
+    if(this.db || typeof firebase==='undefined') return;
+    try{ this.db = firebase.database(); }catch(e){ this.db=null; }
+  },
+
+  /* --- crypto helpers --- */
+  async sha(str){
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+  },
+  rngFrom(hex){
+    let a = parseInt(hex.slice(0,8),16)>>>0;
+    return function(){ a|=0; a=a+0x6D2B79F5|0;
+      let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t;
+      return ((t^t>>>14)>>>0)/4294967296; };
+  },
+  newNonce(){
+    const a=new Uint8Array(16); crypto.getRandomValues(a);
+    return [...a].map(b=>b.toString(16).padStart(2,'0')).join('');
+  },
+  newCode(){
+    const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    return Array.from({length:4},()=>A[Math.floor(Math.random()*A.length)]).join('');
+  },
+
+  /* --- lobby lifecycle --- */
+  async create(game,stake){
+    this.init();
+    if(!this.ready()) return toast('Sign in on the portal to play versus.','lose');
+    if(stake>state.balance) return toast('Versus stakes must come from real balance, not ghost credit.','lose');
+    const code=this.newCode();
+    const ref=this.db.ref('/jarvisbet/lobbies/'+code);
+    await ref.set({
+      host:Cloud.uid, game, stake:round2(stake), status:'waiting', createdAt:Date.now(),
+      players:{ [Cloud.uid]:{ name:Cloud.name||'Player', ready:false } }
+    });
+    this.attach(code);
+    toast('Lobby '+code+' created — share the code.','win');
+  },
+
+  async join(code,stake){
+    this.init();
+    if(!this.ready()) return toast('Sign in on the portal to play versus.','lose');
+    code=(code||'').toUpperCase().trim();
+    if(code.length!==4) return toast('Codes are four characters.','lose');
+    const ref=this.db.ref('/jarvisbet/lobbies/'+code);
+    const snap=await ref.once('value');
+    const l=snap.val();
+    if(!l) return toast('No lobby with that code.','lose');
+    if(l.status!=='waiting') return toast('That match has already started.','lose');
+    const n=Object.keys(l.players||{}).length;
+    if(n>=2 && !l.players[Cloud.uid]) return toast('That lobby is full.','lose');
+    if(l.stake>state.balance) return toast('Not enough real balance for that stake — it is '+fmt(l.stake)+'.','lose');
+    await ref.child('players/'+Cloud.uid).set({ name:Cloud.name||'Player', ready:false });
+    this.attach(code);
+  },
+
+  attach(code){
+    this.detach();
+    this.code=code; this.ref=this.db.ref('/jarvisbet/lobbies/'+code);
+    this.settled=false; this.nonce=null;
+    this.unsub=this.ref.on('value',snap=>{
+      this.lobby=snap.val();
+      if(!this.lobby){ this.detach(); paintVersus(); return; }
+      this.tick();
+      paintVersus();
+    });
+    /* leaving the tab shouldn't strand the other player forever */
+    this.ref.child('players/'+Cloud.uid+'/online').onDisconnect().remove();
+    this.ref.child('players/'+Cloud.uid+'/online').set(true);
+  },
+
+  detach(){
+    if(this.ref&&this.unsub) this.ref.off('value',this.unsub);
+    this.ref=null; this.unsub=null; this.code=null; this.lobby=null; this.nonce=null; this.settled=false;
+  },
+
+  async leave(){
+    if(this.ref&&Cloud.uid){
+      const isHost=this.lobby&&this.lobby.host===Cloud.uid;
+      try{
+        if(isHost) await this.ref.remove();
+        else await this.ref.child('players/'+Cloud.uid).remove();
+      }catch(e){}
+    }
+    this.detach(); paintVersus();
+  },
+
+  async setReady(v){
+    if(!this.ref) return;
+    const l=this.lobby;
+    if(v && l && l.stake>state.balance) return toast('Not enough real balance for that stake.','lose');
+    await this.ref.child('players/'+Cloud.uid+'/ready').set(!!v);
+  },
+
+  /* --- the commit / reveal / settle state machine --- */
+  async tick(){
+    const l=this.lobby; if(!l||this.busy) return;
+    const ids=Object.keys(l.players||{});
+    const both=ids.length===2;
+    const me=l.players[Cloud.uid]; if(!me) return;
+
+    if(l.status==='waiting' && both && ids.every(i=>l.players[i].ready)){
+      this.busy=true;
+      try{
+        this.nonce=this.newNonce();
+        const commit=await this.sha(this.nonce);
+        await this.ref.child('players/'+Cloud.uid+'/commit').set(commit);
+        if(l.host===Cloud.uid) await this.ref.child('status').set('commit');
+      }finally{ this.busy=false; }
+      return;
+    }
+
+    if(l.status==='commit' && both && ids.every(i=>l.players[i].commit)){
+      if(!me.reveal && this.nonce){
+        this.busy=true;
+        try{ await this.ref.child('players/'+Cloud.uid+'/reveal').set(this.nonce); }
+        finally{ this.busy=false; }
+      }
+      if(ids.every(i=>l.players[i].reveal) && l.host===Cloud.uid){
+        this.busy=true;
+        try{ await this.ref.child('status').set('rolling'); }finally{ this.busy=false; }
+      }
+      return;
+    }
+
+    if(l.status==='rolling' && both && ids.every(i=>l.players[i].reveal) && !this.settled){
+      this.settled=true;
+      await this.settle(ids);
+    }
+  },
+
+  async settle(ids){
+    const l=this.lobby;
+    /* the seed is fixed by both nonces, so both clients compute the
+       identical result without either being trusted */
+    const ordered=ids.slice().sort();
+    const seed=await this.sha(ordered.map(i=>l.players[i].reveal).join('|'));
+
+    /* verify the other side's reveal actually matches what they committed */
+    for(const id of ordered){
+      const check=await this.sha(l.players[id].reveal);
+      if(check!==l.players[id].commit){
+        toast('Reveal did not match the commitment — match void, stake refunded.','lose');
+        if(l.host===Cloud.uid) this.ref.child('status').set('void');
+        return;
+      }
+    }
+
+    const g=this.games[l.game];
+    const results={};
+    ordered.forEach((id,i)=>{
+      const r=this.rngFrom(seed.slice(i*16,i*16+16) || seed);
+      results[id]=g.roll(r);
+    });
+
+    const mine=results[Cloud.uid], other=results[ordered.find(i=>i!==Cloud.uid)];
+    const stake=l.stake;
+
+    betCtx={forced:'versus'};
+    if(!placeBet(stake)){ toast('Could not cover the stake.','lose'); return; }
+
+    if(mine.score>other.score){
+      resolveRound(stake*2,true);
+      toast('You won the pot — '+fmt(stake*2),'win');
+      sfx.win();
+    } else if(mine.score<other.score){
+      resolveRound(0,false);
+      toast('Lost the duel — '+fmt(stake),'lose'); sfx.lose();
+    } else {
+      resolveRound(stake,null);
+      toast('Draw — stake returned.','');
+    }
+
+    this.lastResult={mine,other,otherName:(l.players[ordered.find(i=>i!==Cloud.uid)]||{}).name||'Opponent'};
+    paintVersus();
+
+    if(l.host===Cloud.uid){
+      setTimeout(()=>{ if(this.ref) this.ref.update({status:'done'}); },400);
+    }
+  },
+
+  async rematch(){
+    if(!this.ref||!this.lobby) return;
+    const ids=Object.keys(this.lobby.players||{});
+    const upd={status:'waiting'};
+    ids.forEach(i=>{ upd['players/'+i+'/ready']=false;
+      upd['players/'+i+'/commit']=null; upd['players/'+i+'/reveal']=null; });
+    this.lastResult=null; this.settled=false; this.nonce=null;
+    await this.ref.update(upd);
+  }
+};
+
+function renderVersus(content){
+  MP.init();
+  content.innerHTML='<div id="vs-root"></div>';
+  paintVersus();
+}
+
+function paintVersus(){
+  const root=document.getElementById('vs-root');
+  if(!root) return;
+  const esc=t=>String(t==null?'':t).replace(/</g,'&lt;');
+
+  if(!Cloud.on()){
+    root.innerHTML=`
+      <div class="row-head"><h2>Versus</h2><span>Head to head</span></div>
+      <div class="masthead"><div>
+        <h1 style="font-size:22px">Sign in to play versus</h1>
+        <p>Lobbies are tied to your Jarvis Portal account, so both players need to be signed in.
+           <a href="index.html" style="color:var(--accent)">Open the portal</a>.</p>
+      </div></div>`;
+    return;
+  }
+
+  const l=MP.lobby;
+
+  /* ---- no lobby: create or join ---- */
+  if(!l){
+    root.innerHTML=`
+      <div class="row-head"><h2>Versus</h2><span>Head to head · winner takes the pot</span></div>
+      <div class="masthead" style="margin-bottom:14px"><div>
+        <h1 style="font-size:22px">Stake against a friend</h1>
+        <p>Both players put up the same stake and play one round. Highest result takes the lot;
+           a draw returns both stakes. The dice are settled by a shared seed neither side can steer.</p>
+        <p style="opacity:.75;font-size:12px">Versus stakes come from real balance only — ghost credit is refused.</p>
+      </div></div>
+
+      <div class="stat-grid" style="margin-bottom:16px">
+        ${Object.entries(MP.games).map(([k,g])=>`
+          <div class="stat"><b style="font-size:15px">${g.name}</b><small>${g.blurb}</small></div>`).join('')}
+      </div>
+
+      <div class="split2">
+        <div class="field">
+          <label>Create a lobby</label>
+          <div class="inp-row">
+            <select id="vs-game">${Object.entries(MP.games).map(([k,g])=>`<option value="${k}">${g.name}</option>`).join('')}</select>
+          </div>
+          <div class="inp-row" style="margin-top:8px">
+            <span class="unit pre">Stake</span>
+            <input type="number" id="vs-stake" min="0.01" step="1" value="10">
+          </div>
+          <button class="act" id="vs-create" style="margin-top:10px">Create lobby</button>
+        </div>
+        <div class="field">
+          <label>Join with a code</label>
+          <div class="inp-row">
+            <input type="text" id="vs-code" placeholder="ABCD" maxlength="4"
+                   style="text-transform:uppercase;font-family:'JetBrains Mono',monospace;letter-spacing:3px">
+            <button class="mini" id="vs-join">Join</button>
+          </div>
+          <div class="note" style="margin-top:10px">Your friend sends you their four-character code. Both of you need enough real balance for the stake.</div>
+        </div>
+      </div>`;
+
+    root.querySelector('#vs-create').onclick=()=>{
+      const g=root.querySelector('#vs-game').value;
+      const st=round2(parseFloat(root.querySelector('#vs-stake').value)||0);
+      if(st<=0) return toast('Set a stake first.','lose');
+      MP.create(g,st);
+    };
+    root.querySelector('#vs-join').onclick=()=>
+      MP.join(root.querySelector('#vs-code').value, 0);
+    return;
+  }
+
+  /* ---- in a lobby ---- */
+  const ids=Object.keys(l.players||{});
+  const me=l.players[Cloud.uid]||{};
+  const oppId=ids.find(i=>i!==Cloud.uid);
+  const opp=oppId?l.players[oppId]:null;
+  const g=MP.games[l.game]||{name:l.game};
+  const res=MP.lastResult;
+
+  const phase =
+      l.status==='waiting' ? (ids.length<2?'Waiting for an opponent':'Both players must ready up')
+    : l.status==='commit'  ? 'Locking in secret seeds…'
+    : l.status==='rolling' ? 'Rolling…'
+    : l.status==='void'    ? 'Match void'
+    : 'Round complete';
+
+  root.innerHTML=`
+    <div class="row-head"><h2>${esc(g.name)}</h2><span>${esc(phase)}</span></div>
+
+    <div class="masthead" style="margin-bottom:14px">
+      <div>
+        <h1 style="font-size:22px;letter-spacing:4px;font-family:'JetBrains Mono',monospace">${esc(MP.code)}</h1>
+        <p>Share that code. Stake is <b>${fmt(l.stake)}</b> each — the winner takes <b>${fmt(l.stake*2)}</b>.</p>
+      </div>
+      <div class="mast-stats">
+        <div><small>You</small><b>${esc(me.name||'You')}</b></div>
+        <div><small>Opponent</small><b>${opp?esc(opp.name):'—'}</b></div>
+      </div>
+    </div>
+
+    <div class="split2" style="margin-bottom:14px">
+      <div class="stat">
+        <small>${esc(me.name||'You')}${me.ready?' · ready':''}</small>
+        <b style="font-size:20px">${res?esc(res.mine.label):(me.ready?'Ready':'Not ready')}</b>
+      </div>
+      <div class="stat">
+        <small>${opp?esc(opp.name):'Empty seat'}${opp&&opp.ready?' · ready':''}</small>
+        <b style="font-size:20px">${res?esc(res.other.label):(opp?(opp.ready?'Ready':'Not ready'):'—')}</b>
+      </div>
+    </div>
+
+    ${res?`<div class="note" style="margin-bottom:12px">
+      ${res.mine.score>res.other.score?'<b class="pos">You won the pot.</b>'
+       :res.mine.score<res.other.score?'<b class="neg">'+esc(res.otherName)+' took it.</b>'
+       :'<b>Draw — stakes returned.</b>'}
+    </div>`:''}
+
+    <div class="row-acts">
+      ${l.status==='waiting'&&ids.length===2
+        ? `<button class="act ${me.ready?'act-amber':''}" id="vs-ready">${me.ready?'Cancel ready':'Ready up'}</button>` : ''}
+      ${l.status==='done'||res ? `<button class="act" id="vs-again">Rematch</button>` : ''}
+      <button class="mini" id="vs-leave">Leave lobby</button>
+    </div>
+
+    <div class="note" style="margin-top:12px">
+      Each side commits a hashed secret before either reveals, so the seed can't be steered by
+      either player — and each client checks the other's reveal against the commitment it already sent.
+      Balances still live in each browser, so play with people you trust.
+    </div>`;
+
+  const rb=root.querySelector('#vs-ready');
+  if(rb) rb.onclick=()=>MP.setReady(!me.ready);
+  const ab=root.querySelector('#vs-again');
+  if(ab) ab.onclick=()=>MP.rematch();
+  root.querySelector('#vs-leave').onclick=()=>MP.leave();
+}
 
 function renderProfile(content){
   const s=state.stats;
