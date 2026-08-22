@@ -388,12 +388,50 @@ svg{display:block;}
 .cx-big{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;color:var(--amber);}
 .cx-hint{font-size:11.5px;color:var(--text-3);}
 
+/* ============ FLOATING P/L WIDGET ============ */
+.pl-widget{
+  position:fixed;top:96px;right:26px;width:300px;height:210px;z-index:9000;
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:0 14px 34px rgba(0,0,0,.45);display:flex;flex-direction:column;overflow:hidden;
+  min-width:180px;min-height:96px;
+}
+.pl-widget.dragging,.pl-widget.resizing{user-select:none;}
+.pl-widget.min{height:auto!important;}
+.pl-head{
+  display:flex;align-items:center;gap:8px;padding:8px 9px;background:var(--panel-2);
+  border-bottom:1px solid var(--line-soft);flex:none;cursor:grab;touch-action:none;
+}
+.pl-head:active{cursor:grabbing;}
+.pl-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none;}
+.pl-dot.neg{background:var(--red);}
+.pl-title{font-family:'Barlow Condensed',sans-serif;font-size:11.5px;letter-spacing:1.1px;text-transform:uppercase;color:var(--text-3);font-weight:600;white-space:nowrap;}
+.pl-value{margin-left:auto;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;white-space:nowrap;}
+.pl-value.pos{color:var(--accent);}
+.pl-value.neg{color:var(--red);}
+.pl-btn{
+  width:20px;height:20px;flex:none;border-radius:5px;background:var(--panel-3);border:1px solid var(--line);
+  color:var(--text-2);font-size:13px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;
+}
+.pl-btn:hover{color:#fff;border-color:var(--accent-dim);}
+.pl-body{flex:1;min-height:0;position:relative;}
+.pl-body canvas{position:absolute;inset:0;width:100%;height:100%;}
+.pl-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--text-3);font-size:11.5px;text-align:center;padding:0 20px;}
+.pl-widget.min .pl-body,.pl-widget.min .pl-resize{display:none;}
+.pl-resize{
+  position:absolute;right:0;bottom:0;width:16px;height:16px;cursor:nwse-resize;z-index:2;
+  background:linear-gradient(135deg,transparent 0 45%,var(--text-3) 45% 55%,transparent 55% 65%,var(--text-3) 65% 75%,transparent 75%);
+  opacity:.55;
+}
+.pl-resize:hover{opacity:1;}
+@media (max-width:720px){ .pl-widget{right:10px;left:auto;top:70px;width:min(78vw,280px);} }
+
 /* ============ CRASH ============ */
 .cr-wrap{width:100%;height:100%;display:flex;flex-direction:column;gap:8px;}
 .cr-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;}
-.cr-mult{font-family:'JetBrains Mono',monospace;font-size:clamp(34px,7vh,62px);font-weight:700;line-height:1;}
+.cr-mult{font-family:'JetBrains Mono',monospace;font-size:clamp(34px,7vh,62px);font-weight:700;line-height:1;transition:color .15s;}
 .cr-canvas-wrap{
-  flex:1;min-height:0;position:relative;border:1px solid var(--line-soft);border-radius:var(--r);overflow:hidden;
+  flex:1 1 auto;min-height:0;width:100%;margin:0 auto;
+  position:relative;border:1px solid var(--line-soft);border-radius:var(--r);overflow:hidden;
   background:
     radial-gradient(circle at 18% 22%,rgba(124,196,245,.2),transparent 18%),
     radial-gradient(circle at 76% 34%,rgba(192,132,252,.16),transparent 22%),
@@ -567,6 +605,57 @@ svg{display:block;}
 .cs-odd i{width:7px;height:7px;border-radius:2px;display:inline-block;margin-right:7px;}
 .cs-odd b{font-family:'JetBrains Mono',monospace;}
 
+/* ============ WHEEL GAME ============ */
+.wg-wrap{position:relative;width:min(58vh,320px);height:min(58vh,320px);}
+.wg-wheel{width:100%;height:100%;border-radius:50%;border:6px solid #16303f;transition:transform 4.6s cubic-bezier(.11,.7,.2,1);position:relative;box-shadow:0 0 0 3px #0b1620,0 10px 30px rgba(0,0,0,.4);}
+.wg-lbl{position:absolute;left:50%;top:50%;transform-origin:0 0;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:#fff;white-space:nowrap;text-shadow:0 1px 3px rgba(0,0,0,.8);pointer-events:none;}
+.wg-pointer{position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-top:18px solid var(--amber);z-index:5;filter:drop-shadow(0 2px 3px rgba(0,0,0,.4));}
+.wg-hub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:64px;height:64px;border-radius:50%;background:#0d1c26;border:3px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:16px;text-align:center;}
+
+/* ============ DARTS ============ */
+.dt-wrap{position:relative;width:min(58vh,320px);height:min(58vh,320px);}
+.dt-board{width:100%;height:100%;border-radius:50%;position:relative;background:radial-gradient(circle,#f0b429 0 8%,#e5484d 8% 12%,#eef2f5 12% 16%,#16303f 16% 34%,#eef2f5 34% 38%,#e5484d 38% 56%,#16303f 56% 100%);box-shadow:0 0 0 6px #241019,0 10px 30px rgba(0,0,0,.4);}
+.dt-dart{position:absolute;width:32px;height:32px;transform:translate(-50%,-50%) scale(0) rotate(-40deg);transition:transform .45s cubic-bezier(.2,.8,.3,1.3);pointer-events:none;}
+.dt-dart.show{transform:translate(-50%,-50%) scale(1) rotate(0deg);}
+.dt-dart svg{width:100%;height:100%;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5));}
+.dt-result{display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap;}
+.dt-chip{background:var(--panel-2);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;}
+
+/* ============ PUMP ============ */
+.pm-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;height:100%;justify-content:center;}
+.pm-stage{position:relative;width:200px;height:230px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;}
+.pm-balloon{position:relative;border-radius:50% 50% 50% 50% / 62% 62% 38% 38%;transition:width .2s cubic-bezier(.3,1.4,.6,1),height .2s cubic-bezier(.3,1.4,.6,1),background .3s ease;box-shadow:inset -10px -12px 20px rgba(0,0,0,.25),0 8px 20px rgba(0,0,0,.35);}
+.pm-balloon::after{content:"";position:absolute;left:50%;bottom:-13px;transform:translateX(-50%);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:14px solid inherit;}
+.pm-knot{position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);width:9px;height:9px;border-radius:50%;}
+.pm-pop{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:46px;opacity:0;pointer-events:none;}
+.pm-pop.show{animation:pmPop .5s ease forwards;}
+@keyframes pmPop{0%{opacity:1;transform:scale(.4);}60%{opacity:1;transform:scale(1.35);}100%{opacity:0;transform:scale(1.7);}}
+.pm-gauge{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;color:var(--amber);}
+
+/* ============ SNAKES ============ */
+.sn-wrap{width:min(100%,420px);display:flex;flex-direction:column-reverse;gap:5px;}
+.sn-step{display:flex;align-items:center;gap:8px;opacity:.34;transition:opacity .15s;}
+.sn-step.on{opacity:1;}
+.sn-step.past{opacity:.75;}
+.sn-tile{flex:1;height:clamp(28px,5.4vh,48px);border-radius:var(--r-sm);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;background:linear-gradient(180deg,#1c3a24,#173021);border:1px solid #23482d;}
+.sn-tile.safe{background:rgba(55,214,122,.18);border-color:var(--accent-dim);}
+.sn-tile.bad{background:rgba(229,72,77,.18);border-color:#7a2126;}
+.sn-tile .token{font-size:19px;transition:transform .22s ease;}
+.sn-mul{width:58px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--text-3);flex:none;}
+.sn-snake{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:20px;animation:snStrike .35s ease;}
+@keyframes snStrike{0%{transform:scale(.2) rotate(-30deg);opacity:0;}70%{transform:scale(1.35) rotate(8deg);opacity:1;}100%{transform:scale(1) rotate(0);opacity:1;}}
+
+/* ============ MOLES ============ */
+.ml-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr);gap:9px;width:min(100%,58vh,420px);aspect-ratio:1;}
+.ml-mound{background:linear-gradient(180deg,#4a3520,#3a2a16);border:1px solid #5c4326;border-bottom:3px solid #2a1d10;border-radius:var(--r);position:relative;cursor:pointer;overflow:hidden;}
+.ml-mound:hover:not(.done){filter:brightness(1.15);}
+.ml-mound .pop{position:absolute;left:50%;bottom:-100%;transform:translateX(-50%);width:76%;transition:bottom .3s cubic-bezier(.2,.8,.3,1.2);}
+.ml-mound.done .pop{bottom:4%;}
+.ml-mound.done{cursor:default;}
+.ml-mound.bad{background:linear-gradient(180deg,#5c1d20,#3a1417);}
+.ml-mound.good{background:linear-gradient(180deg,#1f4a2c,#173a21);}
+.ml-mound.shake{animation:tileShake .2s ease;}
+
 /* ============ RIDE THE BUS (table + flip cards) ============ */
 .rb{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
 .rb-stages{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;}
@@ -714,7 +803,12 @@ const ART = {
     higherlower: svg('0 0 160 106','<rect width="160" height="106" fill="#3a1030"/><rect x="52" y="18" width="56" height="70" rx="7" fill="#eef2f5"/><path d="M80 30v22M72 38l8-8 8 8" stroke="#37d67a" stroke-width="4.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M80 76V54M72 68l8 8 8-8" stroke="#e5484d" stroke-width="4.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'),
     keno: svg('0 0 160 106','<rect width="160" height="106" fill="#0c3634"/><g fill="#17494a"><rect x="24" y="20" width="22" height="22" rx="4"/><rect x="50" y="20" width="22" height="22" rx="4"/><rect x="102" y="20" width="22" height="22" rx="4"/><rect x="24" y="46" width="22" height="22" rx="4"/><rect x="76" y="46" width="22" height="22" rx="4"/><rect x="128" y="46" width="8" height="22" rx="4"/><rect x="50" y="72" width="22" height="22" rx="4"/><rect x="102" y="72" width="22" height="22" rx="4"/></g><g fill="#37d67a"><rect x="76" y="20" width="22" height="22" rx="4"/><rect x="50" y="46" width="22" height="22" rx="4"/><rect x="102" y="46" width="22" height="22" rx="4"/><rect x="76" y="72" width="22" height="22" rx="4"/></g>'),
     rps: svg('0 0 160 106','<rect width="160" height="106" fill="#22254e"/><g transform="translate(16,20) scale(.62)"><path d="M30 52c0-16 12-26 30-26s30 10 30 26v18c0 16-13 26-30 26S30 86 30 70Z" fill="#e8b98f"/><path d="M42 46h12M60 44h12M78 48h8" stroke="#c99a72" stroke-width="5" stroke-linecap="round"/></g><g transform="translate(150,20) scale(-.62,.62)"><path d="M34 54c0-12 10-20 26-20h30v40H60c-16 0-26-8-26-20Z" fill="#e8b98f"/><rect x="52" y="8" width="13" height="46" rx="6" fill="#e8b98f" transform="rotate(-22 58 30)"/><rect x="74" y="8" width="13" height="46" rx="6" fill="#e8b98f" transform="rotate(16 80 30)"/></g>'),
-    luckynumber: svg('0 0 160 106','<rect width="160" height="106" fill="#33230c"/><g fill="#37d67a"><circle cx="70" cy="42" r="13"/><circle cx="92" cy="42" r="13"/><circle cx="70" cy="62" r="13"/><circle cx="92" cy="62" r="13"/></g><path d="M81 62c2 10 6 16 14 20" stroke="#1d8a4f" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="81" cy="52" r="5" fill="#33230c"/>')
+    luckynumber: svg('0 0 160 106','<rect width="160" height="106" fill="#33230c"/><g fill="#37d67a"><circle cx="70" cy="42" r="13"/><circle cx="92" cy="42" r="13"/><circle cx="70" cy="62" r="13"/><circle cx="92" cy="62" r="13"/></g><path d="M81 62c2 10 6 16 14 20" stroke="#1d8a4f" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="81" cy="52" r="5" fill="#33230c"/>'),
+    darts: svg('0 0 160 106','<rect width="160" height="106" fill="#241019"/><circle cx="80" cy="53" r="38" fill="#eef2f5"/><circle cx="80" cy="53" r="30" fill="#e5484d"/><circle cx="80" cy="53" r="22" fill="#eef2f5"/><circle cx="80" cy="53" r="14" fill="#e5484d"/><circle cx="80" cy="53" r="6" fill="#f0b429"/><path d="M100 30 82 50" stroke="#c8d6de" stroke-width="3" stroke-linecap="round"/><path d="M100 30l6-2 2 6-4 4Z" fill="#4a9fd8"/><path d="M50 78 66 60" stroke="#c8d6de" stroke-width="3" stroke-linecap="round"/><path d="M50 78l-6 1-1-6 4-3Z" fill="#37d67a"/>'),
+    wheel: svg('0 0 160 106','<rect width="160" height="106" fill="#182a1e"/><circle cx="80" cy="53" r="38" fill="#16303f"/><path d="M80 15a38 38 0 0 1 33 19L80 53Z" fill="#37d67a"/><path d="M113 34a38 38 0 0 1 0 38L80 53Z" fill="#f0b429"/><path d="M113 72a38 38 0 0 1-66 0L80 53Z" fill="#4a9fd8"/><path d="M47 72a38 38 0 0 1 0-38L80 53Z" fill="#e5484d"/><path d="M47 34a38 38 0 0 1 33-19L80 53Z" fill="#c084fc"/><circle cx="80" cy="53" r="8" fill="#0d1c26"/><path d="M80 5l7 12H73Z" fill="#f0b429"/>'),
+    pump: svg('0 0 160 106','<rect width="160" height="106" fill="#122a1c"/><ellipse cx="90" cy="42" rx="30" ry="34" fill="#e5484d"/><path d="M90 76v10l-6 6h12l-6-6Z" fill="#c33"/><rect x="22" y="70" width="12" height="26" rx="2" fill="#5f7f92"/><rect x="16" y="60" width="24" height="12" rx="3" fill="#4a9fd8"/><path d="M40 66h20" stroke="#f0b429" stroke-width="4" stroke-linecap="round"/>'),
+    snakes: svg('0 0 160 106','<rect width="160" height="106" fill="#122316"/><path d="M6 90c30-8 30 8 60 0s30-8 60 0" stroke="#5c8a4a" stroke-width="16" fill="none" stroke-linecap="round"/><path d="M18 40c14-10 10 14 24 8s6-16 20-10 8 14 22 6" stroke="#37d67a" stroke-width="7" fill="none" stroke-linecap="round"/><circle cx="84" cy="24" r="4" fill="#e5484d"/><path d="M84 24 90 20M84 24 90 27" stroke="#e5484d" stroke-width="2" stroke-linecap="round"/>'),
+    moles: svg('0 0 160 106','<rect width="160" height="106" fill="#2a1f10"/><g fill="#4a3520"><ellipse cx="35" cy="90" rx="26" ry="10"/><ellipse cx="90" cy="94" rx="26" ry="10"/><ellipse cx="135" cy="88" rx="20" ry="8"/></g><g transform="translate(75,52)"><ellipse cx="0" cy="20" rx="18" ry="9" fill="#4a3520"/><circle cx="0" cy="0" r="16" fill="#8b6f47"/><circle cx="-6" cy="-4" r="2.4" fill="#16232c"/><circle cx="6" cy="-4" r="2.4" fill="#16232c"/><ellipse cx="0" cy="4" rx="5" ry="3" fill="#5c4326"/></g>')
   }
 };
 
@@ -999,6 +1093,7 @@ function renderWallet(up){
     tag.classList.toggle('ghost',ghost>0);
   }
   document.getElementById('emergency-btn').classList.toggle('hidden',totalBalance()>1.0001);
+  if(window.plTrack) window.plTrack();
 }
 function toast(msg,type){
   const c=document.getElementById('toasts');
@@ -1055,7 +1150,12 @@ const GAMES=[
   {id:'higherlower', name:'Higher or Lower', cat:'originals', desc:'Read the deck, stack the multiplier'},
   {id:'keno',        name:'Keno',            cat:'originals', desc:'Pick spots, chase the draw'},
   {id:'rps',         name:'Rock Paper Scissors',cat:'originals',desc:'Best the house hand'},
-  {id:'luckynumber', name:'Lucky Number',    cat:'originals', desc:'One number, big payout'}
+  {id:'luckynumber', name:'Lucky Number',    cat:'originals', desc:'One number, big payout'},
+  {id:'darts',       name:'Darts',           cat:'originals', desc:'Throw three, chase the bullseye'},
+  {id:'wheel',       name:'Wheel',           cat:'originals', desc:'Pick your risk, spin the segments'},
+  {id:'pump',        name:'Pump',            cat:'originals', desc:'Inflate the balloon, cash out before it pops'},
+  {id:'snakes',      name:'Snakes',          cat:'originals', desc:'Climb the garden path, dodge the snake'},
+  {id:'moles',       name:'Whack-a-Mole',    cat:'originals', desc:'Dig up moles, watch for the farmer'}
 ];
 const gameById=id=>GAMES.find(g=>g.id===id);
 
@@ -2034,14 +2134,24 @@ MODULES.crash={
     const multEl=ctx.q('#cr-mult'), rocket=ctx.q('#cr-rocket'), hint=ctx.q('#cr-hint');
     const goBtn=ctx.q('#cr-go'), cashBtn=ctx.q('#cr-cash');
     let W=0,H=0;
+    const canvasWrap=cv.parentElement;
+    function squareIt(){
+      /* let it size to its natural rectangle first, then cap width to the
+         resulting height so it renders as a square instead of a rectangle */
+      canvasWrap.style.maxWidth='none';
+      const h=canvasWrap.getBoundingClientRect().height;
+      if(h>0) canvasWrap.style.maxWidth=h+'px';
+    }
     function size(){
+      squareIt();
       const r=cv.parentElement.getBoundingClientRect();
       const dpr=window.devicePixelRatio||1;
       W=r.width; H=r.height;
       cv.width=W*dpr; cv.height=H*dpr; g.setTransform(dpr,0,0,dpr,0,0);
     }
     const curMult=t=>Math.max(1,Math.pow(Math.E,0.00016*t*1.65));
-    function draw(mult,dead){
+    /* status: 'live' (still climbing / already cashed out = profit) or 'lose' (blew up with no cash out) */
+    function draw(mult,status){
       g.clearRect(0,0,W,H);
       const pad=26;
       const maxM=Math.max(2,mult*1.15), maxT=Math.max(2200,(Math.log(maxM)/(0.00016*1.65)));
@@ -2056,12 +2166,13 @@ MODULES.crash={
         pts.push([pad+(W-pad*2)*(t/maxT), H-pad-(H-pad*2)*((m-1)/(maxM-1))]);
       }
       if(!pts.length) pts.push([pad,H-pad]);
-      const col=dead?'#e5484d':'#37d67a';
+      const lose=status==='lose';
+      const col=lose?'#e5484d':'#37d67a';
       g.beginPath(); g.moveTo(pts[0][0],pts[0][1]);
       pts.forEach(p=>g.lineTo(p[0],p[1]));
       g.strokeStyle=col; g.lineWidth=3; g.lineJoin='round'; g.stroke();
       g.lineTo(pts[pts.length-1][0],H-pad); g.lineTo(pad,H-pad); g.closePath();
-      g.fillStyle=dead?'rgba(229,72,77,.12)':'rgba(55,214,122,.12)'; g.fill();
+      g.fillStyle=lose?'rgba(229,72,77,.12)':'rgba(55,214,122,.12)'; g.fill();
       const tip=pts[pts.length-1];
       rocket.style.left=tip[0]+'px'; rocket.style.top=tip[1]+'px';
       rocket.classList.remove('hidden');
@@ -2074,8 +2185,8 @@ MODULES.crash={
       live=false; goBtn.classList.remove('hidden'); cashBtn.classList.add('hidden'); ctx.lockBet(false);
     }
     function finishCrash(){
-      multEl.textContent=crashAt.toFixed(2)+'×'; multEl.style.color='var(--red)';
-      draw(crashAt,true);
+      multEl.textContent=crashAt.toFixed(2)+'×'; multEl.style.color=cashed?'var(--accent)':'var(--red)';
+      draw(crashAt,cashed?'win':'lose');
       rocket.classList.add('boom');
       setTimeout(()=>{ rocket.innerHTML=ART.boom; },60);
       pushHist(crashAt,cashed);
@@ -2094,7 +2205,7 @@ MODULES.crash={
       const m=curMult(t);
       if(m>=crashAt) return finishCrash();
       multEl.textContent=m.toFixed(2)+'×';
-      draw(m,false);
+      draw(m,'live');
       const target=ctx.opts().target;
       if(!cashed&&target&&m>=target) doCash(true);
       raf=requestAnimationFrame(loop);
@@ -2134,7 +2245,7 @@ MODULES.crash={
         if(m>=at){
           multEl.textContent=at.toFixed(2)+'\u00d7';
           multEl.style.color=d.win?'var(--accent)':'var(--red)';
-          draw(at,true); rocket.classList.add('boom');
+          draw(at,d.win?'win':'lose'); rocket.classList.add('boom');
           setTimeout(()=>{ rocket.innerHTML=ART.boom; },60);
           pushHist(at,d.win);
           hint.textContent=d.win?`Bot took ${target.toFixed(2)}\u00d7 \u2014 it ran to ${at.toFixed(2)}\u00d7.`
@@ -2142,13 +2253,13 @@ MODULES.crash={
           return;
         }
         if(!flagged&&d.win&&m>=target){ flagged=true; multEl.style.color='var(--accent)'; sfx.win(); }
-        multEl.textContent=m.toFixed(2)+'\u00d7'; draw(m,false);
+        multEl.textContent=m.toFixed(2)+'\u00d7'; draw(m,'live');
         requestAnimationFrame(frame);
       })();
     };
     const ro=()=>{ size(); };
     window.addEventListener('resize',ro);
-    size(); draw(1,false); rocket.classList.add('hidden');
+    size(); draw(1,'live'); rocket.classList.add('hidden');
     onLeave(()=>{ cancelAnimationFrame(raf); window.removeEventListener('resize',ro); });
   },
   onAutoRound(ctx,d){
@@ -3741,16 +3852,17 @@ MODULES.horse={
    the strip eases to a stop under the needle.
 ========================================================== */
 const CASES=[
-  /* CS-style rarity bands are mostly common with tiny premium tiers; this table keeps that feel,
-     but uses the fun odds requested here: 2x at 25% and the 2000x chase at 0.10%. */
+  /* Rebalanced: duds cut from ~45-55% down to 20-22%, the 1x-5x "feels like a win" band
+     carries a lot more weight, and every jackpot keeps its exact original odds (100 / 80 / 50 / 30
+     out of 100,000 — unchanged) so the chase is still just as rare, just not the only way to win. */
   {id:'starter',name:'Starter Crate',c:'#4a9fd8',
-   items:[{m:0,w:45000},{m:0.2,w:7000},{m:0.5,w:6000},{m:1,w:10000},{m:2,w:25000},{m:5,w:5000},{m:15,w:1400},{m:60,w:350},{m:250,w:150},{m:2000,w:100}]},
+   items:[{m:0,w:20000},{m:0.2,w:8000},{m:0.5,w:8000},{m:1,w:20000},{m:2,w:28000},{m:5,w:10000},{m:15,w:3500},{m:60,w:1900},{m:250,w:500},{m:2000,w:100}]},
   {id:'field',name:'Field Case',c:'#37d67a',
-   items:[{m:0,w:48000},{m:0.3,w:7000},{m:0.8,w:6000},{m:1.5,w:8000},{m:3,w:25000},{m:9,w:4200},{m:30,w:1300},{m:120,w:350},{m:700,w:70},{m:5000,w:80}]},
+   items:[{m:0,w:20000},{m:0.3,w:8000},{m:0.8,w:9000},{m:1.5,w:14000},{m:3,w:33940},{m:9,w:11000},{m:30,w:3500},{m:120,w:400},{m:700,w:80},{m:5000,w:80}]},
   {id:'vault',name:'Vault Case',c:'#f0b429',
-   items:[{m:0,w:50000},{m:0.4,w:6000},{m:1,w:9000},{m:2.5,w:25000},{m:6,w:6000},{m:20,w:2800},{m:80,w:850},{m:400,w:250},{m:2500,w:50},{m:10000,w:50}]},
+   items:[{m:0,w:20000},{m:0.4,w:7000},{m:1,w:15000},{m:2.5,w:35000},{m:6,w:13000},{m:20,w:7000},{m:80,w:2200},{m:400,w:700},{m:2500,w:50},{m:10000,w:50}]},
   {id:'blackbox',name:'Black Box',c:'#8b7fd4',
-   items:[{m:0,w:55000},{m:0.5,w:5000},{m:1.5,w:15000},{m:4,w:20000},{m:12,w:3500},{m:45,w:1000},{m:200,w:350},{m:1200,w:100},{m:6000,w:20},{m:25000,w:30}]}
+   items:[{m:0,w:22000},{m:0.5,w:6000},{m:1.5,w:22000},{m:4,w:28000},{m:12,w:13000},{m:45,w:7000},{m:200,w:1500},{m:1200,w:350},{m:6000,w:120},{m:25000,w:30}]}
 ];
 const caseById=id=>CASES.find(c=>c.id===id)||CASES[0];
 function caseRTP(c){
@@ -3916,6 +4028,632 @@ MODULES.cases={
   sim(bet,o){
     const c=caseById(o.caseId), idx=rollCase(c), m=c.items[idx].m;
     return {payout:bet*m,mult:m,tag:m+'×',detail:{caseId:c.id,idx}};
+  }
+};
+
+/* ==========================================================
+   WHEEL
+========================================================== */
+const WHEEL_RISK={
+  low:{items:[{m:0,w:4},{m:1.0,w:6},{m:1.1,w:4},{m:1.2,w:4},{m:2,w:1},{m:3,w:1}]},
+  medium:{items:[{m:0,w:21},{m:0.5,w:3},{m:1.5,w:3},{m:3,w:1},{m:6,w:1},{m:14,w:1}]},
+  high:{items:[{m:0,w:28},{m:0.3,w:9},{m:3,w:1},{m:10,w:1},{m:25,w:1}]}
+};
+function wheelTier(m){
+  if(m>=20) return {c:'#c084fc',tag:'Mega'};
+  if(m>=5) return {c:'#f0b429',tag:'Big'};
+  if(m>=1.3) return {c:'#4a9fd8',tag:'Win'};
+  if(m>0) return {c:'#37d67a',tag:'Small'};
+  return {c:'#3c5566',tag:'Miss'};
+}
+function wheelPick(risk){
+  const items=WHEEL_RISK[risk].items, tot=items.reduce((a,i)=>a+i.w,0);
+  let r=Math.random()*tot;
+  for(let i=0;i<items.length;i++){ if(r<items[i].w) return i; r-=items[i].w; }
+  return 0;
+}
+function wheelSlices(risk){
+  const items=WHEEL_RISK[risk].items, tot=items.reduce((a,i)=>a+i.w,0);
+  let deg=0;
+  return items.map((it,idx)=>{
+    const span=360*it.w/tot, from=deg; deg+=span;
+    return {m:it.m,w:it.w,from,span,mid:from+span/2,idx};
+  });
+}
+MODULES.wheel={
+  blurb:'Pick a risk, spin the wheel',
+  edge:'~1-3% edge',
+  jewelAt:10,
+  optsHTML(o){
+    return segField('Risk','wg-risk',[{v:'low',t:'Low'},{v:'medium',t:'Medium'},{v:'high',t:'High'}],o.risk||'medium')
+      +`<div class="field"><label>Segments</label><div class="cs-odds" id="wg-odds"></div></div>`;
+  },
+  readOpts(w){ return {risk:segVal(w,'wg-risk','medium')}; },
+  onChange(ctx){
+    const risk=ctx.opts().risk, slices=wheelSlices(risk), tot=slices.reduce((a,s)=>a+s.w,0);
+    const el=ctx.q('#wg-odds');
+    if(el) el.innerHTML=slices.slice().sort((a,b)=>b.m-a.m).map(s=>{
+      const t=wheelTier(s.m), p=s.w/tot*100;
+      return `<div class="cs-odd"><span><i style="background:${t.c}"></i>${s.m}×</span><b>${p<0.1?p.toFixed(2):p.toFixed(1)}%</b></div>`;
+    }).join('');
+    const top=Math.max(...slices.map(s=>s.m));
+    ctx.preview(ctx.bet()*top-ctx.bet(),'Top segment',top+'×');
+    if(MODULES.wheel._redraw) MODULES.wheel._redraw();
+  },
+  mount(ctx){
+    let spinning=false;
+    function draw(){
+      const risk=ctx.opts().risk, slices=wheelSlices(risk);
+      const stops=slices.map(s=>{ const t=wheelTier(s.m); return `${t.c} ${s.from.toFixed(2)}deg ${(s.from+s.span).toFixed(2)}deg`; });
+      const labels=slices.map(s=>`<div class="wg-lbl" style="transform:rotate(${s.mid-90}deg) translate(${s.span<20?38:50}px,-6px)">${s.m}×</div>`).join('');
+      ctx.stage.innerHTML=`<div class="wg-wrap"><div class="wg-pointer"></div>
+          <div class="wg-wheel" id="wg-wheel" style="background:conic-gradient(${stops.join(',')})">${labels}</div>
+          <div class="wg-hub" id="wg-hub">SPIN</div></div>`;
+    }
+    MODULES.wheel._redraw=()=>{ if(!spinning) draw(); };
+    draw();
+    ctx.manual.innerHTML='<button class="act" id="wg-spin">Spin the wheel</button>';
+    function play(risk,idx,bet,manual){
+      const slices=wheelSlices(risk), sl=slices[idx];
+      if(!ctx.q('#wg-wheel')) draw();
+      const w2=ctx.q('#wg-wheel'), h2=ctx.q('#wg-hub');
+      const inside=sl.from+sl.span*(0.2+Math.random()*0.6);
+      const rot=(5+Math.floor(Math.random()*3))*360+(360-inside);
+      sfx.spin(); w2.style.transform=`rotate(${rot}deg)`;
+      h2.textContent='…';
+      setTimeout(()=>{
+        const t=wheelTier(sl.m);
+        h2.textContent=sl.m+'×'; h2.style.color=t.c;
+        if(manual){
+          const payout=bet*sl.m;
+          resolveRound(payout,payout>bet?true:(payout>0?null:false));
+          ctx.banner(`Landed ${sl.m}× — ${fmt(payout)}`,payout>bet?'win':(payout>0?'push':'lose'));
+          ctx.strip(sl.m+'×',payout>bet?'w':(payout>0?'':'l'));
+          payout>bet?sfx.win():sfx.lose();
+          spinning=false; ctx.q('#wg-spin').disabled=false; ctx.lockBet(false);
+        } else {
+          d_win?sfx.win():sfx.lose();
+        }
+      },4200);
+    }
+    let d_win=false;
+    ctx.q('#wg-spin').addEventListener('click',()=>{
+      if(spinning||ctx.autoRunning()) return;
+      const bet=ctx.bet(), risk=ctx.opts().risk;
+      if(!placeBet(bet)) return toast('Not enough balance for that bet.','lose');
+      spinning=true; ctx.q('#wg-spin').disabled=true; ctx.lockBet(true); ctx.banner(null);
+      const idx=wheelPick(risk); play(risk,idx,bet,true);
+    });
+    ctx.play=d=>{
+      if(spinning||d.detail===undefined) return;
+      spinning=true; d_win=d.win;
+      play(d.detail.risk,d.detail.idx,0,false);
+      setTimeout(()=>{ spinning=false; },4250);
+    };
+    onLeave(()=>{ MODULES.wheel._redraw=null; });
+  },
+  onAutoRound(ctx,d){
+    if(!d.detail) return;
+    const slices=wheelSlices(d.detail.risk), sl=slices[d.detail.idx], t=wheelTier(sl.m);
+    const h=ctx.q('#wg-hub'); if(h){ h.textContent=sl.m+'×'; h.style.color=t.c; }
+  },
+  sim(bet,o){
+    const risk=o.risk||'medium', idx=wheelPick(risk), slices=wheelSlices(risk), m=slices[idx].m;
+    return {payout:bet*m,mult:m,tag:m+'×',detail:{risk,idx}};
+  }
+};
+
+/* ==========================================================
+   DARTS
+========================================================== */
+const DARTS_RISK={
+  low:{items:[{m:0,w:30},{m:0.5,w:35},{m:1.2,w:20},{m:2,w:10},{m:5,w:4},{m:20,w:1}]},
+  medium:{items:[{m:0,w:60},{m:0.5,w:23},{m:1.5,w:9},{m:3,w:5},{m:8,w:2},{m:40,w:1}]},
+  high:{items:[{m:0,w:75},{m:0.3,w:23},{m:15,w:1},{m:75,w:1}]}
+};
+function dartsPick(risk){
+  const items=DARTS_RISK[risk].items, tot=items.reduce((a,i)=>a+i.w,0);
+  let r=Math.random()*tot;
+  for(let i=0;i<items.length;i++){ if(r<items[i].w) return i; r-=items[i].w; }
+  return 0;
+}
+function dartsTier(m){
+  if(m>=40) return {c:'#c084fc',tag:'Bullseye'};
+  if(m>=5) return {c:'#f0b429',tag:'Bull'};
+  if(m>=1.2) return {c:'#4a9fd8',tag:'Inner'};
+  if(m>0) return {c:'#37d67a',tag:'Outer'};
+  return {c:'#5f7f92',tag:'Miss'};
+}
+/* rank of the landed ring (0=miss, highest=bullseye) maps to a radius band on the board,
+   regardless of how many rings this risk level has */
+function dartBand(risk,idx){
+  const n=DARTS_RISK[risk].items.length;
+  const bands=[[0.84,0.98],[0.66,0.82],[0.50,0.64],[0.34,0.48],[0.18,0.32],[0,0.16]];
+  const bi=Math.round(idx*(bands.length-1)/Math.max(1,n-1));
+  return bands[Math.min(bands.length-1,Math.max(0,bi))];
+}
+MODULES.darts={
+  blurb:'Three darts, one risk level',
+  edge:'~1-4% edge',
+  jewelAt:8,
+  optsHTML(o){
+    return segField('Risk','dt-risk',[{v:'low',t:'Low'},{v:'medium',t:'Medium'},{v:'high',t:'High'}],o.risk||'medium')
+      +`<div class="field"><label>Ring payouts</label><div class="cs-odds" id="dt-odds"></div></div>`;
+  },
+  readOpts(w){ return {risk:segVal(w,'dt-risk','medium')}; },
+  onChange(ctx){
+    const risk=ctx.opts().risk, items=DARTS_RISK[risk].items, tot=items.reduce((a,i)=>a+i.w,0);
+    const el=ctx.q('#dt-odds');
+    if(el) el.innerHTML=items.slice().sort((a,b)=>b.m-a.m).map(i=>{
+      const t=dartsTier(i.m), p=i.w/tot*100;
+      return `<div class="cs-odd"><span><i style="background:${t.c}"></i>${t.tag} · ${i.m}×</span><b>${p<0.1?p.toFixed(2):p.toFixed(1)}%</b></div>`;
+    }).join('');
+    const top=Math.max(...items.map(i=>i.m));
+    ctx.preview(ctx.bet()*top-ctx.bet(),'Top ring pays',top+'×');
+  },
+  mount(ctx){
+    let busy=false;
+    ctx.stage.innerHTML=`<div class="cx-topbar" style="width:min(100%,58vh,320px)"><div class="cx-big" id="dt-mult">—</div><div class="cx-hint" id="dt-hint">Throw three darts</div></div>
+      <div class="dt-wrap"><div class="dt-board"></div><div id="dt-darts" style="position:absolute;inset:0"></div></div>
+      <div class="dt-result" id="dt-result"></div>`;
+    ctx.manual.innerHTML='<button class="act" id="dt-throw">Throw darts</button>';
+    const multEl=ctx.q('#dt-mult'),hint=ctx.q('#dt-hint'),dartsLayer=ctx.q('#dt-darts'),resultEl=ctx.q('#dt-result');
+    function dartIcon(color){
+      return `<svg viewBox="0 0 34 34"><path d="M17 2l4 12-4 4-4-4Z" fill="${color}"/><path d="M17 2l-3 4 3 2 3-2Z" fill="#eef2f5"/><rect x="15.5" y="16" width="3" height="12" fill="#5f7f92"/><path d="M17 28l-5 4h10Z" fill="#16232c"/></svg>`;
+    }
+    function throwDart(risk,idx,delay){
+      return new Promise(resolve=>setTimeout(()=>{
+        const band=dartBand(risk,idx), items=DARTS_RISK[risk].items, m=items[idx].m, t=dartsTier(m);
+        const r=(band[0]+Math.random()*(band[1]-band[0]))*48, ang=Math.random()*Math.PI*2;
+        const left=50+r*Math.cos(ang), top=50+r*Math.sin(ang);
+        const el=document.createElement('div');
+        el.className='dt-dart'; el.style.left=left+'%'; el.style.top=top+'%';
+        el.innerHTML=dartIcon(t.c);
+        dartsLayer.appendChild(el);
+        sfx.step();
+        requestAnimationFrame(()=>el.classList.add('show'));
+        setTimeout(()=>resolve(m),320);
+      },delay||0));
+    }
+    async function playRound(risk,idxs,manual,bet){
+      dartsLayer.innerHTML=''; resultEl.innerHTML=''; multEl.textContent='…'; hint.textContent='Throwing…';
+      const ms=[];
+      for(let i=0;i<idxs.length;i++){
+        const m=await throwDart(risk,idxs[i],i===0?0:150);
+        ms.push(m);
+        resultEl.insertAdjacentHTML('beforeend',`<span class="dt-chip">${m}×</span>`);
+      }
+      const avg=ms.reduce((a,b)=>a+b,0)/ms.length;
+      multEl.textContent=avg.toFixed(2)+'×';
+      hint.textContent='Average of three darts';
+      if(manual){
+        const payout=bet*avg;
+        resolveRound(payout,payout>bet?true:(payout>0?null:false));
+        ctx.banner(`${avg.toFixed(2)}× average — ${fmt(payout)}`,payout>bet?'win':(payout>0?'push':'lose'));
+        ctx.strip(avg.toFixed(2)+'×',payout>bet?'w':(payout>0?'':'l'));
+        payout>bet?sfx.win():sfx.lose();
+        busy=false; ctx.q('#dt-throw').disabled=false; ctx.lockBet(false);
+      }
+    }
+    ctx.q('#dt-throw').addEventListener('click',()=>{
+      if(busy||ctx.autoRunning()) return;
+      const bet=ctx.bet(), risk=ctx.opts().risk;
+      if(!placeBet(bet)) return toast('Not enough balance for that bet.','lose');
+      busy=true; ctx.q('#dt-throw').disabled=true; ctx.lockBet(true); ctx.banner(null);
+      const idxs=[dartsPick(risk),dartsPick(risk),dartsPick(risk)];
+      playRound(risk,idxs,true,bet);
+    });
+    ctx.play=d=>{
+      if(busy||d.detail===undefined) return;
+      busy=true;
+      playRound(d.detail.risk,d.detail.idxs,false,0).then(()=>{ busy=false; d.win?sfx.win():sfx.lose(); });
+    };
+  },
+  onAutoRound(ctx,d){
+    const el=ctx.q('#dt-mult'); if(el) el.textContent=(d.mult||0).toFixed(2)+'×';
+  },
+  sim(bet,o){
+    const risk=o.risk||'medium';
+    const idxs=[dartsPick(risk),dartsPick(risk),dartsPick(risk)];
+    const items=DARTS_RISK[risk].items;
+    const avg=idxs.reduce((a,i)=>a+items[i].m,0)/3;
+    return {payout:bet*avg,mult:avg,tag:avg.toFixed(2)+'×',detail:{risk,idxs}};
+  }
+};
+
+/* ==========================================================
+   PUMP
+========================================================== */
+const PUMP_RISK={
+  low:{q:0.90,max:40},
+  medium:{q:0.80,max:30},
+  high:{q:0.65,max:20}
+};
+const pumpMult=(risk,k)=>k<=0?1:EDGE/Math.pow(PUMP_RISK[risk].q,k);
+const pumpPop=risk=>1-PUMP_RISK[risk].q;
+MODULES.pump={
+  blurb:'Pump the balloon, cash out before it pops',
+  edge:'1% edge',
+  jewelAt:10,
+  optsHTML(o){
+    const risk=o.risk||'medium';
+    return segField('Risk','pm-risk',[{v:'low',t:'Low'},{v:'medium',t:'Medium'},{v:'high',t:'High'}],risk)
+      +`<div class="field auto-only"><label>Autobet pumps to</label>
+        <div class="inp-row"><input type="number" id="pm-target" min="1" max="${PUMP_RISK[risk].max}" value="${o.target||5}"></div></div>`;
+  },
+  readOpts(w){
+    const risk=segVal(w,'pm-risk','medium');
+    const target=Math.min(PUMP_RISK[risk].max,Math.max(1,parseInt(w.querySelector('#pm-target').value)||5));
+    return {risk,target};
+  },
+  onChange(ctx){
+    const o=ctx.opts(), m=pumpMult(o.risk,o.target);
+    ctx.preview(ctx.bet()*m-ctx.bet(),`Autobet stops at pump ${o.target}`,m.toFixed(2)+'×');
+    if(MODULES.pump._reset) MODULES.pump._reset();
+  },
+  mount(ctx){
+    let live=false,pumps=0,bet=0,risk='medium';
+    const colors=['#37d67a','#6fcf6a','#a8d24b','#dcc93a','#f0b429','#e88a29','#e5484d'];
+    ctx.stage.innerHTML=`<div class="pm-wrap">
+        <div class="pm-gauge" id="pm-gauge">1.00×</div>
+        <div class="pm-stage"><div class="pm-balloon" id="pm-balloon" style="width:70px;height:82px;background:${colors[0]};color:${colors[0]}"><div class="pm-knot" style="background:${colors[0]}"></div></div>
+          <div class="pm-pop" id="pm-pop">💥</div></div>
+        <div class="cx-hint" id="pm-hint">Pump to inflate — cash out any time</div>
+      </div>`;
+    ctx.manual.innerHTML=`<button class="act" id="pm-start">Start</button>
+      <div class="act-row hidden" id="pm-live-row"><button class="act" id="pm-pump">Pump</button><button class="act act-amber" id="pm-cash">Cash out</button></div>`;
+    const gauge=ctx.q('#pm-gauge'),balloon=ctx.q('#pm-balloon'),pop=ctx.q('#pm-pop'),hint=ctx.q('#pm-hint');
+    const startBtn=ctx.q('#pm-start'),liveRow=ctx.q('#pm-live-row'),pumpBtn=ctx.q('#pm-pump'),cashBtn=ctx.q('#pm-cash');
+    function paint(){
+      const size=70+pumps*7, col=colors[Math.min(colors.length-1,Math.floor(pumps/6))];
+      balloon.style.width=size+'px'; balloon.style.height=(size+12)+'px';
+      balloon.style.background=col; balloon.style.color=col;
+      balloon.querySelector('.pm-knot').style.background=col;
+      gauge.textContent=pumpMult(risk,pumps).toFixed(2)+'×';
+    }
+    function reset(){ pumps=0; paint(); }
+    MODULES.pump._reset=()=>{ if(!live) reset(); };
+    function end(){ live=false; startBtn.classList.remove('hidden'); liveRow.classList.add('hidden'); ctx.lockBet(false); }
+    startBtn.addEventListener('click',()=>{
+      if(ctx.autoRunning()) return;
+      bet=ctx.bet(); risk=ctx.opts().risk;
+      if(!placeBet(bet)) return toast('Not enough balance for that bet.','lose');
+      pumps=0; live=true; paint(); ctx.banner(null); ctx.lockBet(true);
+      hint.textContent='Pump for more, or cash out';
+      startBtn.classList.add('hidden'); liveRow.classList.remove('hidden');
+    });
+    pumpBtn.addEventListener('click',()=>{
+      if(!live) return;
+      const p=pumpPop(risk);
+      sfx.step();
+      if(Math.random()<p){
+        pop.classList.remove('show'); void pop.offsetWidth; pop.classList.add('show');
+        sfx.lose(); resolveRound(0,false);
+        ctx.banner(`Popped at pump ${pumps+1} — ${fmt(bet)} lost`,'lose');
+        ctx.strip('0×','l'); balloon.style.opacity='0.15';
+        setTimeout(()=>{ balloon.style.opacity='1'; reset(); },700);
+        end();
+      } else {
+        pumps++; paint();
+        if(pumps>=PUMP_RISK[risk].max){
+          const m=pumpMult(risk,pumps);
+          resolveRound(bet*m,true);
+          ctx.banner(`Max pumps — cashed at ${m.toFixed(2)}× — ${fmt(bet*m)}`,'win');
+          ctx.strip(m.toFixed(2)+'×','w'); sfx.win(); reset(); end();
+        }
+      }
+    });
+    cashBtn.addEventListener('click',()=>{
+      if(!live||pumps===0) return toast('Pump at least once first.');
+      const m=pumpMult(risk,pumps);
+      resolveRound(bet*m,true);
+      ctx.banner(`Cashed out at ${m.toFixed(2)}× — ${fmt(bet*m)}`,'win');
+      ctx.strip(m.toFixed(2)+'×','w'); sfx.win(); reset(); end();
+    });
+    ctx.play=d=>{
+      if(!d.detail) return;
+      const {risk:r,pumps:reached,popped}=d.detail;
+      risk=r; pumps=0; paint();
+      let k=0;
+      const step=()=>{
+        if(k<reached){
+          k++; pumps=k; paint(); sfx.step(); setTimeout(step,170);
+        } else if(popped){
+          pop.classList.remove('show'); void pop.offsetWidth; pop.classList.add('show'); sfx.lose();
+          balloon.style.opacity='0.15'; setTimeout(()=>{ balloon.style.opacity='1'; },700);
+        } else sfx.win();
+      };
+      step();
+    };
+    reset();
+    onLeave(()=>{ MODULES.pump._reset=null; });
+  },
+  onAutoRound(ctx,d){
+    const g=ctx.q('#pm-gauge'); if(g) g.textContent=(d.mult||0).toFixed(2)+'×';
+  },
+  sim(bet,o){
+    const risk=o.risk||'medium', target=Math.min(PUMP_RISK[risk].max,o.target||5), p=pumpPop(risk);
+    for(let k=1;k<=target;k++){
+      if(Math.random()<p) return {payout:0,mult:0,tag:'✕',detail:{risk,pumps:k-1,popped:true}};
+    }
+    const m=pumpMult(risk,target);
+    return {payout:bet*m,mult:m,tag:m.toFixed(2)+'×',detail:{risk,pumps:target,popped:false}};
+  }
+};
+
+/* ==========================================================
+   SNAKES
+========================================================== */
+const SNAKE_RISK={
+  low:{steps:10,p:0.90},
+  medium:{steps:10,p:0.75},
+  high:{steps:10,p:0.55}
+};
+const snakeMult=(risk,step)=>step<=0?1:EDGE/Math.pow(SNAKE_RISK[risk].p,step);
+MODULES.snakes={
+  blurb:'Climb the path — one snake per step',
+  edge:'1% edge',
+  jewelAt:10,
+  optsHTML(o){
+    const risk=o.risk||'medium';
+    return segField('Risk','sn-risk',[{v:'low',t:'Gentle'},{v:'medium',t:'Garden'},{v:'high',t:'Venomous'}],risk)
+      +`<div class="field auto-only"><label>Autobet climbs to</label>
+        <div class="inp-row"><span class="unit pre">Step</span><input type="number" id="sn-target" min="1" max="${SNAKE_RISK[risk].steps}" value="${o.target||3}"></div></div>`;
+  },
+  readOpts(w){
+    const risk=segVal(w,'sn-risk','medium');
+    const target=Math.min(SNAKE_RISK[risk].steps,Math.max(1,parseInt(w.querySelector('#sn-target').value)||3));
+    return {risk,target};
+  },
+  onChange(ctx){
+    const o=ctx.opts(), m=snakeMult(o.risk,o.target);
+    ctx.preview(ctx.bet()*m-ctx.bet(),`Autobet leaves at step ${o.target}`,m.toFixed(2)+'×');
+    if(MODULES.snakes._rebuild) MODULES.snakes._rebuild();
+  },
+  mount(ctx){
+    let step=0,live=false,bet=0,risk='medium';
+    ctx.stage.innerHTML=`<div class="cx-topbar" style="width:min(100%,420px)"><div class="cx-big" id="sn-mult">1.00×</div><div class="cx-hint" id="sn-cash">Cash out —</div></div>
+      <div class="sn-wrap" id="sn-board"></div>`;
+    ctx.manual.innerHTML=`<button class="act" id="sn-start">Start climb</button>
+      <button class="act act-amber hidden" id="sn-cash-btn">Cash out</button>`;
+    const board=ctx.q('#sn-board'),multEl=ctx.q('#sn-mult'),cashLbl=ctx.q('#sn-cash');
+    const startBtn=ctx.q('#sn-start'),cashBtn=ctx.q('#sn-cash-btn');
+    function place(){
+      board.querySelectorAll('.token').forEach(t=>t.textContent='');
+      if(step>0){
+        const row=board.querySelector(`.sn-step[data-s="${step-1}"]`);
+        if(row) row.querySelector('.token').textContent='🐸';
+      }
+    }
+    function build(){
+      const o=ctx.opts(), cfg=SNAKE_RISK[o.risk];
+      board.innerHTML='';
+      for(let i=0;i<cfg.steps;i++){
+        const row=document.createElement('div'); row.className='sn-step'; row.dataset.s=i;
+        row.innerHTML=`<div class="sn-tile" data-tile><span class="token"></span></div><div class="sn-mul">${snakeMult(o.risk,i+1).toFixed(2)}×</div>`;
+        board.appendChild(row);
+      }
+      mark();
+    }
+    MODULES.snakes._rebuild=()=>{ if(!live) build(); };
+    function mark(){
+      board.querySelectorAll('.sn-step').forEach(r=>{
+        const i=parseInt(r.dataset.s);
+        r.classList.toggle('on',live&&i===step);
+        r.classList.toggle('past',i<step);
+      });
+      place();
+    }
+    function end(){ live=false; startBtn.classList.remove('hidden'); cashBtn.classList.add('hidden'); ctx.lockBet(false); mark(); }
+    board.addEventListener('click',e=>{
+      const tile=e.target.closest('[data-tile]'); if(!tile||!live||ctx.autoRunning()) return;
+      const row=tile.closest('.sn-step'); if(parseInt(row.dataset.s)!==step) return;
+      const p=SNAKE_RISK[risk].p;
+      sfx.step();
+      if(Math.random()>p){
+        tile.classList.add('bad');
+        tile.insertAdjacentHTML('beforeend','<div class="sn-snake">🐍</div>');
+        resolveRound(0,false);
+        ctx.banner(`Snake on step ${step+1} — ${fmt(bet)} lost`,'lose');
+        ctx.strip('0×','l'); sfx.lose(); end();
+      } else {
+        tile.classList.add('safe'); step++;
+        const m=snakeMult(risk,step);
+        multEl.textContent=m.toFixed(2)+'×'; cashLbl.textContent='Cash out '+fmt(bet*m);
+        if(step>=SNAKE_RISK[risk].steps){
+          resolveRound(bet*m,true);
+          ctx.banner(`Reached the top — ${fmt(bet*m)}`,'win'); ctx.strip(m.toFixed(2)+'×','w'); sfx.win(); end();
+        } else mark();
+      }
+    });
+    startBtn.addEventListener('click',()=>{
+      if(ctx.autoRunning()) return;
+      const o=ctx.opts(); risk=o.risk; bet=ctx.bet();
+      if(!placeBet(bet)) return toast('Not enough balance for that bet.','lose');
+      step=0; live=true; build(); ctx.banner(null); ctx.lockBet(true);
+      multEl.textContent='1.00×'; cashLbl.textContent='Cash out —';
+      startBtn.classList.add('hidden'); cashBtn.classList.remove('hidden');
+    });
+    cashBtn.addEventListener('click',()=>{
+      if(!live||step===0) return toast('Take at least one step first.');
+      const m=snakeMult(risk,step);
+      resolveRound(bet*m,true);
+      ctx.banner(`Cashed out at step ${step} for ${fmt(bet*m)}`,'win');
+      ctx.strip(m.toFixed(2)+'×','w'); sfx.win(); end();
+    });
+    ctx.play=d=>{
+      if(d.detail===undefined) return;
+      risk=d.detail.risk||ctx.opts().risk; build();
+      const reached=d.detail.step;
+      let s=0;
+      const anim=()=>{
+        if(!document.body.contains(board)) return;
+        const row=board.querySelector(`.sn-step[data-s="${s}"]`);
+        if(!row) return;
+        board.querySelectorAll('.sn-step').forEach(r=>r.classList.toggle('on',r===row));
+        if(s<reached){
+          row.querySelector('[data-tile]').classList.add('safe'); sfx.step();
+          multEl.textContent=snakeMult(risk,s+1).toFixed(2)+'×';
+          step=s+1; place();
+          s++; setTimeout(anim,220);
+        } else {
+          if(!d.win){ const t=row.querySelector('[data-tile]'); t.classList.add('bad'); t.insertAdjacentHTML('beforeend','<div class="sn-snake">🐍</div>'); sfx.lose(); }
+          else sfx.win();
+          board.querySelectorAll('.sn-step').forEach(r=>r.classList.remove('on'));
+        }
+      };
+      multEl.textContent='1.00×'; anim();
+    };
+    build();
+    onLeave(()=>{ MODULES.snakes._rebuild=null; });
+  },
+  onAutoRound(ctx,d){
+    const el=ctx.q('#sn-mult'); if(el) el.textContent=(d.mult||0).toFixed(2)+'×';
+  },
+  sim(bet,o){
+    const risk=o.risk||'medium', target=Math.min(SNAKE_RISK[risk].steps,o.target||3), p=SNAKE_RISK[risk].p;
+    for(let s=0;s<target;s++) if(Math.random()>p) return {payout:0,mult:0,tag:'✕',detail:{risk,step:s}};
+    const m=snakeMult(risk,target);
+    return {payout:bet*m,mult:m,tag:m.toFixed(2)+'×',detail:{risk,step:target}};
+  }
+};
+
+/* ==========================================================
+   WHACK-A-MOLE
+========================================================== */
+function molesMult(picks,farmers){
+  let m=1; for(let i=0;i<picks;i++) m*=(16-i)/(16-farmers-i);
+  return m*EDGE;
+}
+const MOLE_SVG='<svg viewBox="0 0 40 40"><ellipse cx="20" cy="34" rx="15" ry="5" fill="#00000033"/><circle cx="20" cy="20" r="15" fill="#8b6f47"/><circle cx="14" cy="16" r="2.6" fill="#16232c"/><circle cx="26" cy="16" r="2.6" fill="#16232c"/><ellipse cx="20" cy="23" rx="5" ry="3" fill="#5c4326"/></svg>';
+const FARMER_SVG='<svg viewBox="0 0 40 40"><circle cx="20" cy="14" r="9" fill="#e8b98f"/><path d="M9 14a11 11 0 0 1 22 0Z" fill="#4a3520"/><rect x="8" y="24" width="24" height="14" rx="4" fill="#4a9fd8"/><path d="M4 36l10-14M36 36 26 22" stroke="#5f7f92" stroke-width="3" stroke-linecap="round"/></svg>';
+MODULES.moles={
+  blurb:'16 mounds, dig for moles, dodge the farmer',
+  edge:'1% edge',
+  jewelAt:10,
+  optsHTML(o){
+    return `<div class="field"><label>Farmers on the plot <span>1 – 8</span></label>
+        <div class="inp-row"><input type="number" id="ml-count" min="1" max="8" step="1" value="${o.farmers||2}"><span class="unit">farmers</span></div></div>
+      ${segField('Quick set','mlquick',[{v:1,t:'1'},{v:2,t:'2'},{v:4,t:'4'},{v:6,t:'6'},{v:8,t:'8'}],'')}
+      <div class="field auto-only"><label>Autobet digs</label>
+        <div class="inp-row"><input type="number" id="ml-picks" min="1" max="8" value="${o.picks||3}"><span class="unit">mounds</span></div></div>`;
+  },
+  readOpts(w){
+    const inp=w.querySelector('#ml-count');
+    let farmers=Math.min(8,Math.max(1,parseInt(inp.value)||2));
+    const quick=w.querySelector('[data-seg="mlquick"] button.on');
+    if(quick){ farmers=parseInt(quick.dataset.val); inp.value=farmers; quick.classList.remove('on'); }
+    const picks=Math.min(16-farmers,Math.max(1,parseInt(w.querySelector('#ml-picks').value)||3));
+    return {farmers,picks};
+  },
+  onChange(ctx){
+    const o=ctx.opts(), m=molesMult(o.picks,o.farmers);
+    ctx.preview(ctx.bet()*m-ctx.bet(),`Autobet stops after ${o.picks} mole${o.picks===1?'':'s'}`,m.toFixed(2)+'×');
+  },
+  mount(ctx){
+    let farmers=new Set(),open=new Set(),live=false,bet=0,count=2;
+    ctx.stage.innerHTML=`<div class="cx-topbar" style="width:min(100%,58vh,420px)"><div class="cx-big" id="ml-mult">1.00×</div><div class="cx-hint" id="ml-cash">Cash out —</div></div>
+      <div class="ml-grid" id="mlgrid"></div>`;
+    ctx.manual.innerHTML=`<button class="act" id="ml-start">Start round</button>
+      <button class="act act-amber hidden" id="ml-cashout">Cash out</button>`;
+    const grid=ctx.q('#mlgrid'),multEl=ctx.q('#ml-mult'),cashEl=ctx.q('#ml-cash');
+    const start=ctx.q('#ml-start'),cash=ctx.q('#ml-cashout');
+    function build(){
+      grid.innerHTML='';
+      for(let i=0;i<16;i++){
+        const t=document.createElement('div'); t.className='ml-mound'; t.dataset.i=i;
+        t.innerHTML='<span class="pop"></span>';
+        t.addEventListener('click',()=>tap(i,t));
+        grid.appendChild(t);
+      }
+    }
+    function pop(el,html){ el.querySelector('.pop').innerHTML=html; }
+    function end(){ live=false; start.classList.remove('hidden'); cash.classList.add('hidden'); ctx.lockBet(false); }
+    function revealRest(showSafe){
+      grid.querySelectorAll('.ml-mound').forEach(el=>{
+        const i=parseInt(el.dataset.i);
+        if(el.classList.contains('done')) return;
+        if(farmers.has(i)){ el.classList.add('done','bad'); pop(el,FARMER_SVG); }
+        else if(showSafe){ el.classList.add('done','good'); pop(el,MOLE_SVG); }
+      });
+    }
+    function tap(i,el){
+      if(!live||ctx.autoRunning()||open.has(i)) return;
+      open.add(i); el.classList.add('done');
+      if(farmers.has(i)){
+        el.classList.add('bad','shake'); pop(el,FARMER_SVG); sfx.lose();
+        setTimeout(()=>{
+          revealRest(false); resolveRound(0,false);
+          ctx.banner(`Farmer under mound ${i+1} — ${fmt(bet)} lost`,'lose');
+          ctx.strip('0×','l'); end();
+        },200);
+      } else {
+        el.classList.add('good'); pop(el,MOLE_SVG); sfx.chip();
+        const m=molesMult(open.size,count);
+        multEl.textContent=m.toFixed(2)+'×'; cashEl.textContent='Cash out '+fmt(bet*m);
+        if(open.size===16-count){
+          resolveRound(bet*m,true);
+          ctx.banner(`Plot cleared — ${fmt(bet*m)}`,'win'); ctx.strip(m.toFixed(2)+'×','w'); sfx.win(); end();
+        }
+      }
+    }
+    start.addEventListener('click',()=>{
+      if(ctx.autoRunning()) return;
+      bet=ctx.bet(); count=ctx.opts().farmers;
+      if(!placeBet(bet)) return toast('Not enough balance for that bet.','lose');
+      farmers=new Set(); open=new Set();
+      while(farmers.size<count) farmers.add(Math.floor(Math.random()*16));
+      live=true; build(); ctx.banner(null); ctx.lockBet(true);
+      multEl.textContent='1.00×'; cashEl.textContent='Cash out —';
+      start.classList.add('hidden'); cash.classList.remove('hidden');
+    });
+    cash.addEventListener('click',()=>{
+      if(!live||!open.size) return toast('Dig up at least one mole first.');
+      const m=molesMult(open.size,count);
+      live=false; resolveRound(bet*m,true);
+      revealRest(true);
+      ctx.banner(`Cashed out at ${m.toFixed(2)}× — ${fmt(bet*m)}`,'win');
+      ctx.strip(m.toFixed(2)+'×','w'); sfx.win(); end();
+    });
+    ctx.play=d=>{
+      if(!d.detail) return;
+      const {farmers:fs,picks}=d.detail;
+      build();
+      let k=0;
+      const step=()=>{
+        if(k>=picks.length||!document.body.contains(grid)) return;
+        const i=picks[k++], el=grid.querySelector(`[data-i="${i}"]`);
+        if(!el) return;
+        const bad=fs.includes(i);
+        el.classList.add('done',bad?'bad':'good');
+        if(bad) el.classList.add('shake');
+        pop(el,bad?FARMER_SVG:MOLE_SVG);
+        bad?sfx.lose():sfx.chip();
+        if(!bad){
+          multEl.textContent=molesMult(k,fs.length).toFixed(2)+'×';
+          setTimeout(step,260);
+        } else {
+          farmers=new Set(fs);
+          setTimeout(()=>revealRest(false),200);
+        }
+      };
+      multEl.textContent='1.00×'; step();
+    };
+    build();
+  },
+  onAutoRound(ctx,d){
+    const el=ctx.q('#ml-mult'); if(el) el.textContent=(d.mult||0).toFixed(2)+'×';
+  },
+  sim(bet,o){
+    const count=o.farmers||2, picks=Math.min(o.picks||3,16-count);
+    const pool=Array.from({length:16},(_,i)=>i), farmers=[];
+    while(farmers.length<count) farmers.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);
+    const rest=Array.from({length:16},(_,i)=>i), chosen=[];
+    while(chosen.length<picks) chosen.push(rest.splice(Math.floor(Math.random()*rest.length),1)[0]);
+    const hitAt=chosen.findIndex(i=>farmers.includes(i));
+    const shown=hitAt>=0?chosen.slice(0,hitAt+1):chosen;
+    const m=hitAt>=0?0:molesMult(picks,count);
+    return {payout:bet*m,mult:m,tag:m?m.toFixed(2)+'×':'BUST',detail:{farmers,picks:shown}};
   }
 };
 
@@ -4580,6 +5318,195 @@ soundBtn.addEventListener('click',()=>{ state.muted=!state.muted; save(); paintS
 paintSound();
 
 window.addEventListener('beforeunload',e=>{ if(Auto.any()){ e.preventDefault(); e.returnValue=''; } });
+
+/* ==========================================================
+   FLOATING P/L WIDGET — live session profit/loss chart.
+   Draggable by its header, resizable from the corner handle,
+   minimizable, and remembers position/size/state per browser.
+========================================================== */
+(function(){
+  const MAX_POINTS=400;
+  const baseline=totalBalance();
+  let hist=[{t:Date.now(),v:0}];
+
+  document.body.insertAdjacentHTML('beforeend',`
+    <div class="pl-widget" id="pl-widget">
+      <div class="pl-head" id="pl-head">
+        <span class="pl-dot" id="pl-dot"></span>
+        <span class="pl-title">Session P/L</span>
+        <span class="pl-value" id="pl-value">+$0.00</span>
+        <button class="pl-btn" id="pl-min" title="Minimize">–</button>
+      </div>
+      <div class="pl-body" id="pl-body">
+        <canvas id="pl-cv"></canvas>
+        <div class="pl-empty" id="pl-empty">Play a round to start the chart</div>
+      </div>
+      <div class="pl-resize" id="pl-resize" title="Drag to resize"></div>
+    </div>`);
+
+  const widget=document.getElementById('pl-widget');
+  const head=document.getElementById('pl-head');
+  const body=document.getElementById('pl-body');
+  const cv=document.getElementById('pl-cv'), g=cv.getContext('2d');
+  const valueEl=document.getElementById('pl-value'), dotEl=document.getElementById('pl-dot');
+  const minBtn=document.getElementById('pl-min');
+  const resizeHandle=document.getElementById('pl-resize');
+  const emptyEl=document.getElementById('pl-empty');
+
+  function loadNum(key,def){ const v=parseFloat(localStorage.getItem(key)); return isFinite(v)?v:def; }
+  let minimized=localStorage.getItem('jarvisbet_pl_min')==='1';
+  const savedLeft=localStorage.getItem('jarvisbet_pl_left');
+  const savedTop=localStorage.getItem('jarvisbet_pl_top');
+  if(savedLeft!==null&&savedTop!==null){
+    widget.style.left=Math.max(0,parseFloat(savedLeft))+'px';
+    widget.style.top=Math.max(0,parseFloat(savedTop))+'px';
+    widget.style.right='auto';
+  }
+  widget.style.width=loadNum('jarvisbet_pl_w',300)+'px';
+  widget.style.height=loadNum('jarvisbet_pl_h',210)+'px';
+
+  function setMinimized(v){
+    minimized=v;
+    widget.classList.toggle('min',minimized);
+    minBtn.textContent=minimized?'+':'–';
+    try{localStorage.setItem('jarvisbet_pl_min',minimized?'1':'0');}catch(e){}
+    if(!minimized){ sizeCanvas(); paint(); }
+  }
+
+  /* ---- drag to move, by the header ---- */
+  (function(){
+    let dragging=false,sx=0,sy=0,ox=0,oy=0;
+    function onMove(e){
+      if(!dragging) return;
+      const x=e.touches?e.touches[0].clientX:e.clientX;
+      const y=e.touches?e.touches[0].clientY:e.clientY;
+      let nx=ox+(x-sx), ny=oy+(y-sy);
+      nx=Math.max(4,Math.min(window.innerWidth-40,nx));
+      ny=Math.max(4,Math.min(window.innerHeight-30,ny));
+      widget.style.left=nx+'px'; widget.style.top=ny+'px'; widget.style.right='auto';
+    }
+    function onUp(){
+      if(!dragging) return;
+      dragging=false; widget.classList.remove('dragging');
+      try{
+        localStorage.setItem('jarvisbet_pl_left',parseFloat(widget.style.left));
+        localStorage.setItem('jarvisbet_pl_top',parseFloat(widget.style.top));
+      }catch(e){}
+      window.removeEventListener('pointermove',onMove);
+      window.removeEventListener('pointerup',onUp);
+    }
+    head.addEventListener('pointerdown',e=>{
+      if(e.target.closest('.pl-btn')) return;
+      e.preventDefault(); dragging=true; widget.classList.add('dragging');
+      const r=widget.getBoundingClientRect();
+      sx=e.touches?e.touches[0].clientX:e.clientX; sy=e.touches?e.touches[0].clientY:e.clientY;
+      ox=r.left; oy=r.top;
+      window.addEventListener('pointermove',onMove);
+      window.addEventListener('pointerup',onUp);
+    });
+  })();
+
+  /* ---- drag the corner handle to resize ---- */
+  (function(){
+    let resizing=false,sx=0,sy=0,sw=0,sh=0;
+    function onMove(e){
+      if(!resizing) return;
+      const x=e.touches?e.touches[0].clientX:e.clientX;
+      const y=e.touches?e.touches[0].clientY:e.clientY;
+      const w=Math.max(180,Math.min(window.innerWidth-40,sw+(x-sx)));
+      const h=Math.max(96,Math.min(window.innerHeight-40,sh+(y-sy)));
+      widget.style.width=w+'px'; widget.style.height=h+'px';
+      sizeCanvas(); paint();
+    }
+    function onUp(){
+      if(!resizing) return;
+      resizing=false; widget.classList.remove('resizing');
+      try{
+        localStorage.setItem('jarvisbet_pl_w',parseFloat(widget.style.width));
+        localStorage.setItem('jarvisbet_pl_h',parseFloat(widget.style.height));
+      }catch(e){}
+      window.removeEventListener('pointermove',onMove);
+      window.removeEventListener('pointerup',onUp);
+    }
+    resizeHandle.addEventListener('pointerdown',e=>{
+      e.preventDefault(); e.stopPropagation(); resizing=true; widget.classList.add('resizing');
+      sx=e.touches?e.touches[0].clientX:e.clientX; sy=e.touches?e.touches[0].clientY:e.clientY;
+      const r=widget.getBoundingClientRect(); sw=r.width; sh=r.height;
+      window.addEventListener('pointermove',onMove);
+      window.addEventListener('pointerup',onUp);
+    });
+  })();
+
+  minBtn.addEventListener('click',e=>{ e.stopPropagation(); setMinimized(!minimized); });
+
+  /* ---- chart ---- */
+  let W=0,H=0;
+  function sizeCanvas(){
+    const r=body.getBoundingClientRect();
+    const dpr=window.devicePixelRatio||1;
+    W=r.width; H=r.height;
+    if(W<=0||H<=0) return;
+    cv.width=W*dpr; cv.height=H*dpr; g.setTransform(dpr,0,0,dpr,0,0);
+  }
+  function paint(){
+    if(minimized||W<=0||H<=0||hist.length<2) return;
+    g.clearRect(0,0,W,H);
+    const pad=10;
+    const vals=hist.map(p=>p.v);
+    let maxV=Math.max(...vals,0.01), minV=Math.min(...vals,-0.01);
+    if(maxV-minV<0.02){ maxV+=0.5; minV-=0.5; }
+    const range=maxV-minV;
+    const x=i=>pad+(W-pad*2)*(i/(hist.length-1));
+    const y=v=>pad+(H-pad*2)*(1-(v-minV)/range);
+    const zeroY=y(0);
+    g.strokeStyle='#26445a'; g.setLineDash([4,4]); g.lineWidth=1;
+    g.beginPath(); g.moveTo(pad,zeroY); g.lineTo(W-pad,zeroY); g.stroke();
+    g.setLineDash([]);
+    function seg(xa,ya,xb,yb,pos){
+      const col=pos?'#37d67a':'#e5484d';
+      g.beginPath(); g.moveTo(xa,ya); g.lineTo(xb,yb); g.lineTo(xb,zeroY); g.lineTo(xa,zeroY); g.closePath();
+      g.fillStyle=pos?'rgba(55,214,122,.14)':'rgba(229,72,77,.14)'; g.fill();
+      g.beginPath(); g.moveTo(xa,ya); g.lineTo(xb,yb);
+      g.strokeStyle=col; g.lineWidth=2; g.lineJoin='round'; g.stroke();
+    }
+    for(let i=0;i<hist.length-1;i++){
+      const v0=hist[i].v, v1=hist[i+1].v;
+      const x0=x(i), x1=x(i+1), y0=y(v0), y1=y(v1);
+      if((v0>=0)===(v1>=0)){
+        seg(x0,y0,x1,y1,v0>=0);
+      } else {
+        const t=v0/(v0-v1);
+        const xm=x0+(x1-x0)*t;
+        seg(x0,y0,xm,zeroY,v0>=0);
+        seg(xm,zeroY,x1,y1,v1>=0);
+      }
+    }
+  }
+  function updateHeader(){
+    const cur=hist[hist.length-1].v;
+    valueEl.textContent=(cur>=0?'+':'-')+'$'+Math.abs(cur).toFixed(2);
+    valueEl.classList.toggle('pos',cur>=0);
+    valueEl.classList.toggle('neg',cur<0);
+    dotEl.classList.toggle('neg',cur<0);
+  }
+
+  window.plTrack=function(){
+    const v=round2(totalBalance()-baseline);
+    const last=hist[hist.length-1];
+    if(!last||last.v!==v){
+      hist.push({t:Date.now(),v});
+      if(hist.length>MAX_POINTS) hist.shift();
+    }
+    if(hist.length>=2) emptyEl.style.display='none';
+    updateHeader();
+    if(!minimized) paint();
+  };
+
+  window.addEventListener('resize',()=>{ sizeCanvas(); paint(); });
+  setMinimized(minimized);
+  sizeCanvas();
+  updateHeader();
+})();
 
 buildSidebar();
 renderWallet(false);
