@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Kick the Siamese</title>
+<link rel="icon" href="assets/siamese.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app">
+
+  <header id="hud">
+    <div class="brand">
+      <img src="assets/siamese.png" alt="" class="brand-face">
+      <div>
+        <b>Kick the Siamese</b>
+        <span id="tip">Tap him. He is fine. Probably.</span>
+      </div>
+    </div>
+
+    <div class="readouts">
+      <div class="pill" id="comboPill" hidden>
+        <span class="k">Combo</span><span class="v" id="combo">x1</span>
+      </div>
+      <div class="pill coins">
+        <span class="k">Coins</span><span class="v" id="coins">0</span>
+      </div>
+      <button class="icon" id="soundBtn" title="Sound" aria-label="Toggle sound">&#9834;</button>
+      <button class="icon" id="resetBtn" title="Reset" aria-label="Reset">&#8635;</button>
+    </div>
+  </header>
+
+  <div id="stage">
+    <canvas id="game"></canvas>
+    <div id="flash"></div>
+  </div>
+
+  <nav id="tools"></nav>
+
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>
