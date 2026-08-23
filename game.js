@@ -20,7 +20,12 @@ const rand  = (a, b) => a + Math.random() * (b - a);
 
 /* ---------------- persistence ---------------- */
 const KEY = 'kickTheSiamese.v1';
-const FRESH = () => ({ coins: 0, hits: 0, best: 0, unlocked: ['fist'], sound: true });
+const FRESH = () => ({
+  coins: 0, hits: 0, best: 0,
+  unlocked: ['fist'],
+  up: { power:0, payout:0, bounce:0, combo:0, crit:0 },
+  sound: true
+});
 let S = FRESH();
 
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
@@ -29,6 +34,7 @@ function load(){
     const raw = localStorage.getItem(KEY);
     if (raw) S = Object.assign(FRESH(), JSON.parse(raw));
     if (!Array.isArray(S.unlocked) || !S.unlocked.length) S.unlocked = ['fist'];
+    S.up = Object.assign(FRESH().up, S.up || {});   // saves from before upgrades existed
   }catch(e){ S = FRESH(); }
 }
 
@@ -82,9 +88,32 @@ function sfx(kind, power){
    slow or missing image never stops the game running. */
 const head = new Image();
 let headReady = false, headBroken = false;
-head.onload  = () => { headReady = true; };
-head.onerror = () => { headBroken = true; $('tip').textContent = 'assets/siamese.png is missing — using a stand-in head.'; };
-head.src = 'assets/siamese.png';
+
+/* Try the sensible names in turn. The most common reason the head
+   never appears is that the file was uploaded under its original
+   download name instead of being renamed, so check for that too. */
+const HEAD_PATHS = [
+  'assets/siamese.png',
+  'assets/siamese-Photoroom.png',
+  'assets/siamese.PNG',
+  'siamese.png',
+  'siamese-Photoroom.png'
+];
+let headTry = 0;
+
+head.onload = () => {
+  headReady = true; headBroken = false;
+  document.querySelectorAll('.brand-face').forEach(i => { i.src = head.src; });
+  if (headTry > 0) $('tip').textContent = 'Head loaded from ' + head.src;
+};
+head.onerror = () => {
+  headTry++;
+  if (headTry < HEAD_PATHS.length){ head.src = HEAD_PATHS[headTry]; return; }
+  headBroken = true;
+  $('tip').textContent = 'No head image found — put it at assets/siamese.png';
+  console.error('[Kick the Siamese] none of these loaded:', HEAD_PATHS);
+};
+head.src = HEAD_PATHS[0];
 
 /* ---------------- the character ----------------
    One rigid body: position, velocity, angle, spin. The limbs are drawn
@@ -128,19 +157,42 @@ function resetBody(){
 
 /* ---------------- tools ---------------- */
 const TOOLS = [
-  { id:'fist',  name:'Fist',      glyph:'\u270A', cost:0,    hold:false,
-    tip:'A polite introduction.' },
-  { id:'slap',  name:'Slap',      glyph:'\u270B', cost:60,   hold:false,
-    tip:'Less force, far more spin.' },
-  { id:'boot',  name:'Boot',      glyph:'\uD83D\uDC62', cost:220,  hold:false,
-    tip:'Straight up. Mind the ceiling.' },
-  { id:'bomb',  name:'Bomb',      glyph:'\uD83D\uDCA3', cost:600,  hold:false,
-    tip:'Short fuse, wide blast.' },
-  { id:'fan',   name:'Fan',       glyph:'\uD83C\uDF00', cost:1200, hold:true,
-    tip:'Hold to blow him around.' },
-  { id:'magnet',name:'Tractor',   glyph:'\uD83E\uDDF2', cost:2600, hold:true,
-    tip:'Hold to drag him about.' }
+  { id:'fist',   name:'Fist',    glyph:'\u270A',        cost:0,     hold:false, tip:'A polite introduction.' },
+  { id:'slap',   name:'Slap',    glyph:'\u270B',        cost:50,    hold:false, tip:'Less force, far more spin.' },
+  { id:'boot',   name:'Boot',    glyph:'\uD83D\uDC62', cost:180,   hold:false, tip:'Straight up. Mind the ceiling.' },
+  { id:'hammer', name:'Hammer',  glyph:'\uD83D\uDD28', cost:450,   hold:false, tip:'Slow, heavy, downward.' },
+  { id:'bomb',   name:'Bomb',    glyph:'\uD83D\uDCA3', cost:900,   hold:false, tip:'Short fuse, wide blast.' },
+  { id:'rocket', name:'Rocket',  glyph:'\uD83D\uDE80', cost:1800,  hold:false, tip:'Flies at him, then goes off.' },
+  { id:'zap',    name:'Lightning',glyph:'\u26A1',       cost:3200,  hold:false, tip:'Instant, and it rattles him.' },
+  { id:'anvil',  name:'Anvil',   glyph:'\uD83C\uDFCB', cost:5200,  hold:false, tip:'Dropped from above. Cartoon law.' },
+  { id:'fan',    name:'Fan',     glyph:'\uD83C\uDF00', cost:7500,  hold:true,  tip:'Hold to blow him around.' },
+  { id:'magnet', name:'Tractor', glyph:'\uD83E\uDDF2', cost:11000, hold:true,  tip:'Hold to drag him about.' }
 ];
+
+/* ---------------- permanent upgrades ----------------
+   Bought once each level, never reset. Costs climb geometrically so
+   they stay worth buying without ever being finished. */
+const UPGRADES = [
+  { id:'power',  name:'Gloves',  glyph:'\uD83E\uDD4A', max:12,
+    cost:l => Math.round(120 * Math.pow(1.85, l)),
+    eff: l => 1 + l * 0.22,  show:v => '+' + Math.round((v-1)*100) + '% force' },
+  { id:'payout', name:'Piggy',   glyph:'\uD83D\uDC37', max:12,
+    cost:l => Math.round(200 * Math.pow(1.9, l)),
+    eff: l => 1 + l * 0.30,  show:v => '+' + Math.round((v-1)*100) + '% coins' },
+  { id:'bounce', name:'Springs', glyph:'\uD83C\uDF00', max:6,
+    cost:l => Math.round(400 * Math.pow(2.2, l)),
+    eff: l => 0.44 + l * 0.07, show:v => 'bounce ' + v.toFixed(2) },
+  { id:'combo',  name:'Rhythm',  glyph:'\u23F1', max:8,
+    cost:l => Math.round(300 * Math.pow(2.0, l)),
+    eff: l => 1300 + l * 260, show:v => (v/1000).toFixed(1) + 's combo' },
+  { id:'crit',   name:'Luck',    glyph:'\uD83C\uDF40', max:10,
+    cost:l => Math.round(600 * Math.pow(2.1, l)),
+    eff: l => l * 0.045,     show:v => Math.round(v*100) + '% crit' }
+];
+const UP = {};
+UPGRADES.forEach(u => UP[u.id] = u);
+const ulvl = id => (S.up && S.up[id]) || 0;
+const ueff = id => UP[id].eff(ulvl(id));
 const T = {};
 TOOLS.forEach(t => T[t.id] = t);
 let tool = 'fist';
@@ -152,27 +204,81 @@ function buildTools(){
   nav.innerHTML = '';
   TOOLS.forEach(t => {
     const b = document.createElement('button');
-    b.className = 'tool' + (t.id === tool ? ' on' : '');
+    b.className = 'card';
     b.dataset.tool = t.id;
     b.innerHTML =
       '<span class="g">' + t.glyph + '</span>' +
       '<span class="n">' + t.name + '</span>' +
-      (unlocked(t.id) ? '' : '<span class="c">' + t.cost + ' coins</span>');
+      (unlocked(t.id) ? '' : '<span class="c">' + t.cost + '</span>');
     b.onclick = () => pickTool(t.id);
     nav.appendChild(b);
   });
   paintTools();
 }
 
+function buildUpgrades(){
+  const box = $('upgrades');
+  box.innerHTML = '';
+  UPGRADES.forEach(u => {
+    const b = document.createElement('button');
+    b.className = 'card';
+    b.dataset.up = u.id;
+    b.innerHTML =
+      '<span class="g">' + u.glyph + '</span>' +
+      '<span class="n">' + u.name + '</span>' +
+      '<span class="lvl"></span><span class="c"></span>';
+    b.onclick = () => buyUpgrade(u.id);
+    box.appendChild(b);
+  });
+  paintUpgrades();
+}
+
 function paintTools(){
-  document.querySelectorAll('.tool').forEach(b => {
+  document.querySelectorAll('[data-tool]').forEach(b => {
     const t = T[b.dataset.tool];
     const has = unlocked(t.id);
     b.classList.toggle('on', t.id === tool);
     b.disabled = !has && S.coins < t.cost;
+    if (has && !b.querySelector('.tick')){
+      const c = b.querySelector('.c');
+      if (c) c.remove();
+    }
   });
   $('coins').textContent = S.coins;
 }
+
+function paintUpgrades(){
+  document.querySelectorAll('[data-up]').forEach(b => {
+    const u = UP[b.dataset.up], l = ulvl(u.id), max = l >= u.max;
+    b.disabled = max || S.coins < u.cost(l);
+    b.querySelector('.lvl').textContent = u.show(ueff(u.id));
+    b.querySelector('.c').textContent = max ? 'MAX' : u.cost(l) + ' coins';
+  });
+}
+
+function buyUpgrade(id){
+  const u = UP[id], l = ulvl(id);
+  if (l >= u.max) return;
+  const c = u.cost(l);
+  if (S.coins < c){ $('tip').textContent = 'Need ' + (c - S.coins) + ' more coins.'; return; }
+  S.coins -= c;
+  S.up[id] = l + 1;
+  save(); sfx('boing');
+  $('tip').textContent = u.name + ' is now ' + u.show(ueff(id));
+  paintUpgrades(); paintTools();
+}
+
+/* the two bottom bars swap places */
+$('shopTab').onclick = () => {
+  $('toolBar').style.display = 'none';
+  $('upgradeBar').classList.add('open');
+  paintUpgrades(); sfx('click');
+};
+$('toolsTab').onclick = () => {
+  $('upgradeBar').classList.remove('open');
+  $('toolBar').style.display = '';
+  sfx('click');
+};
 
 function pickTool(id){
   const t = T[id];
@@ -207,10 +313,25 @@ function spawn(x, y, n, kind){
   }
 }
 
+/* The screen used to flash on every single punch, which got tiring
+   fast. Only genuine explosions do it now; ordinary hits get a comic
+   word instead, which reads better and doesn't strobe. */
 function flash(){
   const f = $('flash');
   f.classList.add('on');
-  setTimeout(() => f.classList.remove('on'), 30);
+  setTimeout(() => f.classList.remove('on'), 40);
+}
+
+const POWS = ['POW!','BAM!','WHACK!','THUD!','SMACK!','OOF!','BONK!','KAPOW!','WALLOP!','CRUNCH!'];
+
+function pow(x, y, word){
+  const n = document.createElement('div');
+  n.className = 'pow';
+  n.textContent = word || POWS[Math.floor(Math.random() * POWS.length)];
+  n.style.left = x + 'px';
+  n.style.top  = y + 'px';
+  $('stage').appendChild(n);
+  setTimeout(() => n.remove(), 640);
 }
 
 /* ---------------- scoring ---------------- */
@@ -222,12 +343,13 @@ function paintCombo(){
   else pill.hidden = true;
 }
 
-function award(power){
+function award(power, crit){
   const now = performance.now();
   combo = now < comboUntil ? combo + 1 : 1;
-  comboUntil = now + 1300;
+  comboUntil = now + ueff('combo');
 
-  const gained = Math.max(1, Math.round(power * 12 * (1 + combo * 0.16)));
+  const gained = Math.max(1, Math.round(
+    power * 12 * (1 + combo * 0.16) * ueff('payout') * (crit ? 3 : 1)));
   S.coins += gained;
   S.hits++;
   if (power > S.best) S.best = power;
@@ -296,31 +418,53 @@ function strike(x, y){
   }
 
   const nx = dist ? dx/dist : 0, ny = dist ? dy/dist : -1;
-  let power = 1, ix = 0, iy = 0;
+  let power = 1, ix = 0, iy = 0, word = null;
 
   if (tool === 'fist'){
     power = rand(0.8, 1.25);
     ix = nx * 520 * power; iy = ny * 520 * power - 240;
-    sfx('thud', power);
-    spawn(x, y, 12, 'star');
+    sfx('thud', power); spawn(x, y, 12, 'star');
   } else if (tool === 'slap'){
     power = rand(0.5, 0.9);
     ix = (dx >= 0 ? 1 : -1) * 620 * power; iy = -180;
     body.va += (dx >= 0 ? 1 : -1) * 9;
-    sfx('slap', power);
-    spawn(x, y, 10, 'star');
+    sfx('slap', power); spawn(x, y, 10, 'star');
+    word = 'SLAP!';
   } else if (tool === 'boot'){
     power = rand(1.3, 1.9);
     ix = rand(-120, 120); iy = -980 * power;
-    sfx('boing');
-    spawn(body.x, body.y + 50, 16, 'dust');
+    sfx('boing'); spawn(body.x, body.y + 50, 16, 'dust');
+    word = 'BOING!';
+  } else if (tool === 'hammer'){
+    power = rand(1.8, 2.5);
+    ix = rand(-90, 90); iy = 900 * power;
+    sfx('thud', 1); spawn(x, y, 18, 'star');
+    shake = 18; word = 'CLANG!';
+  } else if (tool === 'zap'){
+    power = rand(1.5, 2.2);
+    ix = rand(-300, 300); iy = -420 * power;
+    body.va += rand(-14, 14);
+    sfx('zap'); spawn(x, y, 22, 'spark');
+    word = 'ZAP!';
+  } else if (tool === 'anvil'){
+    anvils.push({ x: body.x, y: -60, vy: 0 });
+    sfx('click');
+    return;
+  } else if (tool === 'rocket'){
+    rockets.push({ x: x, y: H + 40, vx: 0, vy: -700, t: 2.2 });
+    sfx('click');
+    return;
   }
 
-  impulse(x, y, ix, iy);
-  shake = Math.min(16, shake + 7 * power);
-  flash();
-  const coins = award(power);
-  spawn(body.x, body.y - 30, Math.min(6, 2 + Math.floor(power * 2)), 'coin');
+  const crit = Math.random() < ueff('crit');
+  if (crit){ power *= 2.2; word = 'CRITICAL!'; }
+  const glove = ueff('power');
+
+  impulse(x, y, ix * glove, iy * glove);
+  shake = Math.min(20, shake + 7 * power);
+  pow(x, y, word);
+  const coins = award(power, crit);
+  spawn(body.x, body.y - 30, Math.min(8, 2 + Math.floor(power * 2)), 'coin');
   $('tip').textContent = '+' + coins + ' coins' + (combo > 1 ? '  ·  combo x' + combo : '');
 }
 
@@ -345,29 +489,100 @@ function holdForces(dt){
   }
 }
 
-/* ---------------- bombs ---------------- */
-const bombs = [];
+/* ---------------- projectiles ---------------- */
+const bombs = [], anvils = [], rockets = [];
+
+function blast(x, y, reach, force, word){
+  const dx = body.x - x, dy = body.y - y;
+  const d = Math.max(30, Math.hypot(dx, dy));
+  if (d < reach){
+    const f = force / (d * d);
+    const power = clamp(f / 60, 0.6, 4) * ueff('power');
+    impulse(x, y, (dx/d) * f, (dy/d) * f - 300);
+    shake = 22;
+    const coins = award(power);
+    spawn(body.x, body.y - 30, 9, 'coin');
+    $('tip').textContent = '+' + coins + ' coins from the blast';
+  }
+  spawn(x, y, 34, 'star');
+  spawn(x, y, 18, 'dust');
+  pow(x, y, word || 'BOOM!');
+  sfx('boom');
+  flash();                      // explosions are the only thing that flashes
+}
+
+function updateAnvils(dt){
+  for (let i = anvils.length - 1; i >= 0; i--){
+    const a = anvils[i];
+    a.vy += 2600 * dt;
+    a.y += a.vy * dt;
+    const hit = Math.abs(a.x - body.x) < 90 && Math.abs(a.y - (body.y - 70)) < 60;
+    if (hit || a.y > ground){
+      if (hit){
+        const power = rand(2.4, 3.2) * ueff('power');
+        impulse(a.x, a.y, rand(-160,160), 1500 * power);
+        shake = 24;
+        const coins = award(power);
+        spawn(body.x, body.y - 30, 10, 'coin');
+        pow(a.x, a.y, 'CLONK!');
+        $('tip').textContent = '+' + coins + ' coins';
+      } else pow(a.x, ground - 30, 'MISS');
+      sfx('thud', 1);
+      spawn(a.x, Math.min(a.y, ground), 16, 'dust');
+      anvils.splice(i, 1);
+    }
+  }
+}
+
+function updateRockets(dt){
+  for (let i = rockets.length - 1; i >= 0; i--){
+    const r = rockets[i];
+    r.t -= dt;
+    // steer toward him, which makes it feel homing without being unfair
+    const dx = body.x - r.x, dy = body.y - r.y, d = Math.max(1, Math.hypot(dx, dy));
+    r.vx += (dx/d) * 1500 * dt;
+    r.vy += (dy/d) * 1500 * dt;
+    const sp = Math.hypot(r.vx, r.vy);
+    if (sp > 900){ r.vx *= 900/sp; r.vy *= 900/sp; }
+    r.x += r.vx * dt; r.y += r.vy * dt;
+    spawn(r.x, r.y, 1, 'dust');
+    if (d < 70 || r.t <= 0){
+      blast(r.x, r.y, 320, 240000, 'KABOOM!');
+      rockets.splice(i, 1);
+    }
+  }
+}
+
+function drawProjectiles(){
+  anvils.forEach(a => {
+    ctx.save(); ctx.translate(a.x, a.y);
+    ctx.fillStyle = '#2A2A30';
+    roundRect(-34, -20, 68, 34, 6); ctx.fill();
+    ctx.fillStyle = '#3C3C46';
+    roundRect(-20, -34, 40, 16, 5); ctx.fill();
+    ctx.strokeStyle = '#141210'; ctx.lineWidth = 3;
+    roundRect(-34, -20, 68, 34, 6); ctx.stroke();
+    ctx.restore();
+  });
+  rockets.forEach(r => {
+    ctx.save(); ctx.translate(r.x, r.y);
+    ctx.rotate(Math.atan2(r.vy, r.vx) + Math.PI/2);
+    ctx.fillStyle = '#E23B2E';
+    roundRect(-8, -18, 16, 34, 7); ctx.fill();
+    ctx.strokeStyle = '#141210'; ctx.lineWidth = 3;
+    roundRect(-8, -18, 16, 34, 7); ctx.stroke();
+    ctx.fillStyle = '#FFC93C';
+    ctx.beginPath(); ctx.moveTo(-7, 16); ctx.lineTo(7, 16); ctx.lineTo(0, 30); ctx.closePath(); ctx.fill();
+    ctx.restore();
+  });
+}
 
 function updateBombs(dt){
   for (let i = bombs.length - 1; i >= 0; i--){
     const b = bombs[i];
     b.t -= dt;
     if (b.t <= 0){
-      const dx = body.x - b.x, dy = body.y - b.y;
-      const d = Math.max(30, Math.hypot(dx, dy));
-      if (d < 340){
-        const f = 260000 / (d * d);
-        const power = clamp(f / 60, 0.6, 3.4);
-        impulse(b.x, b.y, (dx/d) * f, (dy/d) * f - 300);
-        shake = 22;
-        const coins = award(power);
-        spawn(body.x, body.y - 30, 8, 'coin');
-        $('tip').textContent = '+' + coins + ' coins from the blast';
-      }
-      spawn(b.x, b.y, 34, 'star');
-      spawn(b.x, b.y, 18, 'dust');
-      sfx('boom');
-      flash();
+      blast(b.x, b.y, 340, 260000);
       bombs.splice(i, 1);
     }
   }
@@ -391,7 +606,7 @@ function physics(dt){
     body.y = ground - body.r;
     if (body.vy > 0){
       if (Math.abs(body.vy) > 90){
-        body.vy = -body.vy * 0.44;
+        body.vy = -body.vy * ueff('bounce');
         body.va += rand(-3.4, 3.4);
         body.squash = Math.min(1, body.squash + 0.55);
         if (Math.abs(body.vy) > 160) sfx('thud', clamp(Math.abs(body.vy)/900, .15, 1));
@@ -442,6 +657,7 @@ function drawScene(){
   drawRoom();
   drawCharacter();
   drawBombs();
+  drawProjectiles();
   drawBits();
 
   ctx.restore();
@@ -604,6 +820,8 @@ function frame(now){
 
   holdForces(dt);
   updateBombs(dt);
+  updateAnvils(dt);
+  updateRockets(dt);
   physics(dt);
   updateBits(dt);
   drawScene();
@@ -616,7 +834,7 @@ function frame(now){
 /* ---------------- chrome ---------------- */
 $('resetBtn').onclick = () => {
   resetBody();
-  bits.length = 0; bombs.length = 0; shake = 0;
+  bits.length = 0; bombs.length = 0; anvils.length = 0; rockets.length = 0; shake = 0;
   sfx('boing');
   $('tip').textContent = 'Back on his feet.';
 };
@@ -637,6 +855,7 @@ $('soundBtn').classList.toggle('off', !S.sound);
 resize();
 resetBody();
 buildTools();
+buildUpgrades();
 requestAnimationFrame(frame);
 
 })();
