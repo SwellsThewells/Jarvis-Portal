@@ -28,7 +28,7 @@
   --r-sm:5px;
 }
 *{box-sizing:border-box;}
-html,body{height:100%;}
+html,body{height:100%;width:100%;margin:0;}
 body{
   margin:0;font-family:'Inter',system-ui,sans-serif;font-size:14px;
   background:var(--root);color:var(--text);overflow:hidden;-webkit-font-smoothing:antialiased;
@@ -678,7 +678,9 @@ svg{display:block;}
 .rb-slot-empty{width:clamp(58px,6.4vw,86px);height:clamp(82px,9vw,120px);border:1px dashed var(--line);border-radius:var(--r-sm);flex:none;opacity:.4;}
 .rb-q{font-size:14px;color:var(--text-2);font-weight:600;text-align:center;}
 </style>
-</head>
+<style>
+  .audit-modal{position:fixed;inset:0;z-index:10000;background:rgba(4,12,18,.82);display:grid;place-items:center;padding:18px}.audit-card{width:min(760px,96vw);max-height:88vh;overflow:auto;background:#0f1e29;border:1px solid #254458;border-radius:8px;padding:20px;box-shadow:0 18px 60px rgba(0,0,0,.6);position:relative}.audit-close{position:absolute;right:10px;top:8px;background:transparent;border:0;color:#93aebd;font-size:24px}.audit-card h2{font-size:22px;margin-bottom:12px}.audit-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:14px 0}.audit-grid>div{background:#152936;border:1px solid #1d3546;padding:11px;border-radius:5px}.audit-grid small{display:block;color:#5f7f92;text-transform:uppercase;font-size:10px;letter-spacing:.8px}.audit-grid b{display:block;margin-top:5px;font-family:'JetBrains Mono',monospace}.audit-line,.history-row{display:grid;grid-template-columns:1fr auto;gap:10px;padding:8px;border-bottom:1px solid #1d3546}.history-row{grid-template-columns:1.4fr 1fr 1fr auto}.audit-output{margin-top:14px}.game-search{margin:14px 0}.game-search input{width:100%;background:#152936;border:1px solid #254458;color:#dce8ef;padding:11px 13px;border-radius:5px}.game-search span{display:block;color:#5f7f92;font-size:11px;margin-top:5px}.sidebar-search{padding:8px 5px}.sidebar-search input,.save-transfer{width:100%;background:#152936;border:1px solid #254458;color:#dce8ef;padding:9px;border-radius:5px}.save-transfer{min-height:90px;margin-top:12px}.settings-list{display:grid;gap:1px;margin:12px 0}.settings-list label{display:flex;justify-content:space-between;padding:11px;background:#152936;border-bottom:1px solid #1d3546}.auto-status{display:none}.auto-status.live{display:flex;color:#37d67a;border-color:#26a95e}.reduce-motion *{animation-duration:.01ms!important;transition-duration:.01ms!important}.compact-ui #content{padding:10px}.compact-ui .tile-art{height:82px}.fav-star{position:absolute;top:8px;left:8px;z-index:4;border:0;background:#0b1620cc;color:#5f7f92;width:27px;height:27px;border-radius:5px}.fav-star.on{color:#f0b429}.tile-cat{display:block;color:#37d67a;font-size:9px;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px}.compact-row{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:18px}.history-filters{display:flex;gap:6px;margin-bottom:10px}.history-filters button{background:#1b3342;border:1px solid #254458;color:#dce8ef;padding:6px 10px;border-radius:5px}.se-stage{text-align:center;padding:20px}.se-dice{display:flex;gap:16px;justify-content:center;margin:16px 0}.die{width:64px;height:64px;background:#152936;border:2px solid #254458;border-radius:12px;display:grid;place-items:center;font-size:42px;color:#dce8ef}.se-sum{font-size:20px;font-family:'JetBrains Mono',monospace;color:#93aebd;margin-top:8px}.se-bets{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:6px}.se-bets button{background:#152936;border:1px solid #254458;border-radius:5px;padding:10px;text-align:left;color:#dce8ef;cursor:pointer}.se-bets button.on{border-color:#37d67a;background:#143226}.se-bets button b{display:block;font-size:13px}.se-bets button small{display:block;color:#5f7f92;font-size:11px;margin-top:3px}.ms-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:420px;margin:0 auto}.ms-hole{position:relative;background:linear-gradient(180deg,#0a161e,#152936);border:1px solid #1d3546;border-radius:50%;aspect-ratio:1;display:grid;place-items:center;cursor:pointer;overflow:hidden;transition:border-color .15s}.ms-hole.up{border-color:#37d67a}.ms-pop{position:absolute;bottom:-100%;left:0;right:0;display:grid;place-items:center;transition:bottom .12s ease-out}.ms-hole.up .ms-pop{bottom:0}/* UI OVERHAUL */body{background:radial-gradient(ellipse at top,#0d1b2a,#0a1420 50%,#080d14)!important}#sidebar{background:rgba(8,16,24,.92)!important;backdrop-filter:blur(14px)!important;border-right:1px solid rgba(55,214,122,.1)!important;box-shadow:2px 0 30px rgba(0,0,0,.3)!important}.nav-item{border-radius:8px!important;margin:2px 4px!important;transition:all .2s!important;border:1px solid transparent!important}.nav-item:hover{background:rgba(55,214,122,.06)!important;border-color:rgba(55,214,122,.15)!important;transform:translateX(2px)!important}.nav-item[data-nav].on{background:linear-gradient(135deg,rgba(55,214,122,.12),rgba(74,159,216,.06))!important;border-color:rgba(55,214,122,.25)!important;box-shadow:0 0 12px rgba(55,214,122,.1)!important}.tb-right,.topbar{background:rgba(8,16,24,.85)!important;backdrop-filter:blur(12px)!important;border-bottom:1px solid rgba(55,214,122,.08)!important}.tb-btn{border-radius:8px!important;border:1px solid rgba(55,214,122,.12)!important;transition:all .2s!important;background:rgba(15,30,42,.6)!important}.tb-btn:hover{border-color:rgba(55,214,122,.25)!important;box-shadow:0 0 10px rgba(55,214,122,.08)!important}.wallet{border-radius:10px!important;background:linear-gradient(135deg,rgba(55,214,122,.05),rgba(74,159,216,.03))!important;border:1px solid rgba(55,214,122,.12)!important;box-shadow:0 0 16px rgba(55,214,122,.05)!important}.tile{border-radius:12px!important;overflow:hidden;transition:transform .25s,box-shadow .25s,border-color .25s!important;border:1px solid rgba(55,214,122,.08)!important;background:linear-gradient(180deg,rgba(15,30,42,.9),rgba(10,20,30,.95))!important;box-shadow:0 4px 14px rgba(0,0,0,.2)!important}.tile:hover{transform:translateY(-4px) scale(1.02)!important;border-color:rgba(55,214,122,.25)!important;box-shadow:0 10px 30px rgba(0,0,0,.4),0 0 20px rgba(55,214,122,.08)!important}.tile-art{border-radius:8px!important}.panel{background:rgba(10,20,30,.85)!important;backdrop-filter:blur(12px)!important;border:1px solid rgba(55,214,122,.08)!important;border-radius:12px!important;box-shadow:0 4px 20px rgba(0,0,0,.15)!important}.stage{background:radial-gradient(ellipse at center,rgba(13,25,36,.5),rgba(8,13,20,.7))!important;border-radius:12px!important;border:1px solid rgba(55,214,122,.05)!important}.act{border-radius:8px!important;font-weight:600!important;letter-spacing:.3px!important;transition:all .2s!important;border:1px solid rgba(55,214,122,.15)!important;background:linear-gradient(135deg,rgba(55,214,122,.1),rgba(55,214,122,.04))!important;color:#c8d6e5!important;box-shadow:0 2px 8px rgba(0,0,0,.15)!important}.act:hover{background:linear-gradient(135deg,rgba(55,214,122,.18),rgba(55,214,122,.08))!important;border-color:rgba(55,214,122,.35)!important;box-shadow:0 0 16px rgba(55,214,122,.12),0 4px 12px rgba(0,0,0,.2)!important;transform:translateY(-1px)!important}.act:active{transform:translateY(0)!important}.act-2{background:linear-gradient(135deg,rgba(74,159,216,.1),rgba(74,159,216,.04))!important;border-color:rgba(74,159,216,.15)!important}.act-2:hover{background:linear-gradient(135deg,rgba(74,159,216,.18),rgba(74,159,216,.08))!important;border-color:rgba(74,159,216,.35)!important;box-shadow:0 0 16px rgba(74,159,216,.12),0 4px 12px rgba(0,0,0,.2)!important}.act-amber{background:linear-gradient(135deg,rgba(240,180,41,.1),rgba(240,180,41,.04))!important;border-color:rgba(240,180,41,.15)!important;color:#f0b429!important}.act-amber:hover{background:linear-gradient(135deg,rgba(240,180,41,.18),rgba(240,180,41,.08))!important;border-color:rgba(240,180,41,.35)!important;box-shadow:0 0 16px rgba(240,180,41,.12)!important}.masthead{background:linear-gradient(135deg,rgba(13,25,36,.7),rgba(10,20,30,.5))!important;border:1px solid rgba(55,214,122,.08)!important;border-radius:12px!important;backdrop-filter:blur(8px)!important;box-shadow:0 4px 20px rgba(0,0,0,.1)!important}.stat{background:linear-gradient(180deg,rgba(15,30,42,.7),rgba(10,20,30,.5))!important;border:1px solid rgba(55,214,122,.06)!important;border-radius:10px!important;transition:all .2s!important}.stat:hover{border-color:rgba(55,214,122,.18)!important;box-shadow:0 4px 16px rgba(0,0,0,.15)!important;transform:translateY(-1px)!important}.readout{background:rgba(10,20,30,.5)!important;border:1px solid rgba(55,214,122,.06)!important;border-radius:10px!important}.row-head h2{font-weight:700!important;letter-spacing:.5px!important;text-shadow:0 0 12px rgba(55,214,122,.08)!important}.ghost-btn{border-radius:8px!important;border:1px solid rgba(55,214,122,.12)!important;transition:all .2s!important;background:transparent!important}.ghost-btn:hover{border-color:rgba(55,214,122,.25)!important;background:rgba(55,214,122,.04)!important}.cx-big{font-family:'JetBrains Mono',monospace!important;text-shadow:0 0 24px currentColor!important}.banner{border-radius:8px!important;backdrop-filter:blur(4px)!important}.banner.win{background:linear-gradient(135deg,rgba(55,214,122,.1),rgba(55,214,122,.04))!important;border:1px solid rgba(55,214,122,.18)!important;box-shadow:0 0 12px rgba(55,214,122,.06)!important}.banner.lose{background:linear-gradient(135deg,rgba(229,72,77,.1),rgba(229,72,77,.04))!important;border:1px solid rgba(229,72,77,.18)!important}.tbl{border-radius:10px!important;overflow:hidden;border:1px solid rgba(55,214,122,.06)!important}.tbl th{background:rgba(55,214,122,.04)!important;border-bottom:1px solid rgba(55,214,122,.08)!important;text-transform:uppercase!important;font-size:11px!important;letter-spacing:.5px!important}.tbl tr:hover td{background:rgba(55,214,122,.02)!important}.field input,select{border-radius:6px!important;border:1px solid rgba(55,214,122,.1)!important;background:rgba(8,16,24,.6)!important;color:#c8d6e5!important;transition:border-color .2s!important}.field input:focus,select:focus{border-color:rgba(55,214,122,.25)!important;outline:none!important;box-shadow:0 0 8px rgba(55,214,122,.06)!important}.seg button,.rps-pick button,.hr-pick,.cs-card{border-radius:8px!important;transition:all .2s!important}.seg button.on,.cs-card.on{box-shadow:0 0 12px rgba(55,214,122,.1)!important;border-color:rgba(55,214,122,.25)!important}.cs-item{border-radius:8px!important;transition:transform .2s!important}.cs-item:hover{transform:scale(1.05)!important}.pl-widget{border-radius:10px!important;backdrop-filter:blur(10px)!important;border:1px solid rgba(55,214,122,.1)!important;box-shadow:0 8px 30px rgba(0,0,0,.3)!important}#dev{border-radius:10px!important;backdrop-filter:blur(10px)!important;border:1px solid rgba(55,214,122,.08)!important}.dice-track,.coin,.die,.kcell,.ml-mound,.qd-hole,.ms-hole{box-shadow:0 2px 8px rgba(0,0,0,.2) inset!important}.vs-visual{display:flex;gap:16px;justify-content:center;align-items:center;margin:16px 0;padding:20px;background:linear-gradient(135deg,rgba(10,20,30,.6),rgba(8,16,24,.4));border-radius:12px;border:1px solid rgba(55,214,122,.08)}.vs-side{display:flex;flex-direction:column;align-items:center;gap:8px}.vs-side small{color:#5f7f92;text-transform:uppercase;font-size:10px;letter-spacing:.8px}.vs-side b{font-family:'JetBrains Mono',monospace;color:#c8d6e5}.vs-dice{display:flex;gap:10px}.vs-card{width:64px;height:90px;background:linear-gradient(180deg,#f0f0f0,#e0e0e0);color:#000;border-radius:8px;display:grid;place-items:center;font-size:22px;font-weight:bold;box-shadow:0 6px 16px rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.2)}.vs-card.red{color:#e5484d}.vs-reel{display:flex;gap:6px;background:#0f1e29;padding:12px;border-radius:8px;border:1px solid #254458;box-shadow:0 4px 12px rgba(0,0,0,.3) inset}.vs-sym{font-size:28px;width:44px;height:44px;display:grid;place-items:center;background:#152936;border-radius:6px;border:1px solid #1d3546}.vs-limbo{font-family:'JetBrains Mono',monospace;font-size:32px;color:#37d67a;text-shadow:0 0 24px currentColor}.vs-vs2{font-size:14px;font-weight:bold;color:#5f7f92;letter-spacing:2px}@media(max-width:700px){.history-row{grid-template-columns:1fr auto}.history-row span:first-of-type{display:none}.audit-card{padding:16px}.bar-tools .sub{display:none}}
+  </style></head>
 <body>
 <div id="app">
   <aside id="sidebar">
@@ -1697,7 +1699,9 @@ function syncAutoUI(wrap,id){
 /* ==========================================================
    SHARED MATH
 ========================================================== */
-const EDGE=0.99;
+const HOUSE_CONFIG={standardRtp:0.99,payouts:{coin:1.98,rps:1.97},edges:{wheel:{low:{rtp:.99},medium:{rtp:.98},high:{rtp:.97}},darts:{low:{rtp:.99},medium:{rtp:.98},high:{rtp:.96}},cases:.96}};
+const EDGE=HOUSE_CONFIG.standardRtp;
+const displayMult=n=>n>=100?n.toFixed(0):n%1===0?n.toFixed(0):n.toFixed(1);
 function combi(n,k){ if(k<0||k>n) return 0; let r=1; for(let i=1;i<=k;i++) r=r*(n-k+i)/i; return r; }
 function newDeck(){
   const su=['♠','♥','♦','♣'], rk=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
@@ -1732,6 +1736,7 @@ const MODULES={};
 ========================================================== */
 const SLOT_KEYS=['cherry','cherry','cherry','cherry','cherry','lemon','lemon','lemon','lemon','grape','grape','grape','bell','bell','star','star','diamond','seven'];
 const SLOT_PAY={cherry:10,lemon:15,grape:25,bell:42,star:78,diamond:170,seven:362};
+let SLOT_PAIR_PAY=0.5;
 const SLOT_NAME={cherry:'Cherries',lemon:'Lemon',grape:'Grapes',bell:'Bell',star:'Star',diamond:'Diamond',seven:'Lucky 7'};
 const randSym=()=>SLOT_KEYS[Math.floor(Math.random()*SLOT_KEYS.length)];
 
@@ -1741,7 +1746,7 @@ MODULES.slots={
   jewelAt:40,
   optsHTML(){
     return `<div class="readout">
-      <div class="line"><span>Any two matching</span><b>0.50×</b></div>
+      <div class="line"><span>Any two matching</span><b>${displayMult(SLOT_PAIR_PAY)}×</b></div>
       <div class="paytable">${Object.entries(SLOT_PAY).map(([k,m])=>`<div><span>${ART.sym(k)}${SLOT_NAME[k]}</span><b>${m}×</b></div>`).join('')}</div>
     </div>`;
   },
@@ -1822,7 +1827,7 @@ MODULES.slots={
     function settle(finals,bet){
       let mult=0,msg;
       if(finals[0]===finals[1]&&finals[1]===finals[2]){ mult=SLOT_PAY[finals[0]]; msg=`${SLOT_NAME[finals[0]]} ×3 — ${mult}× · ${fmt(bet*mult)}`; }
-      else if(finals[0]===finals[1]||finals[1]===finals[2]||finals[0]===finals[2]){ mult=0.5; msg=`Two of a kind — ${fmt(bet*0.5)} back`; }
+      else if(finals[0]===finals[1]||finals[1]===finals[2]||finals[0]===finals[2]){ mult=SLOT_PAIR_PAY; msg=`Two of a kind — ${fmt(bet*SLOT_PAIR_PAY)} back`; }
       else msg='No match';
       return {mult,msg};
     }
@@ -1855,7 +1860,7 @@ MODULES.slots={
     const f=[randSym(),randSym(),randSym()];
     let mult=0;
     if(f[0]===f[1]&&f[1]===f[2]) mult=SLOT_PAY[f[0]];
-    else if(f[0]===f[1]||f[1]===f[2]||f[0]===f[2]) mult=0.5;
+    else if(f[0]===f[1]||f[1]===f[2]||f[0]===f[2]) mult=SLOT_PAIR_PAY;
     return {payout:bet*mult,mult,tag:mult+'×',detail:f};
   }
 };
@@ -2515,7 +2520,7 @@ function plinkoTable(rows,risk){
   const k=PK_RISK[risk]||0.55, p=[],u=[];
   for(let i=0;i<=rows;i++){ const pi=combi(rows,i)/Math.pow(2,rows); p.push(pi); u.push(Math.pow(1/pi,k)); }
   const den=p.reduce((a,pi,i)=>a+pi*u[i],0);
-  return u.map(ui=>{ const raw=EDGE*ui/den; return raw>=10?Math.round(raw):(raw>=1?Math.round(raw*10)/10:Math.round(raw*100)/100); });
+  return u.map(ui=>EDGE*ui/den);
 }
 const binColor=m=>m>=10?'#e5484d':(m>=3?'#f07d29':(m>=1.2?'#f0b429':(m>=0.8?'#8fbf5a':'#4a9fd8')));
 MODULES.plinko={
@@ -2551,7 +2556,7 @@ MODULES.plinko={
       for(let r=0;r<rows;r++){ const n=r+3,y=rowY(r),sx=x0(r);
         for(let c=0;c<n;c++) pegs.push({x:sx+c*gap,y}); }
       binsEl.style.width=(table.length*gap)+'px';
-      binsEl.innerHTML=table.map((m,i)=>`<div class="pk-bin" data-bin="${i}" style="background:${binColor(m)};width:${gap-3}px">${m}×</div>`).join('');
+      binsEl.innerHTML=table.map((m,i)=>`<div class="pk-bin" data-bin="${i}" style="background:${binColor(m)};width:${gap-3}px">${displayMult(m)}×</div>`).join('');
       draw();
     }
     MODULES.plinko._layout=layout;
@@ -2796,7 +2801,7 @@ MODULES.tower={
     const t=TOWER_MODES[mode].tiles;
     for(let f=0;f<target;f++) if(Math.random()<1/t) return {payout:0,mult:0,tag:'✕',detail:f};
     const m=towerMult(mode,target);
-    return {payout:bet*m,mult:m,tag:m.toFixed(2)+'×',detail:target};
+    return {payout:bet*m,mult:m,tag:m.toFixed(2)+'×',detail:target,pushes};
   }
 };
 
@@ -3032,7 +3037,7 @@ MODULES.chicken={
     const diff=o.diff||'easy', target=Math.min(CX_DIFF[diff].lanes,o.target||5);
     for(let i=0;i<target;i++) if(Math.random()>=CX_DIFF[diff].p) return {payout:0,mult:0,tag:'HIT',detail:i+1};
     const m=cxMult(diff,target);
-    return {payout:bet*m,mult:m,tag:m.toFixed(2)+'×',detail:target};
+    return {payout:bet*m,mult:m,tag:m.toFixed(2)+'×',detail:target,pushes};
   }
 };
 
@@ -3205,7 +3210,7 @@ MODULES.dice={
       if(diceChance(o)<=0) return toast('That range can never win — widen it.','lose');
       if(!placeBet(bet)) return toast('Not enough balance for that bet.','lose');
       ctx.q('#dc-roll').disabled=true; ctx.banner(null);
-      const roll=Math.round(Math.random()*10000)/100;
+      const roll=Math.random()*100;
       animate(roll,o,win=>{
         const mult=EDGE*100/diceChance(o);
         resolveRound(win?bet*mult:0,win);
@@ -3225,7 +3230,7 @@ MODULES.dice={
     n.style.color=d.win?'var(--accent)':'var(--red)';
   },
   sim(bet,o){
-    const roll=Math.round(Math.random()*10000)/100;
+    const roll=Math.random()*100;
     const chance=diceChance(o);
     if(chance<=0) return {payout:0,mult:0,tag:roll.toFixed(2),detail:roll};
     const mult=EDGE*100/chance, win=diceWin(roll,o);
@@ -3298,11 +3303,9 @@ MODULES.coinflip={
 ========================================================== */
 const HL_RANKS=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
 const HL_SUITS=['♠','♥','♦','♣'];
-const hlCard=r=>({r:HL_RANKS[r-1],s:HL_SUITS[Math.floor(Math.random()*4)]});
-function hlStep(rank,dir){
-  const fav=dir==='higher'?(13-rank):(rank-1);
-  return fav<=0?null:12/fav;
-}
+function hlDeck(){const d=[];for(let rank=1;rank<=13;rank++)for(const s of HL_SUITS)d.push({r:HL_RANKS[rank-1],s,rank});return d;}
+function hlDraw(deck){return deck.splice(Math.floor(Math.random()*deck.length),1)[0];}
+function hlStep(rank,dir,deck){const live=deck.filter(c=>c.rank!==rank),fav=live.filter(c=>dir==='higher'?c.rank>rank:c.rank<rank).length;return fav?live.length/fav:null;}
 MODULES.higherlower={
   blurb:'Ace low, king high, ties replay',
   edge:'1% edge',
@@ -3315,7 +3318,7 @@ MODULES.higherlower={
   readOpts(w){ return {target:Math.min(10,Math.max(1,parseInt(w.querySelector('#hl-target').value)||2))}; },
   onChange(ctx){ ctx.preview('varies','Typical streak payout',(EDGE*Math.pow(2,ctx.opts().target)).toFixed(2)+'×'); },
   mount(ctx){
-    let rank=Math.ceil(Math.random()*13),card=hlCard(rank),bet=0,mult=1,live=false;
+    let deck=hlDeck(),card=hlDraw(deck),rank=card.rank,bet=0,mult=1,live=false;
     ctx.stage.innerHTML=`<div class="felt">
       <div class="cx-big" id="hl-mult">1.00×</div>
       <div class="hand" id="hl-cards"></div>
@@ -3328,15 +3331,15 @@ MODULES.higherlower={
     const paint=(prev,cur)=>cardsEl.innerHTML=(prev?cardHTML(prev):'')+cardHTML(cur);
     function buttons(){
       hi.disabled=rank>=13; lo.disabled=rank<=1;
-      hi.textContent=`Higher · ${rank>=13?'—':(EDGE*mult*hlStep(rank,'higher')).toFixed(2)+'×'}`;
-      lo.textContent=`Lower · ${rank<=1?'—':(EDGE*mult*hlStep(rank,'lower')).toFixed(2)+'×'}`;
+      hi.textContent=`Higher · ${rank>=13?'—':(EDGE*mult*hlStep(rank,'higher',deck)).toFixed(2)+'×'}`;
+      lo.textContent=`Lower · ${rank<=1?'—':(EDGE*mult*hlStep(rank,'lower',deck)).toFixed(2)+'×'}`;
     }
     function end(){ live=false; start.classList.remove('hidden'); acts.classList.add('hidden'); cash.classList.add('hidden'); ctx.lockBet(false); }
     start.addEventListener('click',()=>{
       if(ctx.autoRunning()) return;
       bet=ctx.bet();
       if(!placeBet(bet)) return toast('Not enough balance for that bet.','lose');
-      rank=Math.ceil(Math.random()*13); card=hlCard(rank); mult=1; live=true;
+      deck=hlDeck(); card=hlDraw(deck); rank=card.rank; mult=1; live=true;
       paint(null,card); multEl.textContent='1.00×'; ctx.banner(null); ctx.lockBet(true);
       hint.textContent='Call the next card.';
       start.classList.add('hidden'); acts.classList.remove('hidden'); cash.classList.add('hidden');
@@ -3344,7 +3347,7 @@ MODULES.higherlower={
     });
     function call(dir){
       if(!live||ctx.autoRunning()) return;
-      const next=Math.ceil(Math.random()*13),nc=hlCard(next);
+      const nc=hlDraw(deck),next=nc.rank;
       sfx.deal(); paint(card,nc);
       if(next===rank){ ctx.banner(`Tie on ${nc.r} — call again`,'push'); rank=next; card=nc; buttons(); return; }
       const ok=dir==='higher'?next>rank:next<rank;
@@ -3365,7 +3368,7 @@ MODULES.higherlower={
       if(!live||mult<=1) return toast('Make at least one correct call first.');
       const pay=mult*EDGE;
       resolveRound(bet*pay,true);
-      const nextBest=Math.max(hlStep(rank,'higher')||0,hlStep(rank,'lower')||0);
+      const nextBest=Math.max(hlStep(rank,'higher',deck)||0,hlStep(rank,'lower',deck)||0);
       ctx.banner(`Cashed out at ${pay.toFixed(2)}× — ${fmt(bet*pay)}`,'win');
       hint.textContent=`One more correct call was worth up to ${(pay*nextBest).toFixed(2)}×.`;
       ctx.strip(pay.toFixed(2)+'×','w'); sfx.win(); end();
@@ -3379,35 +3382,26 @@ MODULES.higherlower={
   },
   sim(bet,o){
     const target=o.target||2;
-    let rank=Math.ceil(Math.random()*13),mult=1;
-    for(let i=0;i<target;i++){
-      const dir=rank<=7?'higher':'lower', step=hlStep(rank,dir);
+    let deck=hlDeck(),card=hlDraw(deck),rank=card.rank,mult=1,i=0,pushes=0;
+    while(i<target){
+      const dir=rank<=7?'higher':'lower', step=hlStep(rank,dir,deck);
       if(step===null) return {payout:0,mult:0,tag:'✕',detail:i+1};
-      let next=Math.ceil(Math.random()*13);
-      while(next===rank) next=Math.ceil(Math.random()*13);
-      if(!(dir==='higher'?next>rank:next<rank)) return {payout:0,mult:0,tag:'✕',detail:i+1};
-      mult*=step; rank=next;
+      const nc=hlDraw(deck),next=nc.rank;
+      if(next===rank){pushes++;continue;}
+      if(!(dir==='higher'?next>rank:next<rank)) return {payout:0,mult:0,tag:'✕',detail:i+1,pushes};
+      mult*=step; rank=next;i++;
     }
     const pay=mult*EDGE;
-    return {payout:bet*pay,mult:pay,tag:pay.toFixed(2)+'×',detail:target};
+    return {payout:bet*pay,mult:pay,tag:pay.toFixed(2)+'×',detail:target,pushes};
   }
 };
 
 /* ==========================================================
    KENO
 ========================================================== */
-const KENO_PAY={
-  1:{1:4},
-  2:{2:4.5,1:1.8},
-  3:{3:16.5,2:5.5},
-  4:{4:23,3:6.5,2:3},
-  5:{5:39,4:9,3:3.5,2:2},
-  6:{6:160,5:32,4:10.5,3:5},
-  7:{7:600,6:135,5:37,4:15},
-  8:{8:1200,7:235,6:54,5:18.5,4:8.5},
-  9:{9:2500,8:485,7:93,6:27,5:10.5,4:5.5},
-  10:{10:5000,9:2950,8:445,7:105,6:35,5:15}
-};
+const KENO_BASE={1:{1:4},2:{2:4.5,1:1.8},3:{3:16.5,2:5.5},4:{4:23,3:6.5,2:3},5:{5:39,4:9,3:3.5,2:2},6:{6:160,5:32,4:10.5,3:5},7:{7:600,6:135,5:37,4:15},8:{8:1200,7:235,6:54,5:18.5,4:8.5},9:{9:2500,8:485,7:93,6:27,5:10.5,4:5.5},10:{10:5000,9:2950,8:445,7:105,6:35,5:15}};
+const KENO_PAY={};
+for(let k=1;k<=10;k++){let r=0;for(let h=0;h<=k;h++)r+=combi(k,h)*combi(40-k,10-h)/combi(40,10)*(KENO_BASE[k][h]||0);KENO_PAY[k]={};Object.entries(KENO_BASE[k]).forEach(([h,m])=>KENO_PAY[k][h]=m*EDGE/r);}
 MODULES.keno={
   blurb:'40 spots, ten drawn each round',
   edge:'Paytable shown live',
@@ -3429,7 +3423,7 @@ MODULES.keno={
         let rows='';
         for(let h=picks.length;h>=0;h--){
           const m=table[h]||0;
-          rows+=`<div class="pay-row ${m?'':'zero'}"><span>${h} hit${h===1?'':'s'}</span><b>${m?m+'× · '+fmt(bet*m):'—'}</b></div>`;
+          rows+=`<div class="pay-row ${m?'':'zero'}"><span>${h} hit${h===1?'':'s'}</span><b>${m?displayMult(m)+'× · '+fmt(bet*m):'—'}</b></div>`;
         }
         t.innerHTML=rows;
       }
@@ -3582,7 +3576,7 @@ MODULES.rps={
         const beats={rock:'scissors',paper:'rock',scissors:'paper'};
         let payout,win,msg,cls;
         if(mine===theirs){ payout=bet; win=null; msg='Tie — bet returned'; cls='push'; }
-        else if(beats[mine]===theirs){ payout=bet*1.96; win=true; msg=`You take it — ${fmt(payout)}`; cls='win'; }
+        else if(beats[mine]===theirs){ payout=bet*HOUSE_CONFIG.payouts.rps; win=true; msg=`You take it — ${fmt(payout)}`; cls='win'; }
         else { payout=0; win=false; msg=`House takes it — ${fmt(bet)} lost`; cls='lose'; }
         resolveRound(payout,win);
         ctx.banner(msg,cls); ctx.strip(win===null?'TIE':(win?'WIN':'LOSS'),win===null?'':(win?'w':'l'));
@@ -3598,7 +3592,7 @@ MODULES.rps={
     const theirs=keys[Math.floor(Math.random()*3)];
     const beats={rock:'scissors',paper:'rock',scissors:'paper'};
     if(mine===theirs) return {payout:bet,mult:1,tag:'TIE',detail:{mine,theirs}};
-    if(beats[mine]===theirs) return {payout:bet*1.96,mult:1.96,tag:'WIN',detail:{mine,theirs}};
+    if(beats[mine]===theirs) return {payout:bet*HOUSE_CONFIG.payouts.rps,mult:HOUSE_CONFIG.payouts.rps,tag:'WIN',detail:{mine,theirs}};
     return {payout:0,mult:0,tag:'LOSS',detail:{mine,theirs}};
   }
 };
@@ -3705,7 +3699,7 @@ const HORSE_P=(()=>{
   const s=raw.reduce((a,b)=>a+b,0);
   return raw.map(x=>x/s);
 })();
-HORSES.forEach((h,i)=>{ h.odds=Math.round(EDGE/HORSE_P[i]*100)/100; });
+HORSES.forEach((h,i)=>{ h.odds=EDGE/HORSE_P[i]; });
 function rollHorse(){
   let r=Math.random();
   for(let i=0;i<HORSE_P.length;i++){ if(r<HORSE_P[i]) return i; r-=HORSE_P[i]; }
@@ -3726,14 +3720,14 @@ MODULES.horse={
     return `<div class="field"><label>Your runner</label>
       <div class="hr-odds" data-seg="hrpick">
         ${HORSES.map(h=>`<button class="hr-pick${cur===h.n?' on':''}" data-val="${h.n}">
-          <b>${h.n}. ${h.name}</b><small>${h.odds}×</small></button>`).join('')}
+          <b>${h.n}. ${h.name}</b><small>${(HORSE_P[h.n-1]*100).toFixed(2)}% · ${h.odds.toFixed(2)}×</small></button>`).join('')}
       </div></div>
       <div class="note">Longer odds win less often — the seven-horse field pays out 99% of every dollar staked across a full card.</div>`;
   },
   readOpts(w){ return {pick:parseInt(segVal(w,'hrpick',1))}; },
   onChange(ctx){
     const h=HORSES[ctx.opts().pick-1];
-    ctx.preview(ctx.bet()*h.odds-ctx.bet(),`${h.name} wins`,(HORSE_P[h.n-1]*100).toFixed(1)+'% · '+h.odds+'×');
+    ctx.preview(ctx.bet()*h.odds-ctx.bet(),`${h.name} wins`,(HORSE_P[h.n-1]*100).toFixed(2)+'% · '+h.odds.toFixed(2)+'×');
   },
   mount(ctx){
     let racing=false;
@@ -4171,12 +4165,7 @@ function dartsTier(m){
 }
 /* rank of the landed ring (0=miss, highest=bullseye) maps to a radius band on the board,
    regardless of how many rings this risk level has */
-function dartBand(risk,idx){
-  const n=DARTS_RISK[risk].items.length;
-  const bands=[[0.84,0.98],[0.66,0.82],[0.50,0.64],[0.34,0.48],[0.18,0.32],[0,0.16]];
-  const bi=Math.round(idx*(bands.length-1)/Math.max(1,n-1));
-  return bands[Math.min(bands.length-1,Math.max(0,bi))];
-}
+function dartBand(risk,idx){const items=DARTS_RISK[risk].items,total=items.reduce((s,i)=>s+i.w,0),before=items.slice(0,idx).reduce((s,i)=>s+i.w,0),through=before+items[idx].w;return [Math.sqrt(Math.max(0,1-through/total))*.98,Math.sqrt(Math.max(0,1-before/total))*.98];}
 MODULES.darts={
   blurb:'Three darts, one risk level',
   edge:'~1-4% edge',
@@ -4675,30 +4664,12 @@ const RB_STAGES=[
   {k:'suit',   label:'Suit',         q:'Which suit?',              opts:[['♠','♠'],['♥','♥'],['♦','♦'],['♣','♣']],   odds:4}
 ];
 const RB_BUS=6;                        /* cards on the bus ride */
-function rbDraw(){
-  const r=1+Math.floor(Math.random()*13), s=['♠','♥','♦','♣'][Math.floor(Math.random()*4)];
-  return {r:HL_RANKS[r-1],s,v:r,red:(s==='♥'||s==='♦')};
-}
+function rbNewDeck(){const d=[];for(let v=1;v<=13;v++)for(const s of ['♠','♥','♦','♣'])d.push({r:HL_RANKS[v-1],s,v,red:s==='♥'||s==='♦'});return d;}
+function rbDraw(deck){return deck.splice(Math.floor(Math.random()*deck.length),1)[0];}
 /* fair odds for each call given the cards already on the table */
-function rbOdds(stage,hand){
-  if(stage===0) return 2;
-  if(stage===1){ const v=hand[0].v; const fav=Math.max(v-1,13-v); return 12/fav; }
-  if(stage===2){
-    const lo=Math.min(hand[0].v,hand[1].v), hi=Math.max(hand[0].v,hand[1].v);
-    const inside=Math.max(0,hi-lo-1), outside=12-inside;
-    return 12/Math.max(inside,outside);
-  }
-  return 4;
-}
-function rbBestCall(stage,hand){
-  if(stage===0) return Math.random()<0.5?'red':'black';
-  if(stage===1) return hand[0].v<=7?'higher':'lower';
-  if(stage===2){
-    const lo=Math.min(hand[0].v,hand[1].v), hi=Math.max(hand[0].v,hand[1].v);
-    return (hi-lo-1)>6?'inside':'outside';
-  }
-  return ['♠','♥','♦','♣'][Math.floor(Math.random()*4)];
-}
+function rbCounts(stage,hand,deck,call){let win=0,loss=0,push=0;deck.forEach(c=>{const r=stage===4?((call==='red')===c.red):rbCheck(stage,call,hand,c);r===null?push++:r?win++:loss++;});return {win,loss,push};}
+function rbOdds(stage,hand,deck,call){const c=rbCounts(stage,hand,deck,call);return c.win?(c.win+c.loss)/c.win:Infinity;}
+function rbBestCall(stage,hand,deck){const calls=stage===0?['red','black']:stage===1?['higher','lower']:stage===2?['inside','outside']:stage===3?['♠','♥','♦','♣']:['red','black'];return calls.reduce((best,c)=>rbCounts(stage,hand,deck,c).win>rbCounts(stage,hand,deck,best).win?c:best,calls[0]);}
 function rbCheck(stage,call,hand,card){
   if(stage===0) return call==='red'?card.red:!card.red;
   if(stage===1){ if(card.v===hand[0].v) return null; return call==='higher'?card.v>hand[0].v:card.v<hand[0].v; }
@@ -4732,7 +4703,7 @@ MODULES.ridebus={
     ctx.preview('varies',stop>=5?'Bus ride pays':'Typical payout',est.toFixed(2)+'×');
   },
   mount(ctx){
-    let hand=[],stage=0,mult=1,bet=0,live=false,busSeat=false,busStep=0,busy=false;
+    let hand=[],deck=[],stage=0,mult=1,bet=0,live=false,busSeat=false,busStep=0,busy=false;
     ctx.stage.innerHTML=`<div class="rb">
       <div class="rb-stages" id="rb-stages">${RB_STAGES.map((s,i)=>`<div class="rb-stage" data-s="${i}">${s.label}</div>`).join('')}<div class="rb-stage" data-s="4">The bus</div></div>
       <div class="rb-mult" id="rb-mult">1.00×</div>
@@ -4790,7 +4761,8 @@ MODULES.ridebus={
     }
     function call(v){
       if(!live||busy||ctx.autoRunning()) return;
-      const card=rbDraw();
+      const busOdds=busSeat?rbOdds(4,hand,deck,v):0;
+      const card=rbDraw(deck);
       if(busSeat){
         drawAndFlip(card, ()=>{
           hand.push(card); paintRow(false);
@@ -4800,7 +4772,7 @@ MODULES.ridebus={
             ctx.banner(`Thrown off the bus on card ${busStep+1} — ${fmt(bet)} lost`,'lose');
             ctx.strip('BUS','l'); sfx.lose(); qEl.textContent='The bus goes on without you.'; end(); return;
           }
-          busStep++; mult*=2; multEl.textContent=(mult*EDGE).toFixed(2)+'×';
+          busStep++; mult*=busOdds; multEl.textContent=(mult*EDGE).toFixed(2)+'×';
           if(busStep>=RB_BUS){
             const pay=mult*EDGE;
             resolveRound(bet*pay,true);
@@ -4812,7 +4784,7 @@ MODULES.ridebus={
         });
         return;
       }
-      const odds=rbOdds(stage,hand);
+      const odds=rbOdds(stage,hand,deck,v);
       drawAndFlip(card, ()=>{
         const res=rbCheck(stage,v,hand,card);
         if(res===null){ paintRow(false); qEl.textContent=`Dead heat on ${card.r} — that one is a push, call it again.`; paintCalls(); return; }
@@ -4830,7 +4802,7 @@ MODULES.ridebus={
           busSeat=true; busStep=0; hand=[]; paintRow(false);
           qEl.textContent=`All four calls good. Ride the bus: ${RB_BUS} colour calls, each one nearly doubles — or take the money.`;
         } else {
-          qEl.textContent=RB_STAGES[stage].q+` · ${rbOdds(stage,hand).toFixed(2)}× if you are right`;
+          qEl.textContent=RB_STAGES[stage].q+` · ${rbOdds(stage,hand,deck,rbBestCall(stage,hand,deck)).toFixed(2)}× if you are right`;
         }
         paintStages(); paintCalls();
       });
@@ -4839,7 +4811,7 @@ MODULES.ridebus={
       if(ctx.autoRunning()) return;
       bet=ctx.bet();
       if(!placeBet(bet)) return toast('Not enough balance for that bet.','lose');
-      hand=[]; stage=0; mult=1; live=true; busSeat=false; busStep=0; busy=false;
+      hand=[]; deck=rbNewDeck(); stage=0; mult=1; live=true; busSeat=false; busStep=0; busy=false;
       paintRow(false); paintStages(); paintCalls();
       multEl.textContent='1.00×'; qEl.textContent=RB_STAGES[0].q+' · 2.00× if you are right';
       ctx.banner(null); ctx.lockBet(true);
@@ -4883,11 +4855,11 @@ MODULES.ridebus={
   },
   sim(bet,o){
     const stop=o.stop||3;
-    let hand=[],mult=1,steps=[];
+    let hand=[],deck=rbNewDeck(),mult=1,steps=[];
     for(let stage=0;stage<4;stage++){
-      const call=rbBestCall(stage,hand), odds=rbOdds(stage,hand);
+      const call=rbBestCall(stage,hand,deck), odds=rbOdds(stage,hand,deck,rbBestCall(stage,hand,deck));
       let card,res;
-      do{ card=rbDraw(); res=rbCheck(stage,call,hand,card); } while(res===null);
+      do{ card=rbDraw(deck); res=rbCheck(stage,call,hand,card); } while(res===null);
       if(!res){ steps.push({stage,card,ok:false,mult}); return {payout:0,mult:0,tag:'✕',detail:{steps}}; }
       mult*=odds; hand.push(card);
       steps.push({stage,card,ok:true,mult});
@@ -4898,11 +4870,11 @@ MODULES.ridebus={
     }
     /* ride the bus */
     for(let b=0;b<RB_BUS;b++){
-      const card=rbDraw(), call=Math.random()<0.5?'red':'black';
+      const call=rbBestCall(4,hand,deck), odds=rbOdds(4,hand,deck,call), card=rbDraw(deck);
       const ok=(call==='red')===card.red;
       steps.push({stage:4,card,ok,mult});
       if(!ok) return {payout:0,mult:0,tag:'BUS',detail:{steps}};
-      mult*=2;
+      mult*=odds;
     }
     const pay=mult*EDGE;
     return {payout:bet*pay,mult:pay,tag:pay.toFixed(2)+'×',detail:{steps}};
@@ -5896,5 +5868,6 @@ navigate('home');
 /* last, so the interface is already up before the network is touched */
 Cloud.init();
 </script>
-</body>
+<script>(function Lk(){const r=x=>String(x??"").replace(/[&<>"']/g,k=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[k]),t=(x,k=2)=>`${(x*100).toFixed(k)}%`,s=x=>x.reduce((k,w)=>k+w.m*w.w,0)/x.reduce((k,w)=>k+w.w,0),o=(x,k)=>{const w=s(x);x.forEach(z=>{z.m>0&&(z.m=z.m*k/w)})};Object.entries(WHEEL_RISK).forEach(([x,k])=>o(k.items,HOUSE_CONFIG.edges.wheel[x].rtp)),Object.entries(DARTS_RISK).forEach(([x,k])=>o(k.items,HOUSE_CONFIG.edges.darts[x].rtp));const l={starter:[{m:0,w:3e4},{m:.5,w:15e3},{m:1,w:15e3},{m:2,w:25e3},{m:5,w:1e3},{m:15,w:200},{m:50,w:20},{m:100,w:8},{m:500,w:2},{m:2e3,w:1}],field:[{m:0,w:3e4},{m:.5,w:12e3},{m:1,w:15e3},{m:2,w:25e3},{m:5,w:1500},{m:15,w:300},{m:50,w:30},{m:100,w:10},{m:500,w:3},{m:3e3,w:1}],vault:[{m:0,w:32e3},{m:.5,w:1e4},{m:1,w:15e3},{m:2,w:25e3},{m:5,w:2e3},{m:15,w:500},{m:50,w:50},{m:100,w:15},{m:500,w:4},{m:5e3,w:1}],blackbox:[{m:0,w:35e3},{m:.5,w:8e3},{m:1,w:12e3},{m:2,w:25e3},{m:5,w:1500},{m:15,w:300},{m:50,w:30},{m:100,w:10},{m:500,w:2},{m:5e3,w:1}]};CASES.forEach(x=>{const k=l[x.id];k&&(x.items=k.slice())});const u={};SLOT_KEYS.forEach(x=>u[x]=(u[x]||0)+1/SLOT_KEYS.length);const d=Object.entries(u).reduce((x,[k,w])=>x+w**3*SLOT_PAY[k]+3*w*w*(1-w)*SLOT_PAIR_PAY,0),p=HOUSE_CONFIG.standardRtp/d;Object.keys(SLOT_PAY).forEach(x=>SLOT_PAY[x]*=p),SLOT_PAIR_PAY*=p,MODULES.slots.edge="1% edge",MODULES.rps.edge="1% edge",MODULES.rps.onChange=x=>x.preview(x.bet()*(HOUSE_CONFIG.payouts.rps-1),"Win / tie / loss",`${HOUSE_CONFIG.payouts.rps.toFixed(2)}× / push / 0`),MODULES.rps.sim=(x,k)=>{const w=k.throw||"rock",z=["rock","paper","scissors"],N=z[Math.floor(Math.random()*3)],E={rock:"scissors",paper:"rock",scissors:"paper"};return w===N?{payout:x,mult:1,tag:"TIE",detail:{mine:w,theirs:N}}:E[w]===N?{payout:x*HOUSE_CONFIG.payouts.rps,mult:HOUSE_CONFIG.payouts.rps,tag:"WIN",detail:{mine:w,theirs:N}}:{payout:0,mult:0,tag:"LOSS",detail:{mine:w,theirs:N}}},MODULES.coinflip.edge="1% edge",MODULES.wheel.edge="Low 1% · Medium 2% · High 3%",MODULES.darts.edge="Low 1% · Medium 2% · High 4%",MODULES.cases.edge="1% edge",MODULES.keno.edge="1% edge · hypergeometric paytable";const h={snake_eyes:{l:"Snake Eyes",d:"Roll 1-1",o:35,p:1/36},boxcars:{l:"Boxcars",d:"Roll 6-6",o:35,p:1/36},doubles:{l:"Any Doubles",d:"Matching pair",o:5.9,p:6/36},lucky7:{l:"Lucky 7",d:"Sum = 7",o:5.9,p:6/36},over:{l:"Over 7",d:"Sum 8+",o:2.3,p:15/36},under:{l:"Under 7",d:"Sum 6-",o:2.3,p:15/36}};function m(x,k,w){const z=k+w;return x==="snake_eyes"?k===1&&w===1:x==="boxcars"?k===6&&w===6:x==="doubles"?k===w:x==="lucky7"?z===7:x==="over"?z>7:z<7}MODULES.snakes={blurb:"Two dice, six ways to bet",edge:"~1-3% edge",jewelAt:15,optsHTML(x){const k=x.bet||"lucky7";return`<div class="field"><label>Your bet</label><div class="se-bets" data-seg="snbet">${Object.entries(h).map(([w,z])=>`<button data-val="${w}" class="${k===w?"on":""}"><b>${z.l}</b><small>${z.d} · ${z.o}×</small></button>`).join("")}</div></div>`},readOpts(x){return{bet:segVal(x,"snbet","lucky7")}},onChange(x){const k=h[x.opts().bet];x.preview(x.bet()*k.o-x.bet(),"Win chance",(k.p*100).toFixed(1)+"% · "+k.o+"×")},mount(x){let k=!1;const w=["","⚀","⚁","⚂","⚃","⚄","⚅"];x.stage.innerHTML='<div class="se-stage"><div class="se-dice"><div class="die" id="se-d1">⚄</div><div class="die" id="se-d2">⚄</div></div><div class="se-sum" id="se-sum">—</div><div class="cx-hint" id="se-hint">Pick a bet and roll.</div></div>',x.manual.innerHTML='<button class="act" id="se-roll">Roll dice</button>';const z=x.q("#se-d1"),N=x.q("#se-d2"),E=x.q("#se-sum"),$=x.q("#se-hint");x.q("#se-roll").addEventListener("click",()=>{if(k||x.autoRunning())return;const X=x.bet(),re=x.opts().bet,ne=h[re];if(!placeBet(X))return toast("Not enough balance for that bet.","lose");k=!0,x.q("#se-roll").disabled=!0,x.banner(null),sfx.spin();let Y=0;const pe=setInterval(()=>{if(z.textContent=w[1+Math.floor(Math.random()*6)],N.textContent=w[1+Math.floor(Math.random()*6)],++Y>10){clearInterval(pe);const ve=1+Math.floor(Math.random()*6),ue=1+Math.floor(Math.random()*6);z.textContent=w[ve],N.textContent=w[ue],E.textContent=ve+" + "+ue+" = "+(ve+ue);const Oe=m(re,ve,ue),rt=Oe?X*ne.o:0;resolveRound(rt,Oe),x.banner(Oe?ne.l+" — "+fmt(rt):"Rolled "+(ve+ue)+" — "+fmt(X)+" lost",Oe?"win":"lose"),x.strip(ve+"+"+ue,Oe?"w":"l"),Oe?sfx.win():sfx.lose(),$.textContent=Oe?"Won "+ne.o+"× on "+ne.l+"!":"Missed "+ne.l+".",k=!1,x.q("#se-roll").disabled=!1}},80)}),x.play=X=>{X.detail&&(z.textContent=w[X.detail.d1],N.textContent=w[X.detail.d2],E.textContent=X.detail.d1+" + "+X.detail.d2)}},onAutoRound(x,k){if(!k.detail)return;const w=["","⚀","⚁","⚂","⚃","⚄","⚅"],z=x.q("#se-d1"),N=x.q("#se-d2"),E=x.q("#se-sum");z&&(z.textContent=w[k.detail.d1]),N&&(N.textContent=w[k.detail.d2]),E&&(E.textContent=k.detail.d1+" + "+k.detail.d2)},sim(x,k){const w=k.bet||"lucky7",z=h[w],N=1+Math.floor(Math.random()*6),E=1+Math.floor(Math.random()*6),$=m(w,N,E);return{payout:$?x*z.o:0,mult:$?z.o:0,tag:N+"+"+E+"="+(N+E),detail:{d1:N,d2:E}}}};const y={low:{show:1400,rate:.75},medium:{show:900,rate:.55},high:{show:550,rate:.35}},v=(x,k)=>EDGE*Math.max(0,x)/4;MODULES.moles={blurb:"Flash whack — 8 moles, react fast",edge:"Skill-based · varies",jewelAt:0,optsHTML(x){const k=x.risk||"medium";return segField("Difficulty","ml-risk",[{v:"low",t:"Easy"},{v:"medium",t:"Medium"},{v:"high",t:"Hard"}],k)+`<div class="field auto-only"><label>Autobet cashes out</label><div class="inp-row"><input type="number" id="ml-target" min="1" max="8" value="${x.target||5}"><span class="unit">hits</span></div></div>`},readOpts(x){const k=segVal(x,"ml-risk","medium"),w=Math.min(8,Math.max(1,parseInt(x.querySelector("#ml-target").value)||5));return{risk:k,target:w}},onChange(x){const k=x.opts(),w=v(k.target,k.risk);x.preview(x.bet()*w-x.bet(),"Autobet stops at "+k.target+" hits",w.toFixed(2)+"×")},mount(x){let k=!1,w=0,z=0,N=0,E=0,$="medium",X=null,re=-1;x.stage.innerHTML='<div class="cx-topbar" style="width:min(100%,58vh,420px)"><div class="cx-big" id="ml-mult">0.00×</div><div class="cx-hint" id="ml-hint">Whack 8 moles — react fast.</div></div><div class="ms-grid" id="mlgrid"></div>',x.manual.innerHTML='<button class="act" id="ml-start">Start round</button><button class="act act-amber hidden" id="ml-cashout">Cash out</button>';const ne=x.q("#mlgrid"),Y=x.q("#ml-mult"),pe=x.q("#ml-hint"),ve=x.q("#ml-start"),ue=x.q("#ml-cashout");function Oe(){ne.innerHTML="";for(let te=0;te<9;te++){const Ue=document.createElement("div");Ue.className="ms-hole",Ue.dataset.i=te,Ue.innerHTML='<span class="ms-pop"></span>',Ue.addEventListener("click",()=>kt(te,Ue)),ne.appendChild(Ue)}}function rt(){const te=v(w);Y.textContent=te.toFixed(2)+"×",pe.textContent=w+" hits · "+z+" misses · "+(8-N)+" left"}function Je(){k=!1,clearTimeout(X),ne.querySelectorAll(".ms-hole").forEach(te=>te.classList.remove("up")),ve.classList.remove("hidden"),ue.classList.add("hidden"),x.lockBet(!1)}function St(){if(!k)return;if(N>=8){pt();return}ne.querySelectorAll(".ms-hole").forEach(Ue=>Ue.classList.remove("up")),re=Math.floor(Math.random()*9);const te=ne.querySelector('[data-i="'+re+'"]');te.classList.add("up"),te.querySelector(".ms-pop").innerHTML=MOLE_SVG,X=setTimeout(()=>{k&&(te.classList.remove("up"),z++,N++,rt(),sfx.lose(),N<8?setTimeout(St,300):pt())},y[$].show)}function kt(te,Ue){if(k){if(clearTimeout(X),te===re?(Ue.classList.remove("up"),w++,sfx.chip()):(z++,sfx.lose()),N++,rt(),N>=8){pt();return}setTimeout(St,300)}}function pt(){const te=v(w);resolveRound(E*te,te>0),x.banner(w+" of 8 whacked — "+(te>0?fmt(E*te):"no payout"),te>0?"win":"lose"),x.strip(te.toFixed(2)+"×",te>0?"w":"l"),te>0?sfx.win():sfx.lose(),pe.textContent="Final: "+w+" hits, "+z+" misses.",Je()}ve.addEventListener("click",()=>{if(!x.autoRunning()){if(E=x.bet(),$=x.opts().risk,!placeBet(E))return toast("Not enough balance for that bet.","lose");w=0,z=0,N=0,k=!0,Oe(),x.banner(null),x.lockBet(!0),Y.textContent="0.00×",pe.textContent="Get ready...",ve.classList.add("hidden"),ue.classList.remove("hidden"),setTimeout(St,800)}}),ue.addEventListener("click",()=>{if(!k||w===0)return toast("Whack at least one mole first.");const te=v(w);resolveRound(E*te,!0),x.banner("Cashed out at "+te.toFixed(2)+"× — "+fmt(E*te),"win"),x.strip(te.toFixed(2)+"×","w"),sfx.win(),pe.textContent="Walked away with "+w+" whacks.",Je()}),x.play=te=>{te.detail&&(w=te.detail.hits,z=te.detail.misses,Oe(),Y.textContent=(te.mult||0).toFixed(2)+"×",te.win?sfx.win():sfx.lose())},Oe(),onLeave(()=>clearTimeout(X))},onAutoRound(x,k){const w=x.q("#ml-mult");w&&(w.textContent=(k.mult||0).toFixed(2)+"×")},sim(x,k){const w=k.risk||"medium",z=y[w].rate,N=k.target||5;let E=0,$=0;for(let re=0;re<8;re++)if(Math.random()<z){if(E++,E>=N)break}else $++;const X=v(E);return{payout:x*X,mult:X,tag:E+"/"+(E+$),detail:{hits:E,misses:$,risk:w}}}};const R={slots:{},blackjack:{},roulette:{layout:[{type:"color",value:"red",weight:1}]},crash:{target:2},horse:{pick:1},cases:{caseId:"starter"},ridebus:{stop:3},mines:{mines:3,picks:4,pickMode:"random"},plinko:{rows:12,risk:"medium"},tower:{mode:"medium",target:3},chicken:{diff:"medium",target:5},limbo:{target:2},dice:{mode:"under",lo:50,hi:75},coinflip:{side:"heads"},higherlower:{target:2},keno:{picks:[1,2,3,4,5]},rps:{throw:"rock"},luckynumber:{range:10,pick:7},darts:{risk:"medium"},wheel:{risk:"medium"},pump:{risk:"medium",target:5},snakes:{bet:"lucky7"},moles:{risk:"medium",target:5}};function M(x,k=R[x]||{}){if(x==="slots"){const w={};return SLOT_KEYS.forEach(N=>w[N]=(w[N]||0)+1/SLOT_KEYS.length),{win:null,loss:null,push:null,rtp:Object.entries(w).reduce((N,[E,$])=>N+$**3*SLOT_PAY[E]+3*$*$*(1-$)*SLOT_PAIR_PAY,0)}}if(x==="coinflip")return{win:.5,loss:.5,push:0,rtp:.5*HOUSE_CONFIG.payouts.coin};if(x==="rps")return{win:1/3,loss:1/3,push:1/3,rtp:(HOUSE_CONFIG.payouts.rps+1)/3};if(x==="roulette")return{win:18/37,loss:19/37,push:0,rtp:36/37};if(x==="limbo"||x==="crash"){const w=k.target||2,z=HOUSE_CONFIG.standardRtp/w;return{win:z,loss:1-z,push:0,rtp:z*w}}if(x==="dice"){const w=diceChance(k)/100,z=HOUSE_CONFIG.standardRtp/w;return{win:w,loss:1-w,push:0,rtp:w*z}}if(x==="luckynumber"){const w=1/(k.range||10);return{win:w,loss:1-w,push:0,rtp:w*(k.range||10)*HOUSE_CONFIG.standardRtp}}if(x==="mines"){const w=combi(25-(k.mines||3),k.picks||4)/combi(25,k.picks||4);return{win:w,loss:1-w,push:0,rtp:w*minesMult(k.picks||4,k.mines||3)}}if(x==="tower"){const w=TOWER_MODES[k.mode||"medium"].tiles,z=Math.pow((w-1)/w,k.target||3);return{win:z,loss:1-z,push:0,rtp:z*towerMult(k.mode||"medium",k.target||3)}}if(x==="chicken"){const w=Math.pow(CX_DIFF[k.diff||"medium"].p,k.target||5);return{win:w,loss:1-w,push:0,rtp:w*cxMult(k.diff||"medium",k.target||5)}}if(x==="pump"){const w=Math.pow(PUMP_RISK[k.risk||"medium"].q,k.target||5);return{win:w,loss:1-w,push:0,rtp:w*pumpMult(k.risk||"medium",k.target||5)}}if(x==="snakes"){const w=h[k.bet||"lucky7"];return{win:w.p,loss:1-w.p,push:0,rtp:w.p*w.o}}if(x==="moles"){const w=k.risk||"medium",z=y[w].rate;let N=0;for(let E=0;E<=8;E++){const $=combi(8,E)*Math.pow(z,E)*Math.pow(1-z,8-E);N+=$*v(E)}return{win:null,loss:null,push:null,rtp:N}}if(x==="plinko"){const w=plinkoTable(k.rows||12,k.risk||"medium"),z=k.rows||12;return{win:null,loss:null,push:null,rtp:w.reduce((E,$,X)=>E+combi(z,X)/2**z*$,0)}}if(x==="horse"){const w=HORSE_P[(k.pick||1)-1],z=HORSES[(k.pick||1)-1].odds;return{win:w,loss:1-w,push:0,rtp:w*z}}if(x==="wheel")return{win:null,loss:null,push:null,rtp:s(WHEEL_RISK[k.risk||"medium"].items)};if(x==="darts")return{win:null,loss:null,push:null,rtp:s(DARTS_RISK[k.risk||"medium"].items)};if(x==="cases")return{win:null,loss:null,push:null,rtp:caseRTP(caseById(k.caseId||"starter"))};if(x==="keno"){const w=(k.picks||[]).length||5;let z=0;for(let N=0;N<=w;N++)z+=combi(w,N)*combi(40-w,10-N)/combi(40,10)*((KENO_PAY[w]||{})[N]||0);return{win:null,loss:null,push:null,rtp:z}}return null}const H=resolveRound;resolveRound=function(x,k){const w=betCtx.stake||0,z=betCtx.game||currentGameId();H(x,k),w>0&&(state.history=state.history||[],state.history.unshift({game:z,bet:w,payout:x,mult:x/w,profit:x-w,win:k,at:Date.now()}),state.history=state.history.slice(0,250),state.recent=state.recent||[],state.recent=[z,...state.recent.filter(N=>N!==z)].slice(0,8),save())};const C=document.createElement("div");C.id="audit-modal",C.className="audit-modal hidden",C.innerHTML='<div class="audit-card"><button class="audit-close">×</button><div id="audit-body"></div></div>',document.body.appendChild(C),C.querySelector(".audit-close").onclick=()=>C.classList.add("hidden"),C.onclick=x=>{x.target===C&&C.classList.add("hidden")};const b=x=>{C.querySelector("#audit-body").innerHTML=x,C.classList.remove("hidden")};function _(x){const k=gameById(x),w=M(x),z=MODULES[x];return`<h2>${r(k.name)} rules</h2><p>${r(z.blurb||k.desc)}.</p><div class="audit-grid"><div><small>Expected RTP</small><b>${w?t(w.rtp):"Strategy dependent"}</b></div><div><small>House edge</small><b>${w?t(1-w.rtp):r(z.edge||"Varies")}</b></div>${w&&w.win!==null?`<div><small>Win chance</small><b>${t(w.win)}</b></div><div><small>Loss chance</small><b>${t(w.loss)}</b></div>`:""}</div><p class="note">Payouts shown in the game are calculated from the same configuration used to settle each round. Pushes return the stake.</p>`}function F(x){const k=M(x);return x==="horse"?`<h2>Horse Race odds</h2><table class="tbl"><thead><tr><th>Horse</th><th>Chance</th><th>Payout</th></tr></thead><tbody>${HORSES.map((w,z)=>`<tr><td>${w.n}. ${w.name}</td><td>${t(HORSE_P[z])}</td><td>${w.odds.toFixed(2)}×</td></tr>`).join("")}</tbody></table>`:x==="wheel"?`<h2>Wheel segments</h2>${WHEEL_RISK.medium.items.map(w=>`<div class="audit-line"><span>${w.m.toFixed(2)}×</span><b>${t(w.w/WHEEL_RISK.medium.items.reduce((z,N)=>z+N.w,0))}</b></div>`).join("")}`:`<h2>${gameById(x).name} odds</h2>${k?`<div class="audit-grid"><div><small>RTP</small><b>${t(k.rtp)}</b></div><div><small>House edge</small><b>${t(1-k.rtp)}</b></div>${k.win!==null?`<div><small>Win</small><b>${t(k.win)}</b></div><div><small>Loss</small><b>${t(k.loss)}</b></div>`:""}</div>`:"<p>Odds vary with your live choices and are shown beside the wager.</p>"}`}document.addEventListener("click",x=>{const k=x.target.closest("[data-rules]");k&&b(_(k.dataset.rules));const w=x.target.closest("[data-odds]");w&&b(F(w.dataset.odds))});const I=mountGame;mountGame=function(x,k){I(x,k);const w=x.querySelector(".bar-tools");w&&w.insertAdjacentHTML("afterbegin",`<button class="ghost-btn" data-rules="${k}">Rules</button><button class="ghost-btn" data-odds="${k}">Odds</button>`)};const D="jarvisbet_favorites";let W=new Set(JSON.parse(localStorage.getItem(D)||"[]"));const Q=tileHTML;tileHTML=function(x){return Q(x).replace('<div class="tile"',`<div class="tile" data-game-id="${x.id}"`).replace('<div class="tile-art">',`<button class="fav-star ${W.has(x.id)?"on":""}" data-fav="${x.id}" title="Favorite">★</button><div class="tile-art">`).replace(`<h3>${x.name}</h3>`,`<small class="tile-cat">${x.cat==="classic"?"Table game":"Original"}</small><h3>${x.name}</h3>`)},document.addEventListener("click",x=>{const k=x.target.closest("[data-fav]");if(!k)return;x.stopPropagation();const w=k.dataset.fav;W.has(w)?W.delete(w):W.add(w),localStorage.setItem(D,JSON.stringify([...W])),k.classList.toggle("on",W.has(w))});const ee=renderLobby;renderLobby=function(x){ee(x);const k=x.querySelector(".masthead");k.insertAdjacentHTML("afterend",'<div class="game-search"><input id="game-search" placeholder="Search games…"><span id="search-count"></span></div>');const w=x.querySelector("#game-search"),z=x.querySelector("#search-count");w.oninput=()=>{const $=w.value.trim().toLowerCase();let X=0;x.querySelectorAll(".tile").forEach(re=>{const ne=!$||re.textContent.toLowerCase().includes($);re.style.display=ne?"":"none",ne&&X++}),z.textContent=X?`${X} game${X===1?"":"s"}`:"No games found"};const N=[...W].map(gameById).filter(Boolean),E=(state.recent||[]).map(gameById).filter(Boolean);N.length&&k.insertAdjacentHTML("beforebegin",`<div class="row-head"><h2>Favorites</h2><span>${N.length} games</span></div><div class="grid compact-row">${N.map(tileHTML).join("")}</div>`),E.length&&k.insertAdjacentHTML("beforebegin",`<div class="row-head"><h2>Recently Played</h2><span>Rounds started, not opens</span></div><div class="grid compact-row">${E.map(tileHTML).join("")}</div>`)};const q=buildSidebar;buildSidebar=function(){q();const x=document.querySelector("#nav-main");x.innerHTML=`<div class="nav-head">Home</div><div class="nav-item" data-nav="home"><span class="ic">${ART.icon.home}</span>Lobby</div><div class="nav-item" data-custom="favorites"><span class="ic">${ART.icon.originals}</span>Favorites</div><div class="nav-item" data-custom="recent"><span class="ic">${ART.icon.popular}</span>Recently Played</div><div class="nav-head">Multiplayer</div><div class="nav-item" data-nav="versus"><span class="ic">⚔️</span>Versus</div><div class="nav-item" data-nav="leaderboard"><span class="ic">🏆</span>Leaderboard</div><div class="nav-head">Tools</div><div class="nav-item" data-nav="manager"><span class="ic">${ART.icon.manager}</span>Autobet</div><div class="nav-item" data-custom="history"><span class="ic">${ART.icon.jarvsino}</span>History</div><div class="nav-item" data-nav="stats"><span class="ic">${ART.icon.stats}</span>Statistics</div><div class="nav-head">Rewards</div><div class="nav-item" data-nav="dailywheel"><span class="ic">${ART.icon.wheel}</span>Daily Wheel</div><div class="nav-item" data-nav="upgrades"><span class="ic">${ART.icon.upgrades}</span>Upgrades</div><div class="nav-head">Account</div><div class="nav-item" data-custom="settings"><span class="ic">${ART.icon.stats}</span>Settings</div><div class="sidebar-search"><input placeholder="Find a game…"></div>`;const k=x.querySelector(".sidebar-search input");k.oninput=()=>{const w=k.value.toLowerCase();document.querySelectorAll(".game-nav").forEach(z=>z.style.display=z.textContent.toLowerCase().includes(w)?"":"none")}},document.addEventListener("click",x=>{var w;const k=(w=x.target.closest("[data-custom]"))==null?void 0:w.dataset.custom;if(k==="history"&&ye(),k==="settings"&&fe(),k==="favorites"||k==="recent"){const N=(k==="favorites"?[...W]:state.recent||[]).map(gameById).filter(Boolean),E=document.querySelector("#content");currentView=k,E.classList.remove("fixed"),E.innerHTML="",renderList(E,k==="favorites"?"Favorites":"Recently Played",N)}}),document.querySelector(".wallet").style.cursor="pointer",document.querySelector(".wallet").onclick=()=>{const x=state.stats,k=(x.returned||0)-(x.wagered||0);b(`<h2>Wallet summary</h2><div class="audit-grid"><div><small>Current balance</small><b>${fmt(totalBalance())}</b></div><div><small>Net profit</small><b class="${k>=0?"pos":"neg"}">${fmtSigned(k)}</b></div><div><small>Total wagered</small><b>${fmt(x.wagered||0)}</b></div><div><small>Total returned</small><b>${fmt(x.returned||0)}</b></div></div><div class="act-row"><button class="act" data-nav="stats">View Statistics</button><button class="act act-2" id="wallet-history">View History</button></div>`),setTimeout(()=>{const w=document.querySelector("#wallet-history");w&&(w.onclick=ye)})};function fe(){const x=JSON.stringify(state);b(`<h2>Settings</h2><div class="settings-list"><label><span>Reduced motion</span><input type="checkbox" id="set-motion" ${localStorage.getItem("jarvisbet_reduce_motion")==="1"?"checked":""}></label><label><span>Confirm bets</span><input type="checkbox" id="set-confirm" ${localStorage.getItem("jarvisbet_confirm")==="1"?"checked":""}></label><label><span>Compact mode</span><input type="checkbox" id="set-compact" ${document.body.classList.contains("compact-ui")?"checked":""}></label></div><div class="act-row"><button class="act act-2" id="set-export">Export save</button><button class="act act-2" id="set-import">Import save</button></div><button class="act act-red" id="set-reset">Reset all data</button><textarea id="save-transfer" class="save-transfer" placeholder="Exported save appears here, or paste a save to import"></textarea>`),document.querySelector("#set-motion").onchange=k=>{localStorage.setItem("jarvisbet_reduce_motion",k.target.checked?"1":"0"),document.body.classList.toggle("reduce-motion",k.target.checked)},document.querySelector("#set-compact").onchange=k=>document.body.classList.toggle("compact-ui",k.target.checked),document.querySelector("#set-confirm").onchange=k=>localStorage.setItem("jarvisbet_confirm",k.target.checked?"1":"0"),document.querySelector("#set-export").onclick=()=>document.querySelector("#save-transfer").value=btoa(unescape(encodeURIComponent(x))),document.querySelector("#set-import").onclick=()=>{try{const k=JSON.parse(decodeURIComponent(escape(atob(document.querySelector("#save-transfer").value.trim()))));localStorage.setItem(LS_KEY,JSON.stringify(k)),location.reload()}catch{toast("That save could not be imported.","lose")}},document.querySelector("#set-reset").onclick=()=>{confirm("Reset all JarvisBet data? This cannot be undone.")&&(localStorage.removeItem(LS_KEY),location.reload())}}function ye(){const x=state.history||[];b(`<h2>History</h2><div class="history-filters"><button data-hf="all">All</button><button data-hf="win">Wins</button><button data-hf="loss">Losses</button></div><div id="history-rows">${x.length?x.map(k=>`<div class="history-row" data-result="${k.win===!0?"win":k.win===!1?"loss":"push"}"><b>${r((gameById(k.game)||{}).name||k.game)}</b><span>${fmt(k.bet)} · ${k.mult.toFixed(2)}×</span><span class="${k.profit>=0?"pos":"neg"}">${fmtSigned(k.profit)}</span><small>${new Date(k.at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}</small></div>`).join(""):'<div class="empty">No rounds played yet.</div>'}</div>`),C.querySelectorAll("[data-hf]").forEach(k=>k.onclick=()=>C.querySelectorAll(".history-row").forEach(w=>w.style.display=k.dataset.hf==="all"||w.dataset.result===k.dataset.hf?"":"none"))}document.querySelector("#dev h4").insertAdjacentHTML("afterend",'<button data-dev="probtest">Run Probability Test</button><button data-dev="auditreport">Probability Audit Report</button>'),document.querySelector(".tb-right").insertAdjacentHTML("afterbegin",'<button class="tb-btn auto-status" data-nav="manager">AUTO <b>0</b></button><button class="tb-btn" data-custom="settings" title="Settings">⚙</button>');const Ee=()=>{const x=document.querySelector(".auto-status"),k=Auto.list();x.classList.toggle("live",k.length>0),x.querySelector("b").textContent=k.reduce((w,z)=>w+z.done,0),x.title=k.length?`${k.map(w=>gameById(w.game).name).join(", ")} · ${fmtSigned(k.reduce((w,z)=>w+z.profit,0))}`:"No autobet running"};document.addEventListener("auto:round",Ee),document.addEventListener("auto:end",Ee),document.addEventListener("auto:state",Ee),Ee();async function Re(){const x=document.querySelector("#pt-game").value,k=+document.querySelector("#pt-rounds").value,w=MODULES[x],z=R[x]||{},N=document.querySelector("#pt-out");let E=0,$=0,X=0,re=0,ne=0;N.textContent="Running…";for(let pe=0;pe<k;pe+=1e4){const ve=Math.min(k,pe+1e4);for(let ue=pe;ue<ve;ue++){const Oe=w.sim(1,z)||{payout:0};E+=Oe.payout,ne=Math.max(ne,Oe.payout),Math.abs(Oe.payout-1)<1e-10?re++:Oe.payout>1?$++:X++}N.textContent=`${ve.toLocaleString()} / ${k.toLocaleString()}`,await new Promise(requestAnimationFrame)}const Y=E/k;N.innerHTML=`<div class="audit-grid"><div><small>Rounds</small><b>${k.toLocaleString()}</b></div><div><small>Total wagered</small><b>${fmt(k)}</b></div><div><small>Total paid</small><b>${fmt(E)}</b></div><div><small>RTP / edge</small><b>${t(Y)} / ${t(1-Y)}</b></div><div><small>Wins / losses / pushes</small><b>${$} / ${X} / ${re}</b></div><div><small>Largest / average payout</small><b>${ne.toFixed(4)}× / ${Y.toFixed(4)}×</b></div></div>`}function _e(){b(`<h2>Probability tester</h2><div class="two"><div class="field"><label>Game</label><div class="inp-row"><select id="pt-game">${GAMES.filter(x=>MODULES[x.id].sim).map(x=>`<option value="${x.id}">${x.name}</option>`).join("")}</select></div></div><div class="field"><label>Rounds</label><div class="inp-row"><select id="pt-rounds"><option>10000</option><option>100000</option><option>1000000</option></select></div></div></div><button class="act" id="pt-run">Run test</button><div id="pt-out" class="audit-output"></div>`),document.querySelector("#pt-run").onclick=Re}function oe(){const x=GAMES.map(k=>{const w=M(k.id);return`<tr><td>${k.name}</td><td>${w?t(w.rtp):"Simulation"}</td><td>${w?t(1-w.rtp):MODULES[k.id].edge||"Varies"}</td><td>${w&&w.rtp>.9&&w.rtp<=1?"✓":"Review in tester"}</td></tr>`}).join("");b(`<h2>Live probability audit</h2><p class="note">Values are calculated from the same tables and formulas currently settling rounds.</p><table class="tbl"><thead><tr><th>Game</th><th>RTP</th><th>Edge</th><th>Status</th></tr></thead><tbody>${x}</tbody></table>`)}dev.onclick,dev.addEventListener("click",x=>{var w;const k=(w=x.target.closest("[data-dev]"))==null?void 0:w.dataset.dev;k==="probtest"&&_e(),k==="auditreport"&&oe()});const ke=paintVersus;paintVersus=function(){var E,$;ke();const x=document.getElementById("vs-root");if(!x||!MP.lastResult||!MP.lastResult.mine)return;const k=MP.lobby;if(!k)return;const w=MP.lastResult,z=["","⚀","⚁","⚂","⚃","⚄","⚅"];let N="";if(k.game==="dice"){const X=ve=>{const ue=ve.match(/(\d+)\s*\+\s*(\d+)/);return ue?[+ue[1],+ue[2]]:[1,1]},[re,ne]=X(w.mine.label),[Y,pe]=X(w.other.label);N=`<div class="vs-visual"><div class="vs-side"><small>You</small><div class="vs-dice"><span class="die">${z[re]}</span><span class="die">${z[ne]}</span></div><b>${r(((E=w.mine.label.split("=")[1])==null?void 0:E.trim())||"")}</b></div><div class="vs-vs2">VS</div><div class="vs-side"><small>${r(w.otherName)}</small><div class="vs-dice"><span class="die">${z[Y]}</span><span class="die">${z[pe]}</span></div><b>${r((($=w.other.label.split("=")[1])==null?void 0:$.trim())||"")}</b></div></div>`}else if(k.game==="card"){const X=pe=>{const ve=pe.match(/([0-9JQKA]+)([♠♥♦♣])/);return ve?{r:ve[1],s:ve[2]}:{r:"?",s:"♠"}},re=X(w.mine.label),ne=X(w.other.label),Y=pe=>pe==="♥"||pe==="♦";N=`<div class="vs-visual"><div class="vs-side"><small>You</small><div class="vs-card ${Y(re.s)?"red":""}">${re.r}<br>${re.s}</div></div><div class="vs-vs2">VS</div><div class="vs-side"><small>${r(w.otherName)}</small><div class="vs-card ${Y(ne.s)?"red":""}">${ne.r}<br>${ne.s}</div></div></div>`}else if(k.game==="slots"){const X=Y=>Y.split(/\s+\d/)[0].trim().split(/\s+/),re=X(w.mine.label),ne=X(w.other.label);N=`<div class="vs-visual"><div class="vs-side"><small>You</small><div class="vs-reel">${re.map(Y=>`<span class="vs-sym">${Y}</span>`).join("")}</div></div><div class="vs-vs2">VS</div><div class="vs-side"><small>${r(w.otherName)}</small><div class="vs-reel">${ne.map(Y=>`<span class="vs-sym">${Y}</span>`).join("")}</div></div></div>`}else k.game==="limbo"&&(N=`<div class="vs-visual"><div class="vs-side"><small>You</small><div class="vs-limbo">${r(w.mine.label)}</div></div><div class="vs-vs2">VS</div><div class="vs-side"><small>${r(w.otherName)}</small><div class="vs-limbo">${r(w.other.label)}</div></div></div>`);if(N){const X=x.querySelector(".vs-visual");X&&X.remove();const re=x.querySelector(".note");re?re.insertAdjacentHTML("beforebegin",N):x.insertAdjacentHTML("beforeend",N)}},buildSidebar(),navigate("home")})();</script></body>
 </html>
+" class="h-screen w-screen border-0 bg-[#0b1620]
