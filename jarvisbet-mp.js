@@ -67,7 +67,7 @@ const MP2 = {
   },
 
   /* ---- creating and joining ---- */
-  async create(game, wager, isPrivate){
+  async create(game, wager, isPrivate, settings){
     this.init();
     if (!this.ready()){ toast('Sign in on the portal to play multiplayer.','lose'); return; }
     if (wager > state.balance){ toast('Multiplayer wagers use real balance only.','lose'); return; }
@@ -82,7 +82,8 @@ const MP2 = {
       status: 'open',
       round: 0,
       createdAt: firebase.database.ServerValue.TIMESTAMP,
-      maxPlayers: g.maxPlayers || 6,
+      maxPlayers: (settings && settings.maxPlayers) || g.maxPlayers || 6,
+      settings: settings || {},
       players: { [this.me()]: this.seatData() }
     });
     this.attach(ref.key);
@@ -189,6 +190,25 @@ const MP2 = {
 
   setReady(v){ this.publish({ ready: !!v }); },
 
+  /* host-only: change a room setting while the room is still open */
+  setOption(key, val){
+    if (!this.isHost() || !this.ref) return;
+    if (this.room.status !== 'open') return;
+    const upd = { ['settings/' + key]: val };
+    if (key === 'maxPlayers') upd.maxPlayers = val;
+    /* changing the deal un-readies everyone, so nobody is committed
+       to a room they did not agree to */
+    this.seats().forEach(p => { upd['players/' + p.uid + '/ready'] = false; });
+    this.ref.update(upd);
+  },
+
+  setWager(v){
+    if (!this.isHost() || !this.ref || this.room.status !== 'open') return;
+    const upd = { wager: round2(v) };
+    this.seats().forEach(p => { upd['players/' + p.uid + '/ready'] = false; });
+    this.ref.update(upd);
+  },
+
   /* ---- the state machine, driven by the host ---- */
   async drive(prev){
     const r = this.room; if (!r) return;
@@ -281,6 +301,9 @@ const MP2 = {
       rng: salt => self.rng(self.room.seed || 'x', salt),
       shared: () => self.rng(self.room.seed || 'x', 'shared'),
       publish: p => self.publish(p),
+      set: k => ((self.room.settings || {})[k] !== undefined
+                 ? self.room.settings[k]
+                 : ((MPGAMES[self.room.game].settings || []).find(s => s.key === k) || {}).def),
       finish: s => self.finish(s),
       elapsed: () => Date.now() - (self.room.liveAt || Date.now())
     };
