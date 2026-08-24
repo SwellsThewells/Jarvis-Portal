@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0E0D0C">
 <title>Jarvis Plinko</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -10,331 +11,391 @@
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
-  :root{
-    --paper:  #F2EFE7;
-    --card:   #FBF9F4;
-    --ink:    #16130E;
-    --muted:  #6C665B;
-    --faint:  #A39C8E;
-    --rule:   rgba(22,19,14,.13);
-    --rule2:  rgba(22,19,14,.07);
-    --hot:    #C6402A;
-    --cool:   #2C5C86;
+/* ================================================================
+   JARVIS PLINKO — precision instrument
 
-    --serif: "Instrument Serif", Georgia, serif;
-    --sans:  "IBM Plex Sans", system-ui, sans-serif;
-    --mono:  "IBM Plex Mono", ui-monospace, monospace;
-  }
+   Warm paper stock, ink-black type, hairline rules, one vermillion
+   accent. Upgrades are ledger rows, not cards.
+   ================================================================ */
 
-  *{ box-sizing:border-box; }
-  html,body{ margin:0; height:100%; }
-  body{
-    background:var(--paper);
-    color:var(--ink);
-    font-family:var(--sans);
-    font-size:14px;
-    -webkit-font-smoothing:antialiased;
-    overflow:hidden;
-  }
-  button{ font:inherit; color:inherit; }
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
 
-  .wrap{ display:grid; grid-template-columns:minmax(0,1fr) 336px; height:100vh; }
-  @media (max-width:920px){
-    body{ overflow:auto; }
-    .wrap{ grid-template-columns:1fr; height:auto; }
-  }
+:root{
+  --paper:  #F2EFE7;
+  --card:   #FBF9F4;
+  --ink:    #16130E;
+  --muted:  #6C665B;
+  --faint:  #A39C8E;
+  --rule:   rgba(22,19,14,.13);
+  --rule2:  rgba(22,19,14,.07);
+  --hot:    #C6402A;
+  --cool:   #2C5C86;
 
-  /* ============ left: the machine ============ */
-  .machine{
-    display:flex; flex-direction:column; min-width:0;
-    border-right:1px solid var(--rule);
-  }
+  --serif: "Instrument Serif", Georgia, serif;
+  --sans:  "IBM Plex Sans", system-ui, sans-serif;
+  --mono:  "IBM Plex Mono", ui-monospace, monospace;
+}
 
-  .head{
-    display:flex; align-items:flex-end; gap:16px;
-    padding:20px 26px 15px;
-    border-bottom:1px solid var(--rule);
-    flex:none;
-  }
-  .back{
-    font-family:var(--mono); font-size:15px; line-height:1;
-    color:var(--faint); text-decoration:none; padding-bottom:5px;
-  }
-  .back:hover{ color:var(--hot); }
-  .wordmark{ font-family:var(--serif); font-size:31px; line-height:.9; letter-spacing:-.01em; }
-  .wordmark i{ font-style:italic; color:var(--hot); }
-  .sub{
-    font-family:var(--mono); font-size:9.5px; letter-spacing:.2em;
-    text-transform:uppercase; color:var(--faint);
-    padding-bottom:6px;
-  }
+*{ box-sizing:border-box; }
+html,body{ margin:0; height:100%; }
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:var(--sans); font-size:14px;
+  -webkit-font-smoothing:antialiased; overflow:hidden;
+}
+button{ font:inherit; color:inherit; }
+::-webkit-scrollbar{ width:9px; }
+::-webkit-scrollbar-thumb{ background:var(--rule); }
 
-  .readout{ margin-left:auto; text-align:right; }
-  .readout .n{
-    font-family:var(--mono); font-variant-numeric:tabular-nums;
-    font-size:29px; font-weight:500; line-height:1; letter-spacing:-.02em;
-  }
-  .readout .l{
-    font-family:var(--mono); font-size:9px; letter-spacing:.24em;
-    text-transform:uppercase; color:var(--faint); margin-top:5px;
-  }
+.wrap{ display:grid; grid-template-columns:minmax(0,1fr) 348px; height:100vh; }
+@media(max-width:940px){
+  body{ overflow:auto; }
+  .wrap{ grid-template-columns:1fr; height:auto; }
+}
 
-  canvas{ display:block; width:100%; flex:1; min-height:0; }
-  @media (max-width:920px){ canvas{ height:58vh; flex:none; } }
+/* ---------------- the machine ---------------- */
+.machine{ display:flex; flex-direction:column; min-width:0; border-right:1px solid var(--rule); }
 
-  /* live landing distribution — the shape the physics actually makes */
-  .dist{
-    display:flex; align-items:flex-end; gap:1px;
-    height:26px; padding:0 26px;
-    flex:none; opacity:.6;
-  }
-  .dist i{ flex:1; background:var(--ink); min-height:1px; transition:height .25s ease; }
+.head{
+  display:flex; align-items:flex-end; gap:16px;
+  padding:20px 26px 15px; border-bottom:1px solid var(--rule); flex:none;
+}
+.back{
+  font-family:var(--mono); font-size:15px; line-height:1;
+  color:var(--faint); text-decoration:none; padding-bottom:5px;
+}
+.back:hover{ color:var(--hot); }
+.wordmark{ font-family:var(--serif); font-size:31px; line-height:.9; letter-spacing:-.01em; }
+.wordmark i{ font-style:italic; color:var(--hot); }
+.sub{
+  font-family:var(--mono); font-size:9.5px; letter-spacing:.2em;
+  text-transform:uppercase; color:var(--faint); padding-bottom:6px;
+}
 
-  .deck{
-    display:flex; align-items:center; gap:18px;
-    padding:13px 26px 16px;
-    border-top:1px solid var(--rule);
-    flex:none;
-  }
-  .drop{
-    padding:11px 30px;
-    background:var(--ink); color:var(--paper);
-    border:0; border-radius:2px;
-    font-family:var(--mono); font-size:11px; font-weight:500;
-    letter-spacing:.18em; text-transform:uppercase; cursor:pointer;
-  }
-  .drop:hover{ background:var(--hot); }
-  .drop:active{ transform:translateY(1px); }
+.readout{ margin-left:auto; text-align:right; }
+.readout .n{
+  font-family:var(--mono); font-variant-numeric:tabular-nums;
+  font-size:29px; font-weight:500; line-height:1; letter-spacing:-.02em;
+}
+.readout .l{
+  font-family:var(--mono); font-size:9px; letter-spacing:.24em;
+  text-transform:uppercase; color:var(--faint); margin-top:5px;
+}
 
-  .gauges{ display:flex; gap:24px; }
-  .g .v{
-    font-family:var(--mono); font-variant-numeric:tabular-nums;
-    font-size:14px; font-weight:500;
-  }
-  .g .k{
-    font-family:var(--mono); font-size:8.5px; letter-spacing:.2em;
-    text-transform:uppercase; color:var(--faint); margin-top:3px;
-  }
-  .hint{
-    margin-left:auto; font-family:var(--mono);
-    font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint);
-    cursor:default;
-  }
-  .hint.synced{ color:var(--cool); }
-  .hint.saving{ color:var(--hot); }
+canvas{ display:block; width:100%; flex:1; min-height:0; }
+@media(max-width:940px){ canvas{ height:58vh; flex:none; } }
 
-  /* ============ right: the ledger ============ */
-  .ledger{
-    display:flex; flex-direction:column; min-height:0;
-    background:var(--card);
-  }
-  .tabs{ display:flex; flex:none; border-bottom:1px solid var(--rule); }
-  .tabs button{
-    flex:1; padding:15px 0; background:none; border:0;
-    border-bottom:1px solid transparent; margin-bottom:-1px;
-    font-family:var(--mono); font-size:9.5px; font-weight:500;
-    letter-spacing:.22em; text-transform:uppercase;
-    color:var(--faint); cursor:pointer;
-  }
-  .tabs button.on{ color:var(--ink); border-bottom-color:var(--hot); }
+.dist{ display:flex; align-items:flex-end; gap:1px; height:26px; padding:0 26px; flex:none; opacity:.6; }
+.dist i{ flex:1; background:var(--ink); min-height:1px; transition:height .25s ease; }
 
-  .scroll{ overflow-y:auto; flex:1; min-height:0; }
-  .scroll::-webkit-scrollbar{ width:9px; }
-  .scroll::-webkit-scrollbar-thumb{ background:var(--rule); }
+.deck{
+  display:flex; align-items:center; gap:18px;
+  padding:13px 26px 16px; border-top:1px solid var(--rule); flex:none;
+}
+.drop{
+  padding:11px 30px; background:var(--ink); color:var(--paper);
+  border:0; border-radius:2px;
+  font-family:var(--mono); font-size:11px; font-weight:500;
+  letter-spacing:.18em; text-transform:uppercase; cursor:pointer;
+}
+.drop:hover{ background:var(--hot); }
+.drop:active{ transform:translateY(1px); }
 
-  /* upgrades as ledger rows, not boxes */
-  .up{
-    display:block; width:100%; text-align:left;
-    padding:14px 20px;
-    background:none; border:0; border-bottom:1px solid var(--rule2);
-    cursor:pointer;
-  }
-  .up:hover:not(:disabled){ background:rgba(198,64,42,.05); }
-  .up:disabled{ cursor:default; }
-  .up:disabled .nm, .up:disabled .cost{ color:var(--faint); }
-  .up .r{ display:flex; align-items:baseline; gap:10px; }
-  .up .nm{ font-size:14px; font-weight:600; letter-spacing:-.005em; }
-  .up .eff{
-    margin-left:auto; font-family:var(--mono);
-    font-variant-numeric:tabular-nums; font-size:11px; color:var(--cool);
-  }
-  .up .ds{ font-size:11.5px; color:var(--muted); line-height:1.5; margin:5px 0 8px; }
-  .up .foot{ display:flex; align-items:baseline; }
-  .up .cost{
-    font-family:var(--mono); font-variant-numeric:tabular-nums;
-    font-size:11.5px; font-weight:500;
-  }
-  .up.afford .cost{ color:var(--hot); }
-  .up .lv{
-    margin-left:auto; font-family:var(--mono); font-size:9.5px;
-    letter-spacing:.14em; text-transform:uppercase; color:var(--faint);
-  }
+.gauges{ display:flex; gap:24px; }
+.g .v{ font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:14px; font-weight:500; }
+.g .k{
+  font-family:var(--mono); font-size:8.5px; letter-spacing:.2em;
+  text-transform:uppercase; color:var(--faint); margin-top:3px;
+}
+.hint{
+  margin-left:auto; font-family:var(--mono);
+  font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); cursor:default;
+}
+.hint.synced{ color:var(--cool); }
+.hint.saving{ color:var(--hot); }
 
-  /* stats with dotted leaders */
-  .stats{ padding:18px 20px; }
-  .row{ display:flex; align-items:baseline; gap:6px; padding:7px 0; font-size:12.5px; }
-  .row .k{ color:var(--muted); white-space:nowrap; }
-  .row .dots{ flex:1; border-bottom:1px dotted var(--rule); transform:translateY(-3px); }
-  .row .v{ font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:12px; }
+/* ---------------- ledger ---------------- */
+.ledger{ display:flex; flex-direction:column; min-height:0; background:var(--card); }
+.tabs{ display:flex; flex:none; border-bottom:1px solid var(--rule); }
+.tabs button{
+  flex:1; padding:15px 0; background:none; border:0;
+  border-bottom:1px solid transparent; margin-bottom:-1px;
+  font-family:var(--mono); font-size:9px; font-weight:500;
+  letter-spacing:.18em; text-transform:uppercase; color:var(--faint); cursor:pointer;
+}
+.tabs button.on{ color:var(--ink); border-bottom-color:var(--hot); }
+.scroll{ overflow-y:auto; flex:1; min-height:0; }
 
-  /* prestige */
-  .prestige{ padding:18px 20px; border-top:1px solid var(--rule); flex:none; }
-  .meter{ height:2px; background:var(--rule); margin-bottom:13px; }
-  .meter i{ display:block; height:100%; background:var(--cool); width:0; transition:width .4s ease; }
-  .pbtn{
-    width:100%; padding:12px;
-    background:none; border:1px solid var(--cool); border-radius:2px;
-    color:var(--cool); font-family:var(--mono); font-size:10px; font-weight:500;
-    letter-spacing:.18em; text-transform:uppercase; cursor:pointer;
-  }
-  .pbtn:hover:not(:disabled){ background:var(--cool); color:var(--card); }
-  .pbtn:disabled{ border-color:var(--rule); color:var(--faint); cursor:default; }
-  .cBtn{ border-color:var(--hot); color:var(--hot); }
-  .aBtn{ border-color:#7A5EA8; color:#7A5EA8; }
-  .aBtn:hover:not(:disabled){ background:#7A5EA8; color:var(--card); }
-  .cBtn:hover:not(:disabled){ background:var(--hot); color:var(--paper); }
-  .up.sp .cost{ color:var(--hot); }
-  .up.sp:hover:not(:disabled){ background:rgba(198,64,42,.05); }
-  .pnote{ margin:10px 0 0; font-size:11px; color:var(--muted); line-height:1.6; }
+.bulk{ display:flex; padding:10px 20px; border-bottom:1px solid var(--rule2); }
+.bulk button{
+  flex:1; padding:7px 0; background:none;
+  border:1px solid var(--rule2); border-right:0;
+  font-family:var(--mono); font-size:9.5px; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--muted); cursor:pointer;
+}
+.bulk button:last-child{ border-right:1px solid var(--rule2); }
+.bulk button.on{ background:var(--ink); border-color:var(--ink); color:var(--card); }
 
-  .foot2{ display:flex; border-top:1px solid var(--rule); flex:none; }
-  .foot2 button{
-    flex:1; padding:11px; background:none; border:0;
-    border-right:1px solid var(--rule);
-    font-family:var(--mono); font-size:9px; letter-spacing:.18em;
-    text-transform:uppercase; color:var(--faint); cursor:pointer;
-  }
-  .foot2 button:last-child{ border-right:0; }
-  .foot2 button:hover{ color:var(--hot); }
+.up{
+  display:block; width:100%; text-align:left;
+  padding:14px 20px; background:none; border:0;
+  border-bottom:1px solid var(--rule2); cursor:pointer;
+}
+.up:hover:not(:disabled){ background:rgba(198,64,42,.05); }
+.up:disabled{ cursor:default; }
+.up:disabled .nm, .up:disabled .cost{ color:var(--faint); }
+.up .r{ display:flex; align-items:baseline; gap:10px; }
+.up .nm{ font-size:14px; font-weight:600; letter-spacing:-.005em; }
+.up .eff{
+  margin-left:auto; font-family:var(--mono);
+  font-variant-numeric:tabular-nums; font-size:11px; color:var(--cool);
+}
+.up .ds{ font-size:11.5px; color:var(--muted); line-height:1.5; margin:5px 0 8px; }
+.up .foot{ display:flex; align-items:baseline; }
+.up .cost{ font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:11.5px; font-weight:500; }
+.up.afford .cost{ color:var(--hot); }
+.up .lv{
+  margin-left:auto; font-family:var(--mono); font-size:9.5px;
+  letter-spacing:.14em; text-transform:uppercase; color:var(--faint);
+}
+.up.pr .cost{ color:var(--cool); }
+.up.pr:hover:not(:disabled){ background:rgba(44,92,134,.06); }
+.up.sp .cost{ color:var(--hot); }
+.up.sp:hover:not(:disabled){ background:rgba(198,64,42,.05); }
 
-  /* ---- bulk buy ---- */
-  .bulk{ display:flex; gap:0; padding:10px 20px; border-bottom:1px solid var(--rule); }
-  .bulk button{
-    flex:1; padding:6px 0; background:none;
-    border:1px solid var(--rule); border-right:0;
-    font-family:var(--mono); font-size:9.5px; letter-spacing:.16em;
-    text-transform:uppercase; color:var(--muted); cursor:pointer;
-  }
-  .bulk button:last-child{ border-right:1px solid var(--rule); }
-  .bulk button.on{ background:var(--ink); border-color:var(--ink); color:var(--paper); }
+.prismhead, .qhead{
+  display:flex; align-items:baseline; gap:10px;
+  padding:18px; border-bottom:1px solid var(--rule);
+}
+.prismhead .n, .qhead .n{ font-family:var(--mono); font-size:22px; font-weight:500; color:var(--cool); }
+.qhead .n{ color:var(--hot); }
+.prismhead .k, .qhead .k{
+  font-family:var(--mono); font-size:9px; letter-spacing:.22em;
+  text-transform:uppercase; color:var(--faint);
+}
 
-  /* ---- prisms ---- */
-  .prismhead{
-    padding:16px 20px; border-bottom:1px solid var(--rule);
-    display:flex; align-items:baseline; gap:10px;
-  }
-  .prismhead .n{
-    font-family:var(--mono); font-variant-numeric:tabular-nums;
-    font-size:22px; font-weight:500; color:var(--cool);
-  }
-  .prismhead .k{
-    font-family:var(--mono); font-size:9px; letter-spacing:.22em;
-    text-transform:uppercase; color:var(--faint);
-  }
-  .up.pr .cost{ color:var(--cool); }
-  .up.pr:hover:not(:disabled){ background:rgba(44,92,134,.06); }
+.sect{ padding:16px 20px 6px; }
+.sect h4{
+  margin:0 0 2px; font-family:var(--mono); font-size:9px; font-weight:500;
+  letter-spacing:.24em; text-transform:uppercase; color:var(--faint);
+}
 
-  /* ---- milestones ---- */
-  .ms{
-    display:flex; align-items:center; gap:10px;
-    padding:10px 20px; border-bottom:1px solid var(--rule2);
-    font-size:12.5px;
-  }
-  .ms .dot{
-    width:7px; height:7px; border-radius:50%; flex:none;
-    border:1px solid var(--faint);
-  }
-  .ms.done .dot{ background:var(--hot); border-color:var(--hot); }
-  .ms.done .lbl{ color:var(--muted); text-decoration:line-through; }
-  .ms .req{
-    margin-left:auto; font-family:var(--mono);
-    font-variant-numeric:tabular-nums; font-size:10.5px; color:var(--faint);
-  }
+/* tree */
+.trow{ position:relative; padding:0 14px; }
+.trow .tier{
+  font-family:var(--mono); font-size:8.5px; letter-spacing:.2em;
+  text-transform:uppercase; color:var(--faint); padding:14px 6px 7px;
+}
+.tnodes{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.tnode{
+  position:relative; text-align:left; padding:10px 9px;
+  border:1px solid var(--rule); border-radius:6px;
+  background:var(--card); cursor:pointer; color:inherit;
+  transition:border-color .16s, transform .14s, background .16s;
+}
+.tnode:hover:not(:disabled){ transform:translateY(-2px); border-color:var(--ink); }
+.tnode:disabled{ cursor:default; }
+.tnode.locked{ opacity:.38; }
+.tnode.owned{ border-color:var(--hot); background:rgba(198,64,42,.06); }
+.tnode .nm{ font-size:11.5px; font-weight:600; line-height:1.25; }
+.tnode .lv{ font-family:var(--mono); font-size:9px; color:var(--faint); margin-top:3px; }
+.tnode .ef{ font-family:var(--mono); font-size:9.5px; color:var(--cool); margin-top:5px; }
+.tnode .cs{ font-family:var(--mono); font-size:10px; margin-top:5px; color:var(--hot); }
+.tnode.locked .cs, .tnode:disabled .cs{ color:var(--faint); }
+.tnode.child::before{
+  content:''; position:absolute; left:50%; top:-15px;
+  width:1px; height:15px; background:var(--rule);
+}
+.tnode.owned.child::before{ background:var(--hot); }
+.tdesc{ font-size:10.5px; color:var(--muted); line-height:1.5; margin-top:6px; }
 
-  /* ---- quanta tree ---- */
-  .qhead{
-    padding:16px 20px; border-bottom:1px solid var(--rule);
-    display:flex; align-items:baseline; gap:9px;
-  }
-  .qhead .n{ font-family:var(--mono); font-size:22px; font-weight:500; color:var(--hot); }
-  .qhead .k{ font-family:var(--mono); font-size:9px; letter-spacing:.22em;
-    text-transform:uppercase; color:var(--faint); }
+/* record */
+.stats{ padding:18px 20px; }
+.row{ display:flex; align-items:baseline; gap:6px; padding:7px 0; font-size:12.5px; }
+.row .k{ color:var(--muted); white-space:nowrap; }
+.row .dots{ flex:1; border-bottom:1px dotted var(--rule); transform:translateY(-3px); }
+.row .v{ font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:12px; }
 
-  .trow{ position:relative; padding:0 14px; }
-  .trow .tier{
-    font-family:var(--mono); font-size:8.5px; letter-spacing:.2em;
-    text-transform:uppercase; color:var(--faint); padding:14px 6px 7px;
-  }
-  .tnodes{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
-  .tnode{
-    position:relative; text-align:left; padding:10px 9px;
-    border:1px solid var(--rule); border-radius:8px;
-    background:var(--card); cursor:pointer;
-    transition:border-color .16s, transform .14s, background .16s;
-  }
-  .tnode:hover:not(:disabled){ transform:translateY(-2px); border-color:var(--ink); }
-  .tnode:disabled{ cursor:default; }
-  .tnode.locked{ opacity:.38; }
-  .tnode.owned{ border-color:var(--hot); background:rgba(198,64,42,.06); }
-  .tnode .nm{ font-size:11.5px; font-weight:600; line-height:1.25; }
-  .tnode .lv{ font-family:var(--mono); font-size:9px; color:var(--faint); margin-top:3px; }
-  .tnode .ef{ font-family:var(--mono); font-size:9.5px; color:var(--cool); margin-top:5px; }
-  .tnode .cs{ font-family:var(--mono); font-size:10px; margin-top:5px; color:var(--hot); }
-  .tnode.locked .cs, .tnode:disabled .cs{ color:var(--faint); }
-  /* the connector up to the row above */
-  .tnode.child::before{
-    content:''; position:absolute; left:50%; top:-15px;
-    width:1px; height:15px; background:var(--rule);
-  }
-  .tnode.owned.child::before{ background:var(--hot); }
-  .tdesc{ font-size:10.5px; color:var(--muted); line-height:1.5; margin-top:6px; }
+.ms{
+  display:flex; align-items:center; gap:10px;
+  padding:10px 20px; border-bottom:1px solid var(--rule2); font-size:12.5px;
+}
+.ms .dot{ width:7px; height:7px; border-radius:50%; flex:none; border:1px solid var(--faint); }
+.ms.done .dot{ background:var(--hot); border-color:var(--hot); }
+.ms.done .lbl{ color:var(--muted); text-decoration:line-through; }
+.ms .req{
+  margin-left:auto; font-family:var(--mono);
+  font-variant-numeric:tabular-nums; font-size:10.5px; color:var(--faint);
+}
 
-  /* ---- settings ---- */
-  .sect{ padding:16px 20px 6px; }
-  .sect h4{
-    margin:0 0 2px; font-family:var(--mono); font-size:9px; font-weight:500;
-    letter-spacing:.24em; text-transform:uppercase; color:var(--faint);
-  }
-  .opt{
-    display:flex; align-items:center; gap:12px;
-    padding:12px 20px; border-bottom:1px solid var(--rule2);
-  }
-  .opt .t{ min-width:0; flex:1; }
-  .opt .t b{ display:block; font-size:13px; font-weight:600; }
-  .opt .t span{ display:block; font-size:11px; color:var(--muted); line-height:1.45; margin-top:2px; }
-  .sw{
-    flex:none; min-width:62px; padding:6px 0;
-    background:none; border:1px solid var(--rule); border-radius:2px;
-    font-family:var(--mono); font-size:9px; letter-spacing:.16em;
-    text-transform:uppercase; color:var(--muted); cursor:pointer;
-  }
-  .sw:hover{ border-color:var(--faint); color:var(--ink); }
-  .sw.on{ background:var(--ink); border-color:var(--ink); color:var(--paper); }
+/* settings */
+.opt{ display:flex; align-items:center; gap:12px; padding:12px 20px; border-bottom:1px solid var(--rule2); }
+.opt .t{ min-width:0; flex:1; }
+.opt .t b{ display:block; font-size:13px; font-weight:600; }
+.opt .t span{ display:block; font-size:11px; color:var(--muted); line-height:1.45; margin-top:2px; }
+.sw{
+  flex:none; min-width:62px; padding:6px 0;
+  background:none; border:1px solid var(--rule); border-radius:2px;
+  font-family:var(--mono); font-size:9px; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--muted); cursor:pointer;
+}
+.sw:hover{ border-color:var(--faint); color:var(--ink); }
+.sw.on{ background:var(--ink); border-color:var(--ink); color:var(--paper); }
 
-  .swatches{ display:flex; gap:8px; padding:4px 20px 16px; flex-wrap:wrap; }
-  .sws{
-    width:60px; padding:0; cursor:pointer;
-    background:none; border:1px solid var(--rule); border-radius:2px;
-    overflow:hidden;
-  }
-  .sws.on{ border-color:var(--hot); }
-  .sws .bar{ display:flex; height:24px; }
-  .sws .bar i{ flex:1; }
-  .sws .nm{
-    display:block; padding:4px 0 5px;
-    font-family:var(--mono); font-size:8px; letter-spacing:.12em;
-    text-transform:uppercase; color:var(--muted);
-  }
-  .sws.on .nm{ color:var(--ink); }
+.swatches{ display:flex; gap:8px; padding:4px 20px 16px; flex-wrap:wrap; }
+.sws{ width:60px; padding:0; cursor:pointer; background:none; border:1px solid var(--rule); border-radius:2px; overflow:hidden; }
+.sws.on{ border-color:var(--hot); }
+.sws .bar{ display:flex; height:24px; }
+.sws .bar i{ flex:1; }
+.sws .nm{
+  display:block; padding:4px 0 5px;
+  font-family:var(--mono); font-size:8px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--muted);
+}
+.sws.on .nm{ color:var(--ink); }
 
-  .toast{
-    position:fixed; left:50%; bottom:24px; transform:translateX(-50%);
-    background:var(--ink); color:var(--paper);
-    padding:10px 20px; border-radius:2px;
-    font-family:var(--mono); font-size:11px; letter-spacing:.06em;
-    opacity:0; pointer-events:none; transition:opacity .3s ease;
-  }
-  .toast.show{ opacity:1; }
+/* prestige rail */
+.prestige{ padding:18px 20px; border-top:1px solid var(--rule); flex:none; }
+.meter{ height:2px; background:var(--rule); margin-bottom:13px; }
+.meter i{ display:block; height:100%; background:var(--cool); width:0; transition:width .4s ease; }
+.pbtn{
+  width:100%; padding:12px;
+  background:none; border:1px solid var(--cool); border-radius:2px;
+  color:var(--cool); font-family:var(--mono); font-size:10px; font-weight:500;
+  letter-spacing:.18em; text-transform:uppercase; cursor:pointer;
+}
+.pbtn:hover:not(:disabled){ background:var(--cool); color:var(--card); }
+.pbtn:disabled{ border-color:var(--rule); color:var(--faint); cursor:default; }
+.cBtn{ border-color:var(--hot); color:var(--hot); }
+.cBtn:hover:not(:disabled){ background:var(--hot); color:var(--paper); }
+.aBtn{ border-color:#7A5EA8; color:#7A5EA8; }
+.aBtn:hover:not(:disabled){ background:#7A5EA8; color:var(--card); }
+.rBtn{ border-color:#9C6B2F; color:#9C6B2F; }
+.rBtn:hover:not(:disabled){ background:#9C6B2F; color:var(--card); }
+.tBtn{ border-color:#2F7F6B; color:#2F7F6B; }
+.tBtn:hover:not(:disabled){ background:#2F7F6B; color:var(--card); }
+.pnote{ margin:10px 0 0; font-size:11px; color:var(--muted); line-height:1.6; }
+
+.foot2{ display:flex; border-top:1px solid var(--rule); flex:none; }
+.foot2 button{
+  flex:1; padding:11px; background:none; border:0;
+  border-right:1px solid var(--rule);
+  font-family:var(--mono); font-size:9px; letter-spacing:.18em;
+  text-transform:uppercase; color:var(--faint); cursor:pointer;
+}
+.foot2 button:last-child{ border-right:0; }
+.foot2 button:hover{ color:var(--hot); }
+
+.toast{
+  position:fixed; left:50%; bottom:24px; transform:translateX(-50%);
+  background:var(--ink); color:var(--paper);
+  padding:10px 20px; border-radius:2px;
+  font-family:var(--mono); font-size:11px; letter-spacing:.06em;
+  opacity:0; pointer-events:none; transition:opacity .3s ease;
+}
+.toast.show{ opacity:1; }
+
+/* ---------------- cosmos: constellations, bazaar, quests ---------------- */
+.chead{
+  display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;
+  padding:18px; border-bottom:1px solid var(--rule);
+}
+.chead div{ display:flex; align-items:baseline; gap:7px; }
+.chead .n{ font-family:var(--mono); font-size:20px; font-weight:500; }
+.chead .n.ae{ color:#7A5EA8; }
+.chead .n.sh{ color:#2F7F6B; }
+.chead .k{
+  font-family:var(--mono); font-size:8.5px; letter-spacing:.22em;
+  text-transform:uppercase; color:var(--faint);
+}
+
+.cons{ display:grid; grid-template-columns:repeat(2,1fr); gap:8px; padding:0 14px 14px; }
+.con{
+  position:relative; text-align:left; padding:11px 10px;
+  border:1px solid var(--rule); border-radius:6px;
+  background:var(--card); cursor:pointer; color:inherit;
+  transition:border-color .16s, background .16s;
+}
+.con:hover:not(:disabled){ border-color:var(--ink); }
+.con:disabled{ cursor:default; opacity:.5; }
+.con.active{ border-color:#7A5EA8; background:rgba(122,94,168,.08); }
+.con .nm{ font-size:12px; font-weight:600; }
+.con .ds{ font-size:10.5px; color:var(--muted); line-height:1.4; margin-top:4px; }
+.con .ef{ font-family:var(--mono); font-size:9.5px; color:var(--cool); margin-top:5px; }
+.con .cs{ font-family:var(--mono); font-size:10px; color:#7A5EA8; margin-top:4px; }
+.con .tag{
+  position:absolute; top:8px; right:9px;
+  font-family:var(--mono); font-size:7.5px; letter-spacing:.14em;
+  text-transform:uppercase; color:#7A5EA8;
+}
+
+.quest{
+  padding:14px 20px; border-bottom:1px solid var(--rule2);
+}
+.quest .qt{ display:flex; align-items:baseline; gap:8px; }
+.quest .qn{ font-size:13px; font-weight:600; }
+.quest .qr{
+  margin-left:auto; font-family:var(--mono); font-size:10px; color:#2F7F6B;
+}
+.quest .qd{ font-size:11px; color:var(--muted); margin:4px 0 8px; }
+.qbar{ height:3px; background:var(--rule); }
+.qbar i{ display:block; height:100%; background:#2F7F6B; width:0; transition:width .3s ease; }
+.quest.done{ opacity:.55; }
+
+.balls{ display:flex; gap:7px; padding:0 20px 16px; flex-wrap:wrap; }
+.ballb{
+  padding:8px 12px; border:1px solid var(--rule); border-radius:2px;
+  background:none; cursor:pointer;
+  font-family:var(--mono); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--muted);
+}
+.ballb.on{ background:var(--ink); border-color:var(--ink); color:var(--paper); }
+.ballb:disabled{ opacity:.35; cursor:default; }
+
+body.dark .drop{ background:var(--hot); color:#120C0A; }
+body.dark .drop:hover{ background:var(--ink); color:var(--paper); }
+body.dark .sw.on{ background:var(--hot); border-color:var(--hot); color:#120C0A; }
+body.dark .bulk button.on{ background:var(--hot); border-color:var(--hot); color:#120C0A; }
+body.dark .toast{ background:var(--hot); color:#120C0A; }
+body.dark ::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.16); }
+body.dark .tnode{ background:rgba(255,255,255,.03); }
+body.dark .tnode.owned{ background:rgba(232,103,78,.12); }
+body.dark .con{ background:rgba(255,255,255,.03); }
+
+/* ---------------- the forge ---------------- */
+.fbench{ display:grid; grid-template-columns:repeat(auto-fill,minmax(74px,1fr)); gap:8px; padding:0 18px 16px; }
+.orb{
+  position:relative; aspect-ratio:1; border:1px solid var(--rule); border-radius:8px;
+  background:var(--card); cursor:pointer; color:inherit; padding:6px 4px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+  transition:border-color .14s, transform .14s;
+}
+.orb:hover{ transform:translateY(-2px); border-color:var(--ink); }
+.orb.sel{ border-color:var(--hot); box-shadow:0 0 0 1px var(--hot); }
+.orb .ball{
+  width:26px; height:26px; border-radius:50%;
+  box-shadow:inset -3px -3px 6px rgba(0,0,0,.35), inset 2px 2px 4px rgba(255,255,255,.35);
+}
+.orb .tt{ font-family:var(--mono); font-size:9px; color:var(--faint); }
+.orb .nm2{ font-size:9px; line-height:1.1; text-align:center; color:var(--muted); }
+.orb .bs{ font-family:var(--mono); font-size:8.5px; color:var(--cool); }
+.fslots{ display:grid; grid-template-columns:repeat(auto-fill,minmax(74px,1fr)); gap:8px; padding:0 18px 16px; }
+.fslot{
+  aspect-ratio:1; border:1px dashed var(--rule); border-radius:8px;
+  display:grid; place-items:center; font-family:var(--mono); font-size:9px; color:var(--faint);
+}
+.frow{ display:flex; gap:8px; padding:0 18px 14px; }
+.frow button{
+  flex:1; padding:9px; background:none; border:1px solid var(--rule); border-radius:2px;
+  font-family:var(--mono); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--muted); cursor:pointer;
+}
+.frow button:hover:not(:disabled){ border-color:var(--hot); color:var(--hot); }
+.frow button:disabled{ opacity:.4; cursor:default; }
+
+@media(prefers-reduced-motion: reduce){
+  *{ animation:none !important; transition-duration:.01ms !important; }
+}
 </style>
 </head>
 
@@ -373,6 +434,8 @@
       <button class="on" data-tab="up">Upgrades</button>
       <button data-tab="prism">Prisms</button>
       <button data-tab="tree" id="treeTab">Tree</button>
+      <button data-tab="cosmos" id="cosmosTab">Cosmos</button>
+      <button data-tab="forge" id="forgeTab">Forge</button>
       <button data-tab="stats">Record</button>
       <button data-tab="set">Settings</button>
     </div>
@@ -386,6 +449,8 @@
     <div class="scroll" id="upList"></div>
     <div class="scroll" id="prismList" style="display:none"></div>
     <div class="scroll" id="treeList" style="display:none"></div>
+    <div class="scroll" id="cosmosList" style="display:none"></div>
+    <div class="scroll" id="forgeList" style="display:none"></div>
     <div class="scroll stats" id="statList" style="display:none"></div>
     <div class="scroll" id="setList" style="display:none"></div>
 
@@ -394,6 +459,8 @@
       <button class="pbtn" id="pBtn" disabled>Recalibrate</button>
       <button class="pbtn cBtn" id="cBtn" style="display:none;margin-top:8px">Collapse</button>
       <button class="pbtn aBtn" id="aBtn" style="display:none;margin-top:8px">Ascend</button>
+      <button class="pbtn tBtn" id="tBtn" style="display:none;margin-top:8px">Transcend</button>
+      <button class="pbtn rBtn" id="rBtn" style="display:none;margin-top:8px">Reforge</button>
       <p class="pnote" id="pNote"></p>
     </div>
 
@@ -453,11 +520,17 @@ const THEMES = {
     peg:'rgba(22,19,14,.20)', ball:'#C6402A', slotInk:'#16130E', slotHot:'#C6402A',
     label:'rgba(22,19,14,.5)' },
 
-  ink: { name:'Ink', vars:{
-      paper:'#111010', card:'#191817', ink:'#EDE9E0', muted:'#9A948A', faint:'#645F58',
-      rule:'rgba(237,233,224,.15)', rule2:'rgba(237,233,224,.08)', hot:'#E4614A', cool:'#7FB4DC' },
-    peg:'rgba(237,233,224,.22)', ball:'#E4614A', slotInk:'#EDE9E0', slotHot:'#E4614A',
-    label:'rgba(237,233,224,.55)' },
+  ink: { name:'Ink', dark:true, vars:{
+      paper:'#0E0D0C', card:'#161514', ink:'#F0ECE4', muted:'#A29B90', faint:'#6B655C',
+      rule:'rgba(240,236,228,.16)', rule2:'rgba(240,236,228,.075)', hot:'#E8674E', cool:'#84B9E0' },
+    peg:'rgba(240,236,228,.24)', ball:'#E8674E', slotInk:'#F0ECE4', slotHot:'#E8674E',
+    label:'rgba(240,236,228,.58)' },
+
+  midnight: { name:'Midnight', dark:true, vars:{
+      paper:'#080A0F', card:'#101319', ink:'#E8ECF3', muted:'#98A2B3', faint:'#5E6879',
+      rule:'rgba(232,236,243,.15)', rule2:'rgba(232,236,243,.07)', hot:'#F2925B', cool:'#7FC4D8' },
+    peg:'rgba(232,236,243,.22)', ball:'#F2925B', slotInk:'#E8ECF3', slotHot:'#F2925B',
+    label:'rgba(232,236,243,.55)' },
 
   blueprint: { name:'Blueprint', vars:{
       paper:'#0D1B26', card:'#122430', ink:'#DCE9F2', muted:'#8AA6BA', faint:'#54728A',
@@ -478,12 +551,34 @@ function applyTheme(key){
   TH = THEMES[key] || THEMES.paper;
   const root = document.documentElement.style;
   for (const k in TH.vars) root.setProperty('--' + k, TH.vars[k]);
+  /* form controls, scrollbars and the browser's own chrome follow this */
+  document.documentElement.style.colorScheme = TH.dark ? 'dark' : 'light';
+  document.body.classList.toggle('dark', !!TH.dark);
   document.querySelectorAll('.sws').forEach(b => b.classList.toggle('on', b.dataset.theme === key));
+  const m = document.querySelector('meta[name="theme-color"]');
+  if (m) m.setAttribute('content', TH.vars.paper);
+}
+
+const isDark = () => !!(THEMES[S.opt.theme] || {}).dark;
+
+/* the toggle remembers which light and dark theme you last used
+   rather than always snapping back to the defaults */
+function toggleDark(){
+  if (isDark()){
+    S.opt.lastDark = S.opt.theme;
+    setOpt('theme', S.opt.lastLight || 'paper');
+  } else {
+    S.opt.lastLight = S.opt.theme;
+    setOpt('theme', S.opt.lastDark || 'ink');
+  }
 }
 
 /* ---------------- state ---------------- */
 const DEFAULT_OPT = {
-  theme: 'paper',
+  /* dark by default; the light themes are still a click away */
+  theme: 'ink',
+  lastLight: 'paper',
+  lastDark: 'ink',
   showDist: true,      // landing histogram under the board
   showLabels: true,    // × multiplier printed in each slot
   confirmReset: true,  // ask before prestiging
@@ -502,7 +597,15 @@ const FRESH = () => ({
   sv:{ res:0, yield:0, found:0, spark:0 },  // spectra shop — permanent
   spectra:0, spectraEarned:0,
   quanta:0, quantaEarned:0,
-  tree:{},                                   // quanta tree — survives everything
+  tree:{},                                   // quanta tree — lost on transcension
+  aether:0, aetherEarned:0,
+  cons:{}, active:[],                        // constellations owned / equipped
+  shards:0, bz:{},                           // quest currency and the bazaar
+  quests:[], questAt:0,
+  ball:'std',
+  alloy:0, alloyEarned:0,
+  bench:[], equipped:[], mergeCount:0, bestOrb:0,
+  selOrb:null,
   flux:0, surgeUntil:0,
   ms:{}                                      // milestones already claimed
 });
@@ -554,7 +657,30 @@ const UPGRADES = [
     cost: l => 1500 * Math.pow(1.6, l),
     eff:  l => Math.min(0.86, 0.45 + l * 0.03),
     show: v => Math.round(v*100) + '% bounce',
-    max: 14 }
+    max: 14 },
+  { id:'floor', name:'Backstop',
+    desc:'Lifts what the crowded middle slots pay — where most balls actually land.',
+    cost: l => 3000 * Math.pow(1.6, l),
+    eff:  l => l * 0.18,
+    show: v => '+' + v.toFixed(2) + ' base' },
+  { id:'jackpot', name:'Jackpot Pins',
+    desc:'A chance for any landing to pay five times over.',
+    cost: l => 6000 * Math.pow(1.7, l),
+    eff:  l => Math.min(0.4, l * 0.02),
+    show: v => Math.round(v*100) + '% for 5×',
+    max: 20 },
+  { id:'echo', name:'Ricochet',
+    desc:'A chance a landed ball kicks a free one back up the board.',
+    cost: l => 12000 * Math.pow(1.8, l),
+    eff:  l => Math.min(0.5, l * 0.025),
+    show: v => Math.round(v*100) + '% free ball',
+    max: 20 },
+  { id:'funnel', name:'Funnel',
+    desc:'Narrows the drop, so balls start with a harder push outward.',
+    cost: l => 20000 * Math.pow(1.9, l),
+    eff:  l => l * 0.6,
+    show: v => '+' + v.toFixed(1) + ' spread',
+    max: 15 }
 ];
 
 const U = {};
@@ -568,13 +694,15 @@ const maxed = id => capOf(U[id]) !== undefined && lvl(id) >= capOf(U[id]);
 const prismMult = () =>
   (1 + S.prisms * 0.5) * peff('boost') * msMult() *
   seff('res') * nEff('density') * nEff('singularity') *
+  cEff('forge') * bz('purse') * nEff('well') * genTotal('mult') * orbEff('mult') *
   (surgeActive() ? SURGE_MULT : 1);
 
 /* Exponent below 1 on purpose. At 1 or above each prestige feeds the
    next and it runs away. At 0.4 numbers climb forever, watchably. */
 const PRISM_EXP = 0.4;
 const prismsAvailable = () => Math.floor(Math.pow(Math.max(0, S.earned) / 1e6, PRISM_EXP));
-const prismsOnReset = () => Math.max(0, Math.floor((prismsAvailable() - S.prismsEarned) * peff('gain') * nEff('facet')));
+const gainMult = () => nEff('prism2') * genTotal('gain') * cEff('crown') * (1 + orbEff('gain'));
+const prismsOnReset = () => Math.max(0, Math.floor((prismsAvailable() - S.prismsEarned) * peff('gain') * nEff('facet') * gainMult()));
 const nextPrismAt = () => 1e6 * Math.pow(S.prismsEarned + 1, 1 / PRISM_EXP);
 
 /* ---------------- the prism shop ----------------
@@ -602,7 +730,29 @@ const PRISM_UP = [
     desc:'Start every run with free levels of Chip Weight and Auto Dropper.',
     cost: l => Math.ceil(5 * Math.pow(2.8, l)),
     eff:  l => l * 3,
-    show: v => v + ' free levels' }
+    show: v => v + ' free levels' },
+  { id:'shine', name:'Lustre',
+    desc:'Golden balls pay more than the usual twenty-five times.',
+    cost: l => Math.ceil(8 * Math.pow(2.9, l)),
+    eff:  l => 25 + l * 12,
+    show: v => v + '× golden' },
+  { id:'tide', name:'Undertow',
+    desc:'Surges run longer for the same flux.',
+    cost: l => Math.ceil(6 * Math.pow(2.7, l)),
+    eff:  l => 1 + l * 0.4,
+    show: v => '×' + v.toFixed(1) + ' surge time',
+    max: 12 },
+  { id:'dawn', name:'Nightshift',
+    desc:'Time away is credited at a better rate.',
+    cost: l => Math.ceil(7 * Math.pow(2.6, l)),
+    eff:  l => 1 + l * 0.5,
+    show: v => '×' + v.toFixed(1) + ' offline',
+    max: 14 },
+  { id:'seed', name:'Float',
+    desc:'Begin each recalibration with chips already banked.',
+    cost: l => Math.ceil(10 * Math.pow(3, l)),
+    eff:  l => l,
+    show: v => v > 0 ? 'seeded start' : 'none' }
 ];
 const PU = {};
 PRISM_UP.forEach(u => PU[u.id] = u);
@@ -622,7 +772,7 @@ const COLLAPSE_AT = 500;          // prisms earned before it unlocks
 const SPECTRA_EXP = 0.5;
 
 const spectraAvailable = () =>
-  Math.floor(Math.pow(Math.max(0, S.prismsEarned) / COLLAPSE_AT, SPECTRA_EXP) * sYield() * nEff('lens'));
+  Math.floor(Math.pow(Math.max(0, S.prismsEarned) / COLLAPSE_AT, SPECTRA_EXP) * sYield() * nEff('lens') * gainMult());
 const spectraOnCollapse = () => Math.max(0, spectraAvailable() - S.spectraEarned);
 const collapseUnlocked = () => S.prismsEarned >= COLLAPSE_AT || S.spectraEarned > 0;
 
@@ -669,7 +819,7 @@ const ASCEND_AT = 40;             // lifetime spectra before it unlocks
 const QUANTA_EXP = 0.55;
 
 const quantaAvailable = () =>
-  Math.floor(Math.pow(Math.max(0, S.spectraEarned) / ASCEND_AT, QUANTA_EXP) * (1 + node('flux2')*0.25));
+  Math.floor(Math.pow(Math.max(0, S.spectraEarned) / ASCEND_AT, QUANTA_EXP) * (1 + node('flux2')*0.25) * gainMult());
 const quantaOnAscend = () => Math.max(0, quantaAvailable() - S.quantaEarned);
 const ascendUnlocked = () => S.spectraEarned >= ASCEND_AT || S.quantaEarned > 0;
 
@@ -725,13 +875,399 @@ const TREE = [
     desc:'Keep a share of the spectra shop through an ascension.',
     eff: l => Math.min(0.8, l*0.12), show: v => (v*100).toFixed(0)+'% kept' }
 ];
+/* ---- a fifth handcrafted tier ---- */
+TREE.push(
+  { id:'prism2', row:4, needs:'singularity', max:99, name:'Refractor',
+    cost: l => Math.ceil(120*Math.pow(3.4,l)),
+    desc:'Multiplies every prestige currency you collect.',
+    eff: l => 1 + l*0.4, show: v => '×'+v.toFixed(2)+' all gains' },
+  { id:'storm',  row:4, needs:'echo', max:40, name:'Storm Front',
+    cost: l => Math.ceil(90*Math.pow(3,l)),
+    desc:'Golden balls, ricochets and flux all at once.',
+    eff: l => l*0.02, show: v => '+'+Math.round(v*100)+'% everything' },
+  { id:'well',   row:4, needs:'flux2', max:99, name:'The Well',
+    cost: l => Math.ceil(150*Math.pow(3.8,l)),
+    desc:'A flat multiplier that never stops climbing.',
+    eff: l => Math.pow(2.5,l), show: v => '×'+fmt(v) }
+);
+
+/* ================================================================
+   THE TREE KEEPS GROWING
+
+   Past the handcrafted tiers the tree generates its own. Clear a
+   tier — one level in every node — and the next appears. Names and
+   effects are derived from the tier number rather than randomised,
+   so the same tier is identical on every device and after every
+   reload; nothing about your tree depends on when you looked at it.
+   ================================================================ */
+const BASE_TIERS = 5;
+
+const GEN_KINDS = [
+  { k:'mult', label:'Amplifier', desc:'A flat multiplier on everything you earn.',
+    eff:(l,t) => Math.pow(1.3 + t*0.02, l), show:v => '×'+fmt(v) },
+  { k:'rate', label:'Governor',  desc:'The auto dropper runs faster.',
+    eff:(l,t) => 1 + l*(0.25 + t*0.02), show:v => '×'+v.toFixed(2)+' rate' },
+  { k:'gain', label:'Distiller', desc:'More of every prestige currency.',
+    eff:(l,t) => 1 + l*(0.1 + t*0.01), show:v => '×'+v.toFixed(2)+' gains' },
+  { k:'slot', label:'Escapement',desc:'Every slot on the board pays more.',
+    eff:(l,t) => 1 + l*(0.2 + t*0.015), show:v => '×'+v.toFixed(2)+' slots' },
+  { k:'gold', label:'Gilder',    desc:'Raises the golden ball chance.',
+    eff:(l,t) => Math.min(0.4, l*0.012), show:v => '+'+Math.round(v*100)+'% golden' },
+  { k:'flux', label:'Dynamo',    desc:'More flux from every golden ball.',
+    eff:(l,t) => l, show:v => '+'+v+' flux' }
+];
+
+const GEN_PREFIX = ['Deep','Outer','Silent','Hollow','Bright','Iron','Pale','Vast',
+                    'First','Last','Quiet','Wandering','Folded','Endless'];
+
+/* deterministic: tier number in, same three nodes out, every time */
+function genTier(t){
+  const out = [];
+  for (let i = 0; i < 3; i++){
+    /* 5 and 11 are coprime with the pool sizes (6 and 14), so the same
+       three names don't come back around for 42 tiers. Multiplying by
+       3 and 7 as I first had it repeated every second tier. */
+    const kind = GEN_KINDS[(t*5 + i) % GEN_KINDS.length];
+    const pre  = GEN_PREFIX[(t*11 + i*5) % GEN_PREFIX.length];
+    const id   = 'g' + t + '_' + i;
+    const scale = Math.pow(4.2, t - BASE_TIERS);
+    out.push({
+      id, row:t, gen:true, kind:kind.k, tier:t,
+      name: pre + ' ' + kind.label,
+      desc: kind.desc,
+      max: 99,
+      needs: null,                       // a whole tier gates the next
+      cost: l => Math.ceil(220 * scale * (1 + i*0.4) * Math.pow(2.6 + t*0.06, l)),
+      eff:  l => kind.eff(l, t),
+      show: kind.show
+    });
+  }
+  return out;
+}
+
+/* how deep the tree currently goes: clear every node in a tier to
+   open the next one */
+function treeDepth(){
+  let t = BASE_TIERS;
+  while (t < BASE_TIERS + 200){
+    const tier = genTier(t);
+    if (!tier.every(nd => (S.tree && S.tree[nd.id]) > 0)) return t;
+    t++;
+  }
+  return t;
+}
+
+/* base tier 4 must be cleared before generation starts */
+function baseCleared(){
+  return TREE.filter(t => t.row === BASE_TIERS - 1).every(t => node(t.id) > 0);
+}
+
+function allTiers(){
+  const rows = [];
+  for (let r = 0; r < BASE_TIERS; r++) rows.push(TREE.filter(t => t.row === r));
+  if (baseCleared()){
+    const depth = treeDepth();
+    for (let t = BASE_TIERS; t <= depth; t++) rows.push(genTier(t));
+  }
+  return rows;
+}
+
+/* generated nodes are summed by kind, so the economy does not need to
+   know how many exist */
+function genTotal(kind){
+  let mult = 1, add = 0;
+  if (!S.tree) return kind === 'gold' || kind === 'flux' ? 0 : 1;
+  Object.keys(S.tree).forEach(id => {
+    const m = /^g(\d+)_(\d+)$/.exec(id);
+    if (!m) return;
+    const t = +m[1], i = +m[2], lv = S.tree[id];
+    if (!lv) return;
+    const nd = genTier(t)[i];
+    if (!nd || nd.kind !== kind) return;
+    const v = nd.eff(lv);
+    if (kind === 'gold' || kind === 'flux') add += v; else mult *= v;
+  });
+  return (kind === 'gold' || kind === 'flux') ? add : mult;
+}
+
 const TN = {};
 TREE.forEach(t => TN[t.id] = t);
+
+/* look a node up whether it is handcrafted or generated */
+function nodeDef(id){
+  if (TN[id]) return TN[id];
+  const m = /^g(\d+)_(\d+)$/.exec(id);
+  return m ? genTier(+m[1])[+m[2]] : null;
+}
 const node  = id => (S.tree && S.tree[id]) || 0;
-const nEff  = id => TN[id].eff(node(id));
-const nCost = id => TN[id].cost(node(id));
-const nMax  = id => node(id) >= TN[id].max;
-const nOpen = id => !TN[id].needs || node(TN[id].needs) > 0;
+const nEff  = id => { const d = nodeDef(id); return d ? d.eff(node(id)) : 1; };
+const nCost = id => { const d = nodeDef(id); return d ? d.cost(node(id)) : Infinity; };
+const nMax  = id => { const d = nodeDef(id); return d ? node(id) >= d.max : true; };
+const nOpen = id => {
+  const d = nodeDef(id);
+  if (!d) return false;
+  if (d.gen){
+    /* a generated tier opens once the tier above it is cleared */
+    if (d.tier === BASE_TIERS) return baseCleared();
+    return genTier(d.tier - 1).every(x => node(x.id) > 0);
+  }
+  return !d.needs || node(d.needs) > 0;
+};
+
+/* ================================================================
+   LAYER FOUR — TRANSCEND
+
+   Quanta reset for AETHER. Where the tree is a permanent ladder,
+   aether buys CONSTELLATIONS — powerful effects you own but can
+   only run a few of at once. The interesting decision is not what
+   to buy, it's what to leave switched off.
+   ================================================================ */
+const TRANSCEND_AT = 20;             // lifetime quanta before it unlocks
+const AETHER_EXP = 0.5;
+
+const aetherAvailable = () =>
+  Math.floor(Math.pow(Math.max(0, S.quantaEarned) / TRANSCEND_AT, AETHER_EXP) * (1 + bz('yield')*0.3));
+const aetherOnTranscend = () => Math.max(0, aetherAvailable() - S.aetherEarned);
+const transcendUnlocked = () => S.quantaEarned >= TRANSCEND_AT || S.aetherEarned > 0;
+
+/* How many constellations can run at once. Hard-capped at six of the
+   eight: if you could equip them all, there would be no decision left,
+   and the decision is the mechanic. */
+const CON_SLOT_CAP = 6;
+const conSlots = () =>
+  Math.min(CON_SLOT_CAP, 1 + bz('slots') + Math.floor(S.aetherEarned / 60));
+
+const CONS = [
+  { id:'forge',   name:'The Forge',    cost: l => Math.ceil(3*Math.pow(2.6,l)),
+    desc:'Every payout multiplied, and it keeps climbing.',
+    eff: l => Math.pow(1.9,l), show: v => '×'+fmt(v) },
+  { id:'engine',  name:'The Engine',   cost: l => Math.ceil(3*Math.pow(2.4,l)),
+    desc:'The auto dropper runs far faster.',
+    eff: l => 1 + l*0.6, show: v => '×'+v.toFixed(1)+' rate' },
+  { id:'crown',   name:'The Crown',    cost: l => Math.ceil(4*Math.pow(2.7,l)),
+    desc:'Prisms, spectra and quanta all arrive faster.',
+    eff: l => 1 + l*0.25, show: v => '×'+v.toFixed(2)+' prestige' },
+  { id:'shower',  name:'The Shower',   cost: l => Math.ceil(5*Math.pow(2.5,l)),
+    desc:'Golden balls become common rather than rare.',
+    eff: l => Math.min(0.6, l*0.06), show: v => '+'+Math.round(v*100)+'% golden' },
+  { id:'anvil',   name:'The Anvil',    cost: l => Math.ceil(4*Math.pow(2.5,l)),
+    desc:'The crowded middle slots pay far more.',
+    eff: l => l*0.9, show: v => '+'+v.toFixed(1)+' base' },
+  { id:'chain',   name:'The Chain',    cost: l => Math.ceil(6*Math.pow(2.8,l)),
+    desc:'Landed balls ricochet back up the board more often.',
+    eff: l => Math.min(0.65, l*0.07), show: v => '+'+Math.round(v*100)+'% ricochet' },
+  { id:'hourglass',name:'The Hourglass',cost: l => Math.ceil(5*Math.pow(2.6,l)),
+    desc:'Surges last longer and time away pays better.',
+    eff: l => 1 + l*0.7, show: v => '×'+v.toFixed(1)+' surge & offline' },
+  { id:'lantern', name:'The Lantern',  cost: l => Math.ceil(7*Math.pow(3,l)),
+    desc:'Quests appear faster and pay more shards.',
+    eff: l => 1 + l*0.5, show: v => '×'+v.toFixed(1)+' shards' }
+];
+const CN = {};
+CONS.forEach(c => CN[c.id] = c);
+const conLvl = id => (S.cons && S.cons[id]) || 0;
+const conOn  = id => (S.active || []).indexOf(id) !== -1 && conLvl(id) > 0;
+/* an effect only counts while the constellation is equipped */
+const cEff = id => conOn(id) ? CN[id].eff(conLvl(id)) : CN[id].eff(0);
+
+/* ================================================================
+   LAYER FIVE — REFORGE
+
+   Aether resets for ALLOY, and alloy runs the Forge: a bench of
+   plinko balls you merge two at a time. Two of a kind make the next
+   kind up, forever, and anything on the bench can be equipped for a
+   small passive boost.
+   ================================================================ */
+const REFORGE_AT = 15;                 // lifetime aether before it unlocks
+const ALLOY_EXP = 0.45;
+
+const alloyAvailable = () =>
+  Math.floor(Math.pow(Math.max(0, S.aetherEarned) / REFORGE_AT, ALLOY_EXP) * (1 + orbEff('gain')));
+const alloyOnReforge = () => Math.max(0, alloyAvailable() - S.alloyEarned);
+const reforgeUnlocked = () => S.aetherEarned >= REFORGE_AT || S.alloyEarned > 0;
+
+/* ---- the balls themselves ----
+   Tier 1 is bought; every tier above it only exists because two of
+   the tier below were merged. Names and effects come from the tier
+   number, so tier 40 is the same ball for everyone. */
+const ORB_KIND = [
+  { k:'mult', n:'Weighted',  desc:'payouts',        eff:t => 1 + t*0.05,  show:v => '×'+v.toFixed(2)+' pay' },
+  { k:'rate', n:'Quick',     desc:'drop rate',      eff:t => 1 + t*0.04,  show:v => '×'+v.toFixed(2)+' rate' },
+  { k:'gold', n:'Gilded',    desc:'golden chance',  eff:t => t*0.004,     show:v => '+'+(v*100).toFixed(1)+'% gold' },
+  { k:'slot', n:'Faceted',   desc:'slot values',    eff:t => 1 + t*0.045, show:v => '×'+v.toFixed(2)+' slots' },
+  { k:'flux', n:'Charged',   desc:'flux',           eff:t => Math.floor(t/2), show:v => '+'+v+' flux' },
+  { k:'gain', n:'Prismatic', desc:'prestige gains', eff:t => t*0.03,      show:v => '+'+(v*100).toFixed(0)+'% gains' }
+];
+const ORB_MAT = ['Glass','Clay','Copper','Bronze','Iron','Steel','Silver','Gold','Cobalt',
+                 'Onyx','Opal','Amber','Jade','Ruby','Sapphire','Obsidian','Platinum','Void'];
+
+function orb(t){
+  const kind = ORB_KIND[(t*5) % ORB_KIND.length];
+  const mat  = ORB_MAT[(t*7) % ORB_MAT.length];
+  const hue  = (t * 47) % 360;
+  return {
+    t, kind:kind.k,
+    name: kind.n + ' ' + mat + (t > ORB_MAT.length ? ' ' + Math.ceil(t/ORB_MAT.length) : ''),
+    boost: kind.eff(t),
+    show: kind.show(kind.eff(t)),
+    what: kind.desc,
+    hue
+  };
+}
+
+/* what the equipped balls are worth, summed by kind */
+function orbEff(kind){
+  let mult = 1, add = 0;
+  (S.equipped || []).forEach(t => {
+    const o = orb(t);
+    if (o.kind !== kind) return;
+    if (kind === 'gold' || kind === 'flux' || kind === 'gain') add += o.boost;
+    else mult *= o.boost;
+  });
+  return (kind === 'gold' || kind === 'flux' || kind === 'gain') ? add : mult;
+}
+
+const equipSlots = () => Math.min(8, 2 + Math.floor(S.alloyEarned / 12));
+const orbCost = () => Math.ceil(2 * Math.pow(1.16, (S.bench || []).length + (S.equipped || []).length));
+
+function buyOrb(){
+  const c = orbCost();
+  if (S.alloy < c) return toast('Need ' + fmt(c - S.alloy) + ' more alloy');
+  S.alloy -= c;
+  S.bench = (S.bench || []).concat(1);
+  save(); paintForge(); paintHud();
+}
+
+/* two of a kind become one of the next kind up */
+function mergeOrbs(a, b){
+  const bench = S.bench || [];
+  if (a === b || bench[a] !== bench[b]) return;
+  const t = bench[a];
+  const keep = bench.filter((_, i) => i !== a && i !== b);
+  keep.push(t + 1);
+  S.bench = keep;
+  S.mergeCount = (S.mergeCount || 0) + 1;
+  if (t + 1 > (S.bestOrb || 0)) S.bestOrb = t + 1;
+  save(); paintForge(); paintHud();
+  toast('Merged into ' + orb(t+1).name);
+  if (typeof sfx !== 'undefined') {}
+}
+
+function mergeAll(){
+  let did = 0, guard = 0;
+  while (guard++ < 500){
+    const bench = S.bench || [];
+    const seen = {};
+    let pair = null;
+    for (let i = 0; i < bench.length; i++){
+      if (seen[bench[i]] !== undefined){ pair = [seen[bench[i]], i]; break; }
+      seen[bench[i]] = i;
+    }
+    if (!pair) break;
+    const t = bench[pair[0]];
+    const keep = bench.filter((_, i) => i !== pair[0] && i !== pair[1]);
+    keep.push(t + 1);
+    S.bench = keep;
+    if (t + 1 > (S.bestOrb || 0)) S.bestOrb = t + 1;
+    did++;
+  }
+  S.mergeCount = (S.mergeCount || 0) + did;
+  save(); paintForge(); paintHud();
+  toast(did ? did + ' merges' : 'Nothing left to pair up');
+}
+
+function equipOrb(i){
+  const bench = S.bench || [];
+  if (bench[i] === undefined) return;
+  if ((S.equipped || []).length >= equipSlots()) return toast('All ' + equipSlots() + ' slots are full');
+  S.equipped = (S.equipped || []).concat(bench[i]);
+  S.bench = bench.filter((_, k) => k !== i);
+  save(); paintForge(); paintHud();
+}
+
+function unequipOrb(i){
+  const eq = S.equipped || [];
+  if (eq[i] === undefined) return;
+  S.bench = (S.bench || []).concat(eq[i]);
+  S.equipped = eq.filter((_, k) => k !== i);
+  save(); paintForge(); paintHud();
+}
+
+/* ================================================================
+   QUESTS — rotating objectives paying SHARDS
+   ================================================================ */
+const QUEST_EVERY = () => 180000 / cEff('lantern');
+
+const QUEST_POOL = [
+  { id:'drop',  text: g => 'Drop ' + fmt(g) + ' balls',        goal: () => 40 + Math.floor(S.drops/50),  track:'drops' },
+  { id:'earn',  text: g => 'Earn ' + fmt(g) + ' chips',        goal: () => Math.max(1000, S.earned*0.02), track:'earned' },
+  { id:'rim',   text: g => 'Land ' + fmt(g) + ' rim slots',    goal: () => 8 + Math.floor((S.rimHits||0)/60), track:'rimHits' },
+  { id:'gold',  text: g => 'Catch ' + fmt(g) + ' golden balls',goal: () => 3 + Math.floor((S.goldHits||0)/40), track:'goldHits' }
+];
+
+function rollQuests(){
+  S.quests = [];
+  const pool = QUEST_POOL.slice();
+  for (let i = 0; i < 3 && pool.length; i++){
+    const q = pool.splice(Math.floor(Math.random()*pool.length), 1)[0];
+    const goal = Math.ceil(q.goal());
+    S.quests.push({ id:q.id, goal, base:(S[q.track]||0), reward: Math.ceil((2 + i*2) * cEff('lantern')), done:false });
+  }
+  S.questAt = Date.now();
+  save();
+}
+
+function questProgress(q){
+  const def = QUEST_POOL.find(x => x.id === q.id);
+  return Math.max(0, (S[def.track]||0) - q.base);
+}
+
+function checkQuests(){
+  if (!S.quests || !S.quests.length || Date.now() - S.questAt > QUEST_EVERY()){ rollQuests(); return; }
+  let paid = 0;
+  S.quests.forEach(q => {
+    if (!q.done && questProgress(q) >= q.goal){ q.done = true; S.shards += q.reward; paid += q.reward; }
+  });
+  if (paid){
+    toast('Quest complete · +' + paid + ' shards');
+    save();
+    if (currentTab === 'cosmos') paintCosmos();
+  }
+}
+
+/* ================================================================
+   BAZAAR — permanent perks bought with shards
+   ================================================================ */
+const BAZAAR = [
+  { id:'slots', name:'Star Chart', max:3, cost: l => Math.ceil(12*Math.pow(2.3,l)),
+    desc:'Run another constellation at the same time.',
+    eff: l => l, show: v => '+'+v+' slots' },
+  { id:'yield', name:'Ledger',    max:20, cost: l => Math.ceil(8*Math.pow(1.9,l)),
+    desc:'More aether from every transcension.',
+    eff: l => l, show: v => '×'+(1+v*0.3).toFixed(1)+' aether' },
+  { id:'purse', name:'Deep Purse',max:30, cost: l => Math.ceil(6*Math.pow(1.8,l)),
+    desc:'A flat bonus to everything you earn.',
+    eff: l => 1 + l*0.35, show: v => '×'+v.toFixed(2) },
+  { id:'balls', name:'Ball Rack', max:3, cost: l => Math.ceil(25*Math.pow(3,l)),
+    desc:'Unlocks another ball type for the rack.',
+    eff: l => l, show: v => v+' unlocked' }
+];
+const BZ = {};
+BAZAAR.forEach(b => BZ[b.id] = b);
+const bzLvl = id => (S.bz && S.bz[id]) || 0;
+const bz    = id => BZ[id].eff(bzLvl(id));
+
+/* ================================================================
+   BALL TYPES — a loadout choice that changes how a drop behaves
+   ================================================================ */
+const BALLS = [
+  { id:'std',   name:'Standard', need:0, desc:'No trick to it.' },
+  { id:'heavy', name:'Heavy',    need:1, desc:'Falls hard and pays 1.6×, but drifts less.' },
+  { id:'split', name:'Splitter', need:2, desc:'Breaks into two halves partway down.' },
+  { id:'charge',name:'Charged',  need:3, desc:'Pushed outward hard — rim or nothing.' }
+];
+const ballOK = b => b.need <= bz('balls');
+const curBall = () => BALLS.find(b => b.id === S.ball && ballOK(b)) || BALLS[0];
 
 /* ---------------- flux ----------------
    A small active currency. Golden balls pay it out; you spend it on a
@@ -745,7 +1281,7 @@ const surgeLeft = () => Math.max(0, Math.ceil(((S.surgeUntil || 0) - Date.now())
 function startSurge(){
   if (S.flux < SURGE_COST) return;
   S.flux -= SURGE_COST;
-  S.surgeUntil = Math.max(Date.now(), S.surgeUntil || 0) + SURGE_SECS * 1000;
+  S.surgeUntil = Math.max(Date.now(), S.surgeUntil || 0) + SURGE_SECS * 1000 * peff('tide') * cEff('hourglass');
   save(); paintHud();
   toast('Surge · ×' + SURGE_MULT + ' for ' + SURGE_SECS + 's');
 }
@@ -832,7 +1368,8 @@ function buildBoard(){
    count, so a deeper board makes the outer slots dramatically richer. */
 function slotMult(slot){
   const peak = Math.pow(1.75, eff('rows') / 2.4);
-  return (0.2 + Math.pow(slot.edge, 3.1) * peak) * eff('slots') * nEff('array') * prismMult() * eff('value');
+  return (0.2 + eff('floor') + cEff('anvil') + Math.pow(slot.edge, 3.1) * peak)
+         * eff('slots') * nEff('array') * genTotal('slot') * orbEff('slot') * prismMult() * eff('value');
 }
 
 /* ---------------- balls ---------------- */
@@ -841,10 +1378,16 @@ const GRAV = 0.42;
 
 function dropBall(){
   if (balls.length >= (S.opt.maxBalls || 420)) return;
+  const kind = curBall().id;
+  let spread = 1.2 + eff('funnel');
+  if (kind === 'charge') spread += 7;        // flung outward
+  if (kind === 'heavy')  spread *= 0.5;      // barely drifts
   balls.push({
     x: W/2 + (Math.random()-0.5)*14, y: 16,
-    vx:(Math.random()-0.5)*1.2, vy:0, life:0,
-    gold: Math.random() < Math.min(0.75, peff('gold') + nEff('rain'))
+    vx:(Math.random()-0.5)*spread, vy:0, life:0,
+    gold: Math.random() < Math.min(0.9, peff('gold') + nEff('rain') + cEff('shower')
+                                        + nEff('storm') + genTotal('gold') + orbEff('gold')),
+    kind: curBall().id
   });
   S.drops++;
 }
@@ -895,9 +1438,18 @@ function physics(){
 
       let won = slotMult(slots[idx]);
       if (b.gold){
-        won *= 25;
+        won *= peff('shine');
         S.goldHits = (S.goldHits||0) + 1;
-        S.flux = (S.flux||0) + 1 + seff('spark') + nEff('flux2');
+        S.flux = (S.flux||0) + 1 + seff('spark') + nEff('flux2') + genTotal('flux') + orbEff('flux');
+      }
+      if (b.kind === 'heavy') won *= 1.6;
+      if (Math.random() < eff('jackpot')){ won *= 5; slots[idx].flash = 1.8; }
+      if (Math.random() < eff('echo') + cEff('chain') + nEff('storm')){
+        // a free ball kicked straight back up, no stake attached
+        balls.push({ x: (slots[idx].x0 + slots[idx].x1) / 2,
+                     y: slots[idx].y - 14,
+                     vx:(Math.random()-0.5)*3, vy:-9 - Math.random()*4,
+                     life:0, gold:false });
       }
       if (idx === 0 || idx === slots.length - 1){
         S.rimHits = (S.rimHits||0) + 1;
@@ -910,6 +1462,13 @@ function physics(){
       landed[idx]++;
       balls.splice(i, 1);
       continue;
+    }
+
+    /* the Splitter breaks in two once it is a third of the way down */
+    if (b.kind === 'split' && !b.split && b.y > H * 0.35){
+      b.split = true; b.kind = 'std';
+      balls.push({ x:b.x, y:b.y, vx:-b.vx - 1.4, vy:b.vy, life:b.life, gold:b.gold, kind:'std', split:true });
+      b.vx += 1.4;
     }
 
     if (b.life > 1200) balls.splice(i, 1);
@@ -979,7 +1538,7 @@ function frame(now){
   const dt = Math.min((now - last)/1000, 0.25);
   last = now;
 
-  const rate = eff('auto') * nEff('cadence');
+  const rate = eff('auto') * nEff('cadence') * cEff('engine') * genTotal('rate') * orbEff('rate');
   if (rate > 0){
     carry += rate * dt * (eff('multi') + nEff('cascade'));
     while (carry >= 1){ dropBall(); carry--; }
@@ -990,8 +1549,9 @@ function frame(now){
 
   acc += dt;
   if (acc > 0.12){
-    acc = 0; paintHud(); paintDist(); checkMilestones();
+    acc = 0; paintHud(); paintDist(); checkMilestones(); checkQuests();
     if (currentTab === 'tree') paintTree();
+    if (currentTab === 'cosmos') paintCosmos();
   }
   requestAnimationFrame(frame);
 }
@@ -1044,12 +1604,30 @@ function paintHud(){
   ab.textContent = aGain > 0 ? 'Ascend · ' + fmt(aGain) + ' quanta' : 'Ascend';
   $('treeTab').style.display = ascendUnlocked() ? '' : 'none';
 
+  const rGain = alloyOnReforge();
+  const rb2 = $('rBtn');
+  rb2.style.display = reforgeUnlocked() ? '' : 'none';
+  rb2.disabled = rGain < 1;
+  rb2.textContent = rGain > 0 ? 'Reforge · ' + fmt(rGain) + ' alloy' : 'Reforge';
+  $('forgeTab').style.display = reforgeUnlocked() ? '' : 'none';
+
+  const tGain = aetherOnTranscend();
+  const tb = $('tBtn');
+  tb.style.display = transcendUnlocked() ? '' : 'none';
+  tb.disabled = tGain < 1;
+  tb.textContent = tGain > 0 ? 'Transcend · ' + fmt(tGain) + ' aether' : 'Transcend';
+  $('cosmosTab').style.display = transcendUnlocked() ? '' : 'none';
+
   $('pNote').textContent =
       surgeActive() ? 'Surge active · ×' + SURGE_MULT + ' for ' + surgeLeft() + 's'
     : gain > 0 ? 'Recalibrating resets chips and upgrades. Prisms are kept.'
     : collapseUnlocked() && cGain > 0 ? 'Collapse resets prisms too, and pays spectra.'
     : !collapseUnlocked() ? 'Next prism at ' + fmt(nextPrismAt()) + ' lifetime chips. Collapse unlocks at ' + COLLAPSE_AT + ' lifetime prisms.'
     : ascendUnlocked() && aGain > 0 ? 'Ascending resets spectra too, and pays quanta for the tree.'
+    : reforgeUnlocked() && rGain > 0 ? 'Reforging resets aether too, and pays alloy for the forge.'
+    : transcendUnlocked() && !reforgeUnlocked() ? 'Reforge unlocks at ' + REFORGE_AT + ' lifetime aether.'
+    : transcendUnlocked() && tGain > 0 ? 'Transcending resets the tree too, and pays aether for constellations.'
+    : ascendUnlocked() && !transcendUnlocked() ? 'Transcend unlocks at ' + TRANSCEND_AT + ' lifetime quanta.'
     : !ascendUnlocked() ? 'Next prism at ' + fmt(nextPrismAt()) + ' chips. Ascend unlocks at ' + ASCEND_AT + ' lifetime spectra.'
     : 'Next prism at ' + fmt(nextPrismAt()) + ' lifetime chips.';
 
@@ -1158,23 +1736,25 @@ function buildVault(){
   }
 }
 
-const TIERS = ['Foundation','Refinement','Convergence','Capstone'];
+const TIERS = ['Foundation','Refinement','Convergence','Capstone','Ascendant'];
+const tierName = t => TIERS[t] || ('Depth ' + (t - BASE_TIERS + 1));
 
 function buildTree(){
   const box = $('treeList');
   box.innerHTML = '<div class="qhead"><span class="n" id="quantaN">0</span>' +
-                  '<span class="k">quanta</span></div>';
+                  '<span class="k">quanta</span>' +
+                  '<span class="k" id="treeDepth" style="margin-left:auto"></span></div>';
 
-  for (let row = 0; row < 4; row++){
+  allTiers().forEach((tier, row) => {
     const wrap = document.createElement('div');
     wrap.className = 'trow';
-    wrap.innerHTML = '<div class="tier">' + TIERS[row] + '</div>';
+    wrap.innerHTML = '<div class="tier">' + tierName(row) + '</div>';
     const grid = document.createElement('div');
     grid.className = 'tnodes';
 
-    TREE.filter(t => t.row === row).forEach(t => {
+    tier.forEach(t => {
       const b = document.createElement('button');
-      b.className = 'tnode' + (t.needs ? ' child' : '');
+      b.className = 'tnode' + (t.needs || t.gen ? ' child' : '');
       b.dataset.node = t.id;
       b.innerHTML =
         '<div class="nm">' + t.name + '</div>' +
@@ -1188,21 +1768,30 @@ function buildTree(){
 
     wrap.appendChild(grid);
     box.appendChild(wrap);
-  }
+  });
 }
 
+let treeRows = -1;
+
 function paintTree(){
+  /* the tree grows, so rebuild whenever a new tier has opened */
+  const rows = allTiers().length;
+  if (rows !== treeRows){ treeRows = rows; buildTree(); }
+
   const q = $('quantaN');
   if (q) q.textContent = fmt(S.quanta);
+  const d = $('treeDepth');
+  if (d) d.textContent = rows + ' tiers';
 
   document.querySelectorAll('.tnode').forEach(b => {
-    const id = b.dataset.node, t = TN[id];
+    const id = b.dataset.node, t = nodeDef(id);
+    if (!t) return;
     const open = nOpen(id), max = nMax(id), c = nCost(id);
     b.classList.toggle('locked', !open);
     b.classList.toggle('owned', node(id) > 0);
     b.disabled = !open || max || S.quanta < c;
     b.querySelector('.lv').textContent =
-      !open ? 'needs ' + TN[t.needs].name
+      !open ? (t.gen ? 'clear the tier above' : 'needs ' + nodeDef(t.needs).name)
       : max  ? 'level ' + node(id) + ' · max'
              : 'level ' + node(id) + ' / ' + t.max;
     b.querySelector('.ef').textContent = t.show(nEff(id));
@@ -1214,11 +1803,203 @@ function buyNode(id){
   if (!nOpen(id) || nMax(id)) return;
   const c = nCost(id);
   if (S.quanta < c) return;
+  const before = allTiers().length;
   S.quanta -= c;
   S.tree[id] = node(id) + 1;
   if (id === 'deep') buildBoard();     // the board can physically grow
   save(); paintTree(); paintHud();
-  toast(TN[id].name + ' → level ' + node(id));
+  const d = nodeDef(id);
+  toast(d.name + ' → level ' + node(id));
+  if (allTiers().length > before) toast('A new tier opened up');
+}
+
+function paintCosmos(){
+  const box = $('cosmosList');
+  const eq = (S.active || []).length, cap = conSlots();
+
+  box.innerHTML =
+    '<div class="chead">' +
+      '<div><span class="n ae">' + fmt(S.aether) + '</span><span class="k">aether</span></div>' +
+      '<div><span class="n sh">' + fmt(S.shards) + '</span><span class="k">shards</span></div>' +
+      '<div><span class="n">' + eq + '/' + cap + '</span><span class="k">equipped</span></div>' +
+    '</div>' +
+
+    '<div class="sect"><h4>Constellations · click to equip</h4></div>' +
+    '<div class="cons" id="consBox"></div>' +
+
+    '<div class="sect"><h4>Ball rack</h4></div>' +
+    '<div class="balls" id="ballBox"></div>' +
+
+    '<div class="sect"><h4>Quests · refresh every ' + Math.round(QUEST_EVERY()/60000) + ' min</h4></div>' +
+    '<div id="questBox"></div>' +
+
+    '<div class="sect"><h4>Bazaar · bought with shards</h4></div>' +
+    '<div id="bzBox"></div>';
+
+  /* constellations: buy with aether, then equip within your slots */
+  const cb = $('consBox');
+  CONS.forEach(c => {
+    const lv = conLvl(c.id), on = conOn(c.id), cost = c.cost(lv);
+    const b = document.createElement('button');
+    b.className = 'con' + (on ? ' active' : '');
+    b.innerHTML =
+      (lv ? '<span class="tag">' + (on ? 'equipped' : 'owned') + '</span>' : '') +
+      '<div class="nm">' + c.name + '</div>' +
+      '<div class="ds">' + c.desc + '</div>' +
+      '<div class="ef">' + c.show(c.eff(lv)) + (lv && !on ? '  (inactive)' : '') + '</div>' +
+      '<div class="cs">' + (S.aether >= cost ? 'buy lv ' + (lv+1) + ' · ' + fmt(cost) : fmt(cost) + ' aether') + '</div>';
+    b.onclick = (e) => {
+      if (e.shiftKey || !lv){ buyCon(c.id); return; }
+      toggleCon(c.id);
+    };
+    b.oncontextmenu = (e) => { e.preventDefault(); buyCon(c.id); };
+    b.title = lv ? 'Click to equip or unequip · shift-click to level up' : 'Click to buy';
+    cb.appendChild(b);
+  });
+
+  /* ball rack */
+  const bb = $('ballBox');
+  BALLS.forEach(bl => {
+    const ok = ballOK(bl);
+    const b = document.createElement('button');
+    b.className = 'ballb' + (S.ball === bl.id ? ' on' : '');
+    b.disabled = !ok;
+    b.textContent = bl.name;
+    b.title = ok ? bl.desc : 'Unlock with Ball Rack in the bazaar';
+    b.onclick = () => { S.ball = bl.id; save(); paintCosmos(); toast(bl.name + ' loaded'); };
+    bb.appendChild(b);
+  });
+
+  /* quests */
+  const qb = $('questBox');
+  (S.quests || []).forEach(q => {
+    const def = QUEST_POOL.find(x => x.id === q.id);
+    const p = Math.min(1, questProgress(q) / q.goal);
+    qb.appendChild(el('div', 'quest' + (q.done ? ' done' : ''),
+      '<div class="qt"><span class="qn">' + def.text(q.goal) + '</span>' +
+      '<span class="qr">' + (q.done ? 'paid ' : '+') + q.reward + ' shards</span></div>' +
+      '<div class="qd">' + fmt(Math.min(questProgress(q), q.goal)) + ' of ' + fmt(q.goal) + '</div>' +
+      '<div class="qbar"><i style="width:' + (p*100) + '%"></i></div>'));
+  });
+
+  /* bazaar */
+  const zb = $('bzBox');
+  BAZAAR.forEach(u => {
+    const lv = bzLvl(u.id), max = lv >= u.max, cost = u.cost(lv);
+    const b = document.createElement('button');
+    b.className = 'up sp';
+    b.disabled = max || S.shards < cost;
+    b.innerHTML =
+      '<div class="r"><span class="nm">' + u.name + '</span>' +
+      '<span class="eff">' + u.show(u.eff(lv)) + '</span></div>' +
+      '<div class="ds">' + u.desc + '</div>' +
+      '<div class="foot"><span class="cost">' + (max ? 'Maxed' : fmt(cost) + ' shards') + '</span>' +
+      '<span class="lv">lv ' + lv + ' / ' + u.max + '</span></div>';
+    b.onclick = () => {
+      if (max || S.shards < cost) return;
+      S.shards -= cost; S.bz[u.id] = lv + 1;
+      save(); paintCosmos(); paintHud();
+      toast(u.name + ' → level ' + (lv+1));
+    };
+    zb.appendChild(b);
+  });
+}
+
+function orbHTML(t){
+  const o = orb(t);
+  return '<span class="ball" style="background:radial-gradient(circle at 34% 30%,' +
+    'hsl(' + o.hue + ',70%,72%), hsl(' + o.hue + ',65%,42%))"></span>' +
+    '<span class="tt">T' + t + '</span>' +
+    '<span class="nm2">' + o.name + '</span>' +
+    '<span class="bs">' + o.show + '</span>';
+}
+
+function paintForge(){
+  const box = $('forgeList');
+  const bench = S.bench || [], eq = S.equipped || [];
+  const slots = equipSlots();
+
+  box.innerHTML =
+    '<div class="chead">' +
+      '<div><span class="n" style="color:#9C6B2F">' + fmt(S.alloy) + '</span><span class="k">alloy</span></div>' +
+      '<div><span class="n">' + eq.length + '/' + slots + '</span><span class="k">equipped</span></div>' +
+      '<div><span class="n">T' + (S.bestOrb || 1) + '</span><span class="k">best ball</span></div>' +
+    '</div>' +
+
+    '<div class="sect"><h4>Equipped · click to take off</h4></div>' +
+    '<div class="fslots" id="fEq"></div>' +
+
+    '<div class="sect"><h4>Bench · click two of the same tier to merge</h4></div>' +
+    '<div class="frow">' +
+      '<button id="fBuy">Buy T1 · ' + fmt(orbCost()) + ' alloy</button>' +
+      '<button id="fMerge">Merge all</button>' +
+    '</div>' +
+    '<div class="fbench" id="fBench"></div>' +
+    '<div class="sect"><h4>Two of a kind make the next kind up, forever</h4></div>';
+
+  /* equipped row */
+  const eqBox = $('fEq');
+  eq.forEach((t, i) => {
+    const b = document.createElement('button');
+    b.className = 'orb';
+    b.innerHTML = orbHTML(t);
+    b.title = 'Boosts ' + orb(t).what + ' — click to take off';
+    b.onclick = () => unequipOrb(i);
+    eqBox.appendChild(b);
+  });
+  for (let i = eq.length; i < slots; i++){
+    eqBox.appendChild(el('div','fslot','empty'));
+  }
+
+  /* bench */
+  const bBox = $('fBench');
+  if (!bench.length){
+    bBox.innerHTML = '<div class="fslot" style="grid-column:1/-1;padding:18px">Buy a ball to start</div>';
+  }
+  bench.forEach((t, i) => {
+    const b = document.createElement('button');
+    b.className = 'orb' + (S.selOrb === i ? ' sel' : '');
+    b.innerHTML = orbHTML(t);
+    b.title = orb(t).name + ' — boosts ' + orb(t).what;
+    b.onclick = (e) => {
+      if (e.shiftKey){ equipOrb(i); return; }
+      if (S.selOrb === null || S.selOrb === undefined){ S.selOrb = i; paintForge(); return; }
+      if (S.selOrb === i){ S.selOrb = null; paintForge(); return; }
+      if (bench[S.selOrb] === bench[i]){
+        const a = S.selOrb; S.selOrb = null;
+        mergeOrbs(a, i);
+      } else {
+        S.selOrb = i; paintForge();
+      }
+    };
+    b.oncontextmenu = (e) => { e.preventDefault(); equipOrb(i); };
+    bBox.appendChild(b);
+  });
+
+  $('fBuy').disabled = S.alloy < orbCost();
+  $('fBuy').onclick = buyOrb;
+  $('fMerge').onclick = mergeAll;
+}
+
+function buyCon(id){
+  const c = CN[id], lv = conLvl(id), cost = c.cost(lv);
+  if (S.aether < cost) return toast('Need ' + fmt(cost - S.aether) + ' more aether');
+  S.aether -= cost;
+  S.cons[id] = lv + 1;
+  if (lv === 0 && (S.active||[]).length < conSlots()){ S.active = (S.active||[]).concat(id); }
+  save(); paintCosmos(); paintHud();
+  toast(c.name + ' → level ' + (lv+1));
+}
+
+function toggleCon(id){
+  S.active = S.active || [];
+  const i = S.active.indexOf(id);
+  if (i >= 0) S.active.splice(i,1);
+  else {
+    if (S.active.length >= conSlots()) return toast('All ' + conSlots() + ' slots are full — unequip one first');
+    S.active.push(id);
+  }
+  save(); paintCosmos(); paintHud();
 }
 
 function buySpectra(id){
@@ -1281,6 +2062,15 @@ function paintStats(){
     ['Landed this board', fmt(totalLanded)],
     ['Prisms held', fmt(S.prisms)],
     ['Global multiplier', '×' + fmt(prismMult())],
+    ['Alloy held', fmt(S.alloy || 0)],
+    ['Lifetime alloy', fmt(S.alloyEarned || 0)],
+    ['Balls merged', fmt(S.mergeCount || 0)],
+    ['Best ball', 'T' + (S.bestOrb || 0) + (S.bestOrb ? ' · ' + orb(S.bestOrb).name : '')],
+    ['Aether held', fmt(S.aether || 0)],
+    ['Lifetime aether', fmt(S.aetherEarned || 0)],
+    ['Shards', fmt(S.shards || 0)],
+    ['Constellations equipped', (S.active||[]).length + ' / ' + conSlots()],
+    ['Ball loaded', curBall().name],
     ['Quanta held', fmt(S.quanta || 0)],
     ['Lifetime quanta', fmt(S.quantaEarned || 0)],
     ['Tree nodes bought', Object.values(S.tree || {}).reduce((a,b) => a + b, 0)],
@@ -1333,7 +2123,19 @@ function buildSettings(){
   const box = $('setList');
   box.innerHTML = '';
 
-  // theme swatches
+  // dark mode first, then the full palette list
+  const dm = document.createElement('div');
+  dm.className = 'opt';
+  dm.innerHTML = '<div class="t"><b>Dark mode</b>' +
+    '<span>Switches the whole interface, the board and the browser chrome. ' +
+    'Defaults to whatever your system prefers.</span></div>';
+  const dmb = document.createElement('button');
+  dmb.className = 'sw' + (isDark() ? ' on' : '');
+  dmb.textContent = isDark() ? 'On' : 'Off';
+  dmb.onclick = () => { toggleDark(); };
+  dm.appendChild(dmb);
+  box.appendChild(dm);
+
   const sect = document.createElement('div');
   sect.className = 'sect';
   sect.innerHTML = '<h4>Theme</h4>';
@@ -1458,6 +2260,8 @@ document.querySelectorAll('.tabs button').forEach(t => {
     $('upList').style.display    = tab === 'up'    ? '' : 'none';
     $('prismList').style.display = tab === 'prism' ? '' : 'none';
     $('treeList').style.display  = tab === 'tree'  ? '' : 'none';
+    $('cosmosList').style.display= tab === 'cosmos'? '' : 'none';
+    $('forgeList').style.display = tab === 'forge' ? '' : 'none';
     $('statList').style.display  = tab === 'stats' ? '' : 'none';
     $('setList').style.display   = tab === 'set'   ? '' : 'none';
     $('bulk').style.display      = tab === 'up'    ? '' : 'none';
@@ -1465,6 +2269,8 @@ document.querySelectorAll('.tabs button').forEach(t => {
     if (tab === 'set') buildSettings();
     if (tab === 'prism') paintPrisms();
     if (tab === 'tree') { buildTree(); paintTree(); }
+    if (tab === 'cosmos') paintCosmos();
+    if (tab === 'forge') paintForge();
   };
 });
 
@@ -1496,6 +2302,8 @@ $('pBtn').onclick = () => {
       !confirm('Recalibrate for ' + fmt(gain) + ' prisms?\n\nChips and every upgrade reset. Prisms and their multiplier are kept forever.')) return;
   S.prisms += gain; S.prismsEarned += gain;
   S.cash = 0; S.lv = FRESH().lv;
+  // Float: begin the run with something already banked
+  if (peff('seed') > 0) S.cash = 1000 * Math.pow(6, peff('seed')) * prismMult();
   const head = peff('head');
   if (head > 0){ S.lv.value = head; S.lv.auto = head; }   // Momentum
   balls.length = 0;
@@ -1549,6 +2357,49 @@ $('aBtn').onclick = () => {
   toast('Ascended · ' + fmt(S.quanta) + ' quanta held');
 };
 
+$('tBtn').onclick = () => {
+  const gain = aetherOnTranscend();
+  if (gain < 1) return;
+  if (S.opt.confirmReset &&
+      !confirm('Transcend for ' + fmt(gain) + ' aether?\n\nEverything below resets — chips, upgrades, prisms, ' +
+               'spectra, quanta and the whole tree. Constellations, the bazaar, shards and milestones are kept.')) return;
+
+  S.aether += gain; S.aetherEarned += gain;
+  S.cash = 0;
+  S.prisms = 0; S.prismsEarned = 0;
+  S.spectra = 0; S.spectraEarned = 0;
+  S.quanta = 0; S.quantaEarned = 0;
+  S.lv = FRESH().lv; S.pv = FRESH().pv; S.sv = FRESH().sv;
+  S.tree = {};
+
+  balls.length = 0;
+  buildBoard(); buildVault(); buildTree(); paintTree(); paintCosmos(); save(); paintHud();
+  toast('Transcended · ' + fmt(S.aether) + ' aether held');
+};
+
+$('rBtn').onclick = () => {
+  const gain = alloyOnReforge();
+  if (gain < 1) return;
+  if (S.opt.confirmReset &&
+      !confirm('Reforge for ' + fmt(gain) + ' alloy?\n\nEverything below resets, aether and constellations included. ' +
+               'The forge — your balls, bench and equipped set — is kept, along with shards and milestones.')) return;
+
+  S.alloy += gain; S.alloyEarned += gain;
+  S.cash = 0;
+  S.prisms = 0; S.prismsEarned = 0;
+  S.spectra = 0; S.spectraEarned = 0;
+  S.quanta = 0; S.quantaEarned = 0;
+  S.aether = 0; S.aetherEarned = 0;
+  S.lv = FRESH().lv; S.pv = FRESH().pv; S.sv = FRESH().sv;
+  S.tree = {}; S.cons = {}; S.active = [];
+
+  balls.length = 0;
+  treeRows = -1;
+  buildBoard(); buildVault(); buildTree(); paintTree();
+  paintCosmos(); paintForge(); save(); paintHud();
+  toast('Reforged · ' + fmt(S.alloy) + ' alloy held');
+};
+
 /* ---------------- saving ---------------- */
 const KEY = 'jarvis.plinko';
 function save(){
@@ -1566,6 +2417,14 @@ function load(){
     S.pv  = Object.assign(FRESH().pv, d.pv || {});
     S.sv  = Object.assign(FRESH().sv, d.sv || {});
     S.tree = d.tree || {};
+    S.cons = d.cons || {};
+    S.active = Array.isArray(d.active) ? d.active : [];
+    S.bz  = d.bz || {};
+    S.quests = Array.isArray(d.quests) ? d.quests : [];
+    S.ball = d.ball || 'std';
+    S.bench = Array.isArray(d.bench) ? d.bench : [];
+    S.equipped = Array.isArray(d.equipped) ? d.equipped : [];
+    S.selOrb = null;
     S.ms  = d.ms || {};
   }catch(e){ /* corrupt save: start clean rather than break */ }
 }
@@ -1640,6 +2499,14 @@ function initCloud(){
           S.sv   = Object.assign(FRESH().sv, d.sv || {});
           S.opt  = Object.assign({}, DEFAULT_OPT, d.opt || {});
           S.tree = d.tree || {};
+          S.cons = d.cons || {};
+          S.active = Array.isArray(d.active) ? d.active : [];
+          S.bz   = d.bz || {};
+          S.quests = Array.isArray(d.quests) ? d.quests : [];
+          S.ball = d.ball || 'std';
+          S.bench = Array.isArray(d.bench) ? d.bench : [];
+          S.equipped = Array.isArray(d.equipped) ? d.equipped : [];
+          S.selOrb = null;
           S.ms   = d.ms || {};
           balls.length = 0;
           applyTheme(S.opt.theme);
@@ -1701,7 +2568,7 @@ function offline(){
   const away = Math.min((Date.now() - S.lastSeen)/1000, 8*3600);
   if (away < 60) return;
   const mid = slots.length ? slotMult(slots[Math.floor(slots.length/2)]) * 2.4 : 0;
-  const got = away * rate * mid * 0.35;
+  const got = away * rate * mid * 0.35 * peff('dawn') * cEff('hourglass');
   if (got > 0){
     S.cash += got; S.earned += got;
     toast('Away ' + Math.floor(away/60) + ' min · +' + fmt(got) + ' chips');
@@ -1717,6 +2584,9 @@ buildList();
 buildVault();
 buildTree();
 buildSettings();
+if (!S.quests || !S.quests.length) rollQuests();
+paintCosmos();
+paintForge();
 offline();
 paintHud();
 addEventListener('resize', layout);
