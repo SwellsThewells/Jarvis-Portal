@@ -115,16 +115,25 @@ canvas{ display:block; width:100%; flex:1; min-height:0; }
 .hint.saving{ color:var(--hot); }
 
 /* ---------------- ledger ---------------- */
-.ledger{ display:flex; flex-direction:column; min-height:0; background:var(--card); }
-.tabs{ display:flex; flex:none; border-bottom:1px solid var(--rule); }
+.ledger{
+  display:flex; flex-direction:column; min-height:0; height:100vh;
+  background:var(--card); overflow:hidden;
+}
+@media(max-width:940px){ .ledger{ height:auto; } }
+.tabs{
+  display:flex; flex:none; border-bottom:1px solid var(--rule);
+  overflow-x:auto; scrollbar-width:none;
+}
+.tabs::-webkit-scrollbar{ height:0; }
 .tabs button{
-  flex:1; padding:15px 0; background:none; border:0;
+  flex:0 0 auto; padding:14px 13px; background:none; border:0;
   border-bottom:1px solid transparent; margin-bottom:-1px;
   font-family:var(--mono); font-size:9px; font-weight:500;
-  letter-spacing:.18em; text-transform:uppercase; color:var(--faint); cursor:pointer;
+  letter-spacing:.12em; text-transform:uppercase; color:var(--faint);
+  cursor:pointer; white-space:nowrap;
 }
 .tabs button.on{ color:var(--ink); border-bottom-color:var(--hot); }
-.scroll{ overflow-y:auto; flex:1; min-height:0; }
+.scroll{ overflow-y:auto; flex:1 1 auto; min-height:140px; }
 
 .bulk{ display:flex; padding:10px 20px; border-bottom:1px solid var(--rule2); }
 .bulk button{
@@ -162,6 +171,8 @@ canvas{ display:block; width:100%; flex:1; min-height:0; }
 .up.pr:hover:not(:disabled){ background:rgba(44,92,134,.06); }
 .up.sp .cost{ color:var(--hot); }
 .up.sp:hover:not(:disabled){ background:rgba(198,64,42,.05); }
+.up.bz .cost{ color:#2F7F6B; }
+.up.bz:hover:not(:disabled){ background:rgba(47,127,107,.07); }
 
 .prismhead, .qhead{
   display:flex; align-items:baseline; gap:10px;
@@ -255,7 +266,10 @@ canvas{ display:block; width:100%; flex:1; min-height:0; }
 .sws.on .nm{ color:var(--ink); }
 
 /* prestige rail */
-.prestige{ padding:18px 20px; border-top:1px solid var(--rule); flex:none; }
+.prestige{
+  padding:16px 20px; border-top:1px solid var(--rule); flex:none;
+  max-height:46vh; overflow-y:auto;
+}
 .meter{ height:2px; background:var(--rule); margin-bottom:13px; }
 .meter i{ display:block; height:100%; background:var(--cool); width:0; transition:width .4s ease; }
 .pbtn{
@@ -492,6 +506,14 @@ const C = document.getElementById('board');
 const ctx = C.getContext('2d');
 const $ = id => document.getElementById(id);
 
+/* small element builder — the cosmos and forge panels rely on it */
+function el(tag, cls, html){
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (html != null) n.innerHTML = html;
+  return n;
+}
+
 /* ---------------- numbers ----------------
    Idle games outrun every built-in formatter: suffixes while they
    last, then scientific. Doubles give out around 1e308. */
@@ -688,8 +710,8 @@ UPGRADES.forEach(u => U[u.id] = u);
 const lvl  = id => S.lv[id] || 0;
 const eff  = id => U[id].eff(lvl(id));
 const cost = id => U[id].cost(lvl(id));
-const capOf = u => typeof u.max === 'function' ? u.max() : u.max;
-const maxed = id => capOf(U[id]) !== undefined && lvl(id) >= capOf(U[id]);
+const capOf = u => !u ? undefined : (typeof u.max === 'function' ? u.max() : u.max);
+const maxed = id => { const c = capOf(U[id]); return c !== undefined && lvl(id) >= c; };
 
 const prismMult = () =>
   (1 + S.prisms * 0.5) * peff('boost') * msMult() *
@@ -759,7 +781,7 @@ PRISM_UP.forEach(u => PU[u.id] = u);
 const plvl = id => (S.pv && S.pv[id]) || 0;
 const peff = id => PU[id].eff(plvl(id));
 const pcost = id => PU[id].cost(plvl(id));
-const pmaxed = id => PU[id].max !== undefined && plvl(id) >= PU[id].max;
+const pmaxed = id => !!PU[id] && PU[id].max !== undefined && plvl(id) >= PU[id].max;
 
 /* ================================================================
    LAYER TWO — COLLAPSE
@@ -1573,8 +1595,10 @@ function paintHud(){
   $('ballCount').textContent = balls.length;
   $('best').textContent = fmt(S.best);
 
-  document.querySelectorAll('.up:not(.pr)').forEach(btn => {
-    const id = btn.dataset.id, isMax = maxed(id);
+  document.querySelectorAll('.up[data-id]').forEach(btn => {
+    const id = btn.dataset.id;
+    if (!U[id]) return;
+    const isMax = maxed(id);
     const { n, spend } = affordable(id, buyAmount);
     const single = cost(id);
     btn.disabled = isMax || n < 1;
@@ -1887,7 +1911,10 @@ function paintCosmos(){
   BAZAAR.forEach(u => {
     const lv = bzLvl(u.id), max = lv >= u.max, cost = u.cost(lv);
     const b = document.createElement('button');
-    b.className = 'up sp';
+    /* its own class: 'sp' belongs to the spectra shop, and sharing it
+       made both painters try to read this row as one of theirs */
+    b.className = 'up bz';
+    b.dataset.bz = u.id;
     b.disabled = max || S.shards < cost;
     b.innerHTML =
       '<div class="r"><span class="nm">' + u.name + '</span>' +
@@ -2032,16 +2059,20 @@ function paintPrisms(){
     else { sb.textContent = SURGE_COST + ' flux'; sb.classList.remove('on'); sb.disabled = S.flux < SURGE_COST; }
   }
 
-  document.querySelectorAll('.up.pr').forEach(btn => {
-    const id = btn.dataset.pid, isMax = pmaxed(id), c = pcost(id);
+  document.querySelectorAll('.up.pr[data-pid]').forEach(btn => {
+    const id = btn.dataset.pid;
+    if (!PU[id]) return;
+    const isMax = pmaxed(id), c = pcost(id);
     btn.disabled = isMax || S.prisms < c;
     btn.querySelector('.cost').textContent = isMax ? 'Maxed' : fmt(c) + ' prisms';
     btn.querySelector('.lv').textContent = isMax ? 'lv ' + plvl(id) + ' · max' : 'lv ' + plvl(id);
     btn.querySelector('.eff').textContent = PU[id].show(peff(id));
   });
 
-  document.querySelectorAll('.up.sp').forEach(btn => {
-    const id = btn.dataset.pid, c = scost(id);
+  document.querySelectorAll('.up.sp[data-pid]').forEach(btn => {
+    const id = btn.dataset.pid;
+    if (!SU[id]) return;
+    const c = scost(id);
     btn.disabled = S.spectra < c;
     btn.querySelector('.cost').textContent = fmt(c) + ' spectra';
     btn.querySelector('.lv').textContent = 'lv ' + slvl(id);
