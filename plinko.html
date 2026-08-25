@@ -1849,6 +1849,79 @@ function paintDist(){
 
 /* ---------------- loop ---------------- */
 let carry = 0, last = performance.now(), acc = 0;
+let physAcc = 0;
+const STEP = 1/60;
+
+/* Rebuilding a panel throws away and recreates every row, which is
+   expensive and also fights with scrolling. Skip it unless the numbers
+   on show have moved, and never mid-scroll. */
+let lastSig = {}, scrollingUntil = 0;
+
+/* Deliberately excludes the running totals: those tick constantly, and
+   including them would rebuild the panel several times a second, which
+   is the problem this is here to avoid. The totals are refreshed in
+   place by touchPanel() instead. */
+function panelSig(kind){
+  if (kind === 'flux')
+    return JSON.stringify(S.fx || {});
+  return [JSON.stringify(S.cons||{}), (S.active||[]).join(','),
+          JSON.stringify(S.bz||{}),
+          (S.quests||[]).map(q => q.done ? 1 : 0).join('')].join('|');
+}
+
+/* update the numbers and button states without touching the DOM tree */
+function touchPanel(kind){
+  if (kind === 'flux'){
+    const f = $('fluxN');
+    if (f) f.textContent = fmt(Math.floor(S.flux || 0));
+    const sb = $('surgeBtn2');
+    if (sb){
+      const on = surgeActive();
+      sb.textContent = on ? surgeLeft() + 's' : SURGE_COST + ' flux';
+      sb.classList.toggle('on', on);
+      sb.disabled = S.flux < SURGE_COST;
+    }
+    const db = $('dischargeBtn');
+    if (db){
+      db.textContent = S.flux >= 25 ? fmt(dischargeValue()) : '25 flux';
+      db.disabled = S.flux < 25;
+    }
+    document.querySelectorAll('.up.fx[data-fx]').forEach(b => {
+      const u = FU[b.dataset.fx];
+      if (!u) return;
+      const lv = fLvl(u.id);
+      b.disabled = lv >= u.max || S.flux < u.cost(lv);
+    });
+  } else {
+    const a = $('aethN'), sh = $('shardN');
+    if (a) a.textContent = fmt(S.aether);
+    if (sh) sh.textContent = fmt(S.shards);
+    document.querySelectorAll('.up.bz[data-bz]').forEach(b => {
+      const u = BZ[b.dataset.bz];
+      if (!u) return;
+      const lv = bzLvl(u.id);
+      b.disabled = lv >= u.max || S.shards < u.cost(lv);
+    });
+    (S.quests || []).forEach((q, i) => {
+      const bar = document.querySelectorAll('.qbar i')[i];
+      if (bar) bar.style.width = Math.min(100, questProgress(q)/q.goal*100) + '%';
+    });
+  }
+}
+
+function maybePaint(kind, fn){
+  if (performance.now() < scrollingUntil) return;
+  const sig = panelSig(kind);
+  if (lastSig[kind] === sig) return;
+  lastSig[kind] = sig;
+  fn();
+}
+
+/* any scroll inside the side panel pauses rebuilds for a moment */
+addEventListener('scroll', e => {
+  if (e.target && e.target.classList && e.target.classList.contains('scroll'))
+    scrollingUntil = performance.now() + 400;
+}, true);
 
 function frame(now){
   const dt = Math.min((now - last)/1000, 0.25);
@@ -1861,17 +1934,29 @@ function frame(now){
     while (carry >= 1){ dropBall(); carry--; }
   }
 
-  physics();
+  /* Fixed timestep. physics() is tuned for one step per 60th of a
+     second, so it must run on the clock rather than once per frame —
+     otherwise a busy moment (scrolling a long list, switching tabs)
+     drops the frame rate and the balls visibly fall in slow motion.
+     Capped at 4 catch-up steps so a long stall can't spiral. */
+  physAcc += dt;
+  let steps = 0;
+  while (physAcc >= STEP && steps < 4){ physics(); physAcc -= STEP; steps++; }
+  if (physAcc > STEP * 4) physAcc = 0;      // came back from a stall; don't fast-forward
+
   draw();
 
   acc += dt;
   if (acc > 0.12){
     const trickle = fEff('reservoir');
-    if (trickle > 0) S.flux = (S.flux || 0) + trickle * 0.12;
-    acc = 0; paintHud(); paintDist(); checkMilestones(); checkQuests();
+    if (trickle > 0) S.flux = (S.flux || 0) + trickle * acc;
+    acc = 0;
+    paintHud(); paintDist(); checkMilestones(); checkQuests();
     if (currentTab === 'tree') paintTree();
-    if (currentTab === 'cosmos') paintCosmos();
-    if (currentTab === 'flux') paintFlux();
+    /* these three rebuild their whole panel, so they only refresh when
+       something they display has actually changed */
+    if (currentTab === 'cosmos'){ maybePaint('cosmos', paintCosmos); touchPanel('cosmos'); }
+    if (currentTab === 'flux'){   maybePaint('flux', paintFlux);     touchPanel('flux'); }
   }
   requestAnimationFrame(frame);
 }
@@ -2141,8 +2226,8 @@ function paintCosmos(){
 
   box.innerHTML =
     '<div class="chead">' +
-      '<div><span class="n ae">' + fmt(S.aether) + '</span><span class="k">aether</span></div>' +
-      '<div><span class="n sh">' + fmt(S.shards) + '</span><span class="k">shards</span></div>' +
+      '<div><span class="n ae" id="aethN">' + fmt(S.aether) + '</span><span class="k">aether</span></div>' +
+      '<div><span class="n sh" id="shardN">' + fmt(S.shards) + '</span><span class="k">shards</span></div>' +
       '<div><span class="n">' + eq + '/' + cap + '</span><span class="k">equipped</span></div>' +
     '</div>' +
 
@@ -2245,7 +2330,7 @@ function paintFlux(){
 
   box.innerHTML =
     '<div class="chead">' +
-      '<div><span class="n" style="color:#B8860B">' + fmt(Math.floor(S.flux || 0)) + '</span>' +
+      '<div><span class="n" id="fluxN" style="color:#B8860B">' + fmt(Math.floor(S.flux || 0)) + '</span>' +
       '<span class="k">flux</span></div>' +
       '<div><span class="n">×' + SURGE_MULT().toFixed(1) + '</span><span class="k">surge</span></div>' +
     '</div>' +
