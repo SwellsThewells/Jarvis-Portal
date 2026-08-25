@@ -171,6 +171,8 @@ canvas{ display:block; width:100%; flex:1; min-height:0; }
 .up.pr:hover:not(:disabled){ background:rgba(44,92,134,.06); }
 .up.sp .cost{ color:var(--hot); }
 .up.sp:hover:not(:disabled){ background:rgba(198,64,42,.05); }
+.up.fx .cost{ color:#B8860B; }
+.up.fx:hover:not(:disabled){ background:rgba(184,134,11,.08); }
 .up.bz .cost{ color:#2F7F6B; }
 .up.bz:hover:not(:disabled){ background:rgba(47,127,107,.07); }
 
@@ -251,6 +253,12 @@ canvas{ display:block; width:100%; flex:1; min-height:0; }
   text-transform:uppercase; color:var(--muted); cursor:pointer;
 }
 .sw:hover{ border-color:var(--faint); color:var(--ink); }
+.numin{
+  flex:none; width:92px; padding:7px 9px;
+  background:var(--paper); border:1px solid var(--rule); border-radius:2px;
+  color:var(--ink); font-family:var(--mono); font-size:12px; text-align:right;
+}
+.numin:focus{ outline:none; border-color:var(--hot); }
 .sw.on{ background:var(--ink); border-color:var(--ink); color:var(--paper); }
 
 .swatches{ display:flex; gap:8px; padding:4px 20px 16px; flex-wrap:wrap; }
@@ -407,6 +415,70 @@ body.dark .con{ background:rgba(255,255,255,.03); }
 .frow button:hover:not(:disabled){ border-color:var(--hot); color:var(--hot); }
 .frow button:disabled{ opacity:.4; cursor:default; }
 
+/* ================================================================
+   BACKDROPS
+
+   One per theme, sitting behind everything at very low opacity.
+   All of them are slow — 40 seconds and up — so they read as the
+   room breathing rather than as motion competing with the board.
+   ================================================================ */
+.bg{
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  opacity:.5;
+}
+.wrap{ position:relative; z-index:1; }
+
+/* Paper — grain drifting like dust in light */
+body.theme-paper .bg{
+  background-image:radial-gradient(circle, rgba(22,19,14,.22) .6px, transparent .7px);
+  background-size:22px 22px;
+  animation:drift 90s linear infinite;
+  opacity:.35;
+}
+@keyframes drift{ to{ background-position:220px 220px; } }
+
+/* Ink — slow embers rising */
+body.theme-ink .bg{
+  background-image:
+    radial-gradient(circle at 20% 80%, rgba(232,103,78,.10), transparent 42%),
+    radial-gradient(circle at 78% 30%, rgba(232,103,78,.07), transparent 38%);
+  animation:breathe 46s ease-in-out infinite;
+}
+@keyframes breathe{ 50%{ transform:translateY(-3%) scale(1.06); opacity:.75; } }
+
+/* Midnight — a very slow aurora */
+body.theme-midnight .bg{
+  background-image:
+    radial-gradient(ellipse 70% 45% at 30% 12%, rgba(127,196,216,.14), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 72% 8%, rgba(242,146,91,.09), transparent 60%);
+  animation:aurora 62s ease-in-out infinite;
+}
+@keyframes aurora{
+  33%{ transform:translateX(4%) skewX(-2deg); }
+  66%{ transform:translateX(-4%) skewX(2deg); }
+}
+
+/* Blueprint — the drawing grid easing across the page */
+body.theme-blueprint .bg{
+  background-image:
+    linear-gradient(rgba(220,233,242,.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(220,233,242,.07) 1px, transparent 1px);
+  background-size:46px 46px;
+  animation:sheet 70s linear infinite;
+}
+@keyframes sheet{ to{ background-position:46px 46px; } }
+
+/* Sepia — a soft vignette that swells and settles */
+body.theme-sepia .bg{
+  background-image:radial-gradient(ellipse 80% 70% at 50% 40%, transparent 40%, rgba(46,36,23,.16) 100%);
+  animation:vignette 54s ease-in-out infinite;
+}
+@keyframes vignette{ 50%{ opacity:.72; transform:scale(1.04); } }
+
+@media(prefers-reduced-motion: reduce){
+  .bg{ animation:none !important; }
+}
+
 @media(prefers-reduced-motion: reduce){
   *{ animation:none !important; transition-duration:.01ms !important; }
 }
@@ -414,6 +486,8 @@ body.dark .con{ background:rgba(255,255,255,.03); }
 </head>
 
 <body>
+<div class="bg" id="bg"></div>
+
 <div class="wrap">
 
   <div class="machine">
@@ -449,6 +523,7 @@ body.dark .con{ background:rgba(255,255,255,.03); }
       <button data-tab="prism">Prisms</button>
       <button data-tab="tree" id="treeTab">Tree</button>
       <button data-tab="cosmos" id="cosmosTab">Cosmos</button>
+      <button data-tab="flux" id="fluxTab">Flux</button>
       <button data-tab="forge" id="forgeTab">Forge</button>
       <button data-tab="stats">Record</button>
       <button data-tab="set">Settings</button>
@@ -464,6 +539,7 @@ body.dark .con{ background:rgba(255,255,255,.03); }
     <div class="scroll" id="prismList" style="display:none"></div>
     <div class="scroll" id="treeList" style="display:none"></div>
     <div class="scroll" id="cosmosList" style="display:none"></div>
+    <div class="scroll" id="fluxList" style="display:none"></div>
     <div class="scroll" id="forgeList" style="display:none"></div>
     <div class="scroll stats" id="statList" style="display:none"></div>
     <div class="scroll" id="setList" style="display:none"></div>
@@ -576,6 +652,8 @@ function applyTheme(key){
   /* form controls, scrollbars and the browser's own chrome follow this */
   document.documentElement.style.colorScheme = TH.dark ? 'dark' : 'light';
   document.body.classList.toggle('dark', !!TH.dark);
+  /* one class per theme so each gets its own backdrop */
+  Object.keys(THEMES).forEach(k => document.body.classList.toggle('theme-' + k, k === key));
   document.querySelectorAll('.sws').forEach(b => b.classList.toggle('on', b.dataset.theme === key));
   const m = document.querySelector('meta[name="theme-color"]');
   if (m) m.setAttribute('content', TH.vars.paper);
@@ -606,7 +684,8 @@ const DEFAULT_OPT = {
   confirmReset: true,  // ask before prestiging
   offline: true,       // credit time away
   sci: false,          // scientific notation instead of suffixes
-  maxBalls: 420        // hard cap on balls in flight
+  maxBalls: 420,       // hard cap on balls in flight
+  hideBalls: false     // resolve drops instantly instead of drawing them
 };
 
 const FRESH = () => ({
@@ -628,7 +707,7 @@ const FRESH = () => ({
   alloy:0, alloyEarned:0,
   bench:[], equipped:[], mergeCount:0, bestOrb:0,
   selOrb:null,
-  flux:0, surgeUntil:0,
+  flux:0, surgeUntil:0, fx:{}, fluxSpent:0,
   ms:{}                                      // milestones already claimed
 });
 let S = FRESH();
@@ -717,7 +796,7 @@ const prismMult = () =>
   (1 + S.prisms * 0.5) * peff('boost') * msMult() *
   seff('res') * nEff('density') * nEff('singularity') *
   cEff('forge') * bz('purse') * nEff('well') * genTotal('mult') * orbEff('mult') *
-  (surgeActive() ? SURGE_MULT : 1);
+  (surgeActive() ? SURGE_MULT() : 1) * fEff('coil');
 
 /* Exponent below 1 on purpose. At 1 or above each prestige feeds the
    next and it runs away. At 0.4 numbers climb forever, watchably. */
@@ -1294,9 +1373,47 @@ const curBall = () => BALLS.find(b => b.id === S.ball && ballOK(b)) || BALLS[0];
 /* ---------------- flux ----------------
    A small active currency. Golden balls pay it out; you spend it on a
    short surge, so there's a reason to actually watch the board. */
+/* ================================================================
+   THE GRID — everything flux buys
+
+   Flux comes off golden balls, so it accumulates while you play
+   rather than while you idle. It buys permanent electrical upgrades
+   and two things you can fire off on demand.
+   ================================================================ */
+const FLUX_UP = [
+  { id:'capacitor', name:'Capacitor', max:20,
+    cost: l => Math.ceil(20 * Math.pow(1.7, l)),
+    desc:'A stronger surge every time you trigger one.',
+    eff:  l => 5 + l * 1.5, show: v => '×' + v.toFixed(1) + ' surge' },
+  { id:'reservoir', name:'Reservoir', max:25,
+    cost: l => Math.ceil(30 * Math.pow(1.75, l)),
+    desc:'Flux trickles in on its own, golden ball or not.',
+    eff:  l => l * 0.05, show: v => v.toFixed(2) + ' flux/s' },
+  { id:'static',    name:'Static Charge', max:20,
+    cost: l => Math.ceil(25 * Math.pow(1.65, l)),
+    desc:'Rim landings throw off flux as well.',
+    eff:  l => l * 0.15, show: v => '+' + v.toFixed(2) + ' per rim' },
+  { id:'arc',       name:'Arc Welder', max:15,
+    cost: l => Math.ceil(45 * Math.pow(1.9, l)),
+    desc:'A chance for a golden ball to pay double flux.',
+    eff:  l => Math.min(0.75, l * 0.05), show: v => Math.round(v*100) + '% double' },
+  { id:'overcharge',name:'Overcharge', max:15,
+    cost: l => Math.ceil(60 * Math.pow(1.95, l)),
+    desc:'While a surge runs, the dropper runs faster too.',
+    eff:  l => 1 + l * 0.3, show: v => '×' + v.toFixed(1) + ' rate in surge' },
+  { id:'coil',      name:'Induction Coil', max:99,
+    cost: l => Math.ceil(80 * Math.pow(2.1, l)),
+    desc:'A flat multiplier on everything, always on.',
+    eff:  l => Math.pow(1.25, l), show: v => '×' + fmt(v) }
+];
+const FU = {};
+FLUX_UP.forEach(u => FU[u.id] = u);
+const fLvl = id => (S.fx && S.fx[id]) || 0;
+const fEff = id => FU[id].eff(fLvl(id));
+
 const SURGE_COST = 12;
 const SURGE_SECS = 90;
-const SURGE_MULT = 5;
+const SURGE_MULT = () => fEff('capacitor');
 const surgeActive = () => Date.now() < (S.surgeUntil || 0);
 const surgeLeft = () => Math.max(0, Math.ceil(((S.surgeUntil || 0) - Date.now())/1000));
 
@@ -1305,7 +1422,7 @@ function startSurge(){
   S.flux -= SURGE_COST;
   S.surgeUntil = Math.max(Date.now(), S.surgeUntil || 0) + SURGE_SECS * 1000 * peff('tide') * cEff('hourglass');
   save(); paintHud();
-  toast('Surge · ×' + SURGE_MULT + ' for ' + SURGE_SECS + 's');
+  toast('Surge · ×' + SURGE_MULT().toFixed(1) + ' for ' + SURGE_SECS + 's');
 }
 
 /* ---------------- milestones ----------------
@@ -1358,6 +1475,23 @@ function layout(){
   buildBoard();
 }
 
+/* Pegs bucketed by row. A falling ball only ever touches the row it is
+   passing through, so collisions stop being balls x every peg — the
+   difference is roughly tenfold on a full board. */
+let pegRows = [], rowTop = 0, rowGap = 1;
+
+function indexPegs(){
+  pegRows = [];
+  if (!pegs.length){ return; }
+  const ys = [...new Set(pegs.map(p => Math.round(p.y)))].sort((a,b) => a-b);
+  rowTop = ys[0];
+  rowGap = ys.length > 1 ? (ys[1] - ys[0]) : 1;
+  pegs.forEach(p => {
+    const r = Math.max(0, Math.round((p.y - rowTop) / rowGap));
+    (pegRows[r] = pegRows[r] || []).push(p);
+  });
+}
+
 function buildBoard(){
   const rows = eff('rows');
   const top = 44, slotH = 40;
@@ -1383,6 +1517,9 @@ function buildBoard(){
     slots.push({ x0:bottom[i].x, x1:bottom[i+1].x, y:H - slotH - 6, h:slotH, edge:Math.abs(mid), flash:0 });
   }
   landed = new Array(slots.length).fill(0);
+  indexPegs();
+  staticDirty = true;
+  sampleDist();
   buildDist();
 }
 
@@ -1394,11 +1531,134 @@ function slotMult(slot){
          * eff('slots') * nEff('array') * genTotal('slot') * orbEff('slot') * prismMult() * eff('value');
 }
 
+/* ================================================================
+   HIDDEN BALLS
+
+   With the board hidden there is nothing to look at, so simulating
+   every bounce is wasted work. Instead the board is sampled once —
+   real physics, a few thousand balls — and the resulting landing
+   distribution is used to resolve drops instantly.
+
+   The payouts are the genuine article, not a guess: the curve comes
+   from the same collision code you watch when the board is visible,
+   so hiding the balls changes the frame cost and nothing else.
+   ================================================================ */
+let distTable = null, staticDirty = true;
+
+function sampleDist(){
+  distTable = null;
+  if (!slots.length || !pegs.length) return;
+
+  const N = 2500;
+  const counts = new Array(slots.length).fill(0);
+  const rest = eff('bounce'), drift = eff('luck');
+  const min = pegR + ballR, min2 = min * min;
+  const spread = 1.2 + eff('funnel');
+
+  for (let k = 0; k < N; k++){
+    let x = W/2 + (Math.random()-0.5)*14, y = 16;
+    let vx = (Math.random()-0.5)*spread, vy = 0;
+
+    for (let step = 0; step < 900; step++){
+      vy += GRAV;
+      if (drift > 0){
+        const off = (x - W/2) / (W/2);
+        vx += Math.sign(off || (Math.random()-0.5)) * drift * 0.5;
+      }
+      x += vx; y += vy;
+
+      const row = ((y - rowTop) / rowGap) | 0;
+      for (let r = row - 1; r <= row + 1; r++){
+        const bucket = pegRows[r];
+        if (!bucket) continue;
+        let hit = false;
+        for (let p = 0; p < bucket.length; p++){
+          const peg = bucket[p];
+          const dx = x - peg.x, dy = y - peg.y;
+          if (dx*dx + dy*dy < min2){
+            const d = Math.sqrt(dx*dx + dy*dy) || 0.01;
+            const nx = dx/d, ny = dy/d;
+            x = peg.x + nx*min; y = peg.y + ny*min;
+            const dot = vx*nx + vy*ny;
+            vx = (vx - 2*dot*nx) * rest;
+            vy = (vy - 2*dot*ny) * rest;
+            vx += (Math.random()-0.5) * 1.1;
+            hit = true; break;
+          }
+        }
+        if (hit) break;
+      }
+
+      if (x < ballR){ x = ballR; vx = Math.abs(vx)*rest; }
+      if (x > W - ballR){ x = W - ballR; vx = -Math.abs(vx)*rest; }
+      const sp2 = vx*vx + vy*vy;
+      if (sp2 > 196){ const sp = Math.sqrt(sp2); vx *= 14/sp; vy *= 14/sp; }
+
+      if (y > slots[0].y){
+        let idx = -1;
+        for (let i2 = 0; i2 < slots.length; i2++)
+          if (x >= slots[i2].x0 && x < slots[i2].x1){ idx = i2; break; }
+        if (idx < 0) idx = x < W/2 ? 0 : slots.length - 1;
+        counts[idx]++;
+        break;
+      }
+    }
+  }
+
+  /* cumulative table, so a drop is one random number and a scan */
+  const total = counts.reduce((a,b) => a+b, 0) || 1;
+  let acc = 0;
+  distTable = counts.map(c => (acc += c / total));
+}
+
+function sampleSlot(){
+  if (!distTable) return Math.floor(slots.length/2);
+  const r = Math.random();
+  for (let i = 0; i < distTable.length; i++) if (r <= distTable[i]) return i;
+  return distTable.length - 1;
+}
+
+/* resolve a drop without simulating it */
+function resolveHidden(gold, kind){
+  const idx = sampleSlot();
+  let won = slotMult(slots[idx]);
+  if (gold){
+    won *= peff('shine');
+    S.goldHits = (S.goldHits||0) + 1;
+    let fg = 1 + seff('spark') + nEff('flux2') + genTotal('flux') + orbEff('flux');
+        if (Math.random() < fEff('arc')) fg *= 2;      // Arc Welder
+        S.flux = (S.flux||0) + fg;
+  }
+  if (kind === 'heavy') won *= 1.6;
+  if (Math.random() < eff('jackpot')) won *= 5;
+  if (idx === 0 || idx === slots.length - 1){
+    S.rimHits = (S.rimHits||0) + 1;
+    if (fEff('static') > 0) S.flux = (S.flux||0) + fEff('static');
+  }
+
+  S.cash += won; S.earned += won;
+  if (won > S.best) S.best = won;
+  landed[idx] = (landed[idx] || 0) + 1;
+
+  /* ricochets still happen, they just resolve straight away too */
+  if (Math.random() < eff('echo') + cEff('chain') + nEff('storm')) resolveHidden(false, 'std');
+}
+
 /* ---------------- balls ---------------- */
 const balls = [];
 const GRAV = 0.42;
 
 function dropBall(){
+  S.drops++;
+  const hiddenNow = S.opt.hideBalls;
+
+  if (hiddenNow){
+    const g = Math.random() < Math.min(0.9, peff('gold') + nEff('rain') + cEff('shower')
+                                            + nEff('storm') + genTotal('gold') + orbEff('gold'));
+    resolveHidden(g, curBall().id);
+    return;
+  }
+
   if (balls.length >= (S.opt.maxBalls || 420)) return;
   const kind = curBall().id;
   let spread = 1.2 + eff('funnel');
@@ -1411,7 +1671,6 @@ function dropBall(){
                                         + nEff('storm') + genTotal('gold') + orbEff('gold')),
     kind: curBall().id
   });
-  S.drops++;
 }
 function dropSet(){ const n = eff('multi') + nEff('cascade'); for (let i=0;i<n;i++) dropBall(); }
 
@@ -1429,27 +1688,37 @@ function physics(){
 
     b.x += b.vx; b.y += b.vy; b.life++;
 
-    for (let p = 0; p < pegs.length; p++){
-      const peg = pegs[p];
-      const dx = b.x - peg.x, dy = b.y - peg.y, min = pegR + ballR;
-      if (dx*dx + dy*dy < min*min){
-        const d = Math.sqrt(dx*dx + dy*dy) || 0.01;
-        const nx = dx/d, ny = dy/d;
-        b.x = peg.x + nx*min; b.y = peg.y + ny*min;
-        const dot = b.vx*nx + b.vy*ny;
-        b.vx = (b.vx - 2*dot*nx) * rest;
-        b.vy = (b.vy - 2*dot*ny) * rest;
-        b.vx += (Math.random()-0.5) * 1.1;    // the jitter that makes a distribution
-        peg.hit = 1;
-        break;
+    /* only the row the ball is in, plus its neighbours */
+    const min = pegR + ballR, min2 = min * min;
+    const row = ((b.y - rowTop) / rowGap) | 0;
+    for (let r = row - 1; r <= row + 1; r++){
+      const bucket = pegRows[r];
+      if (!bucket) continue;
+      let hit = false;
+      for (let p = 0; p < bucket.length; p++){
+        const peg = bucket[p];
+        const dx = b.x - peg.x, dy = b.y - peg.y;
+        if (dx*dx + dy*dy < min2){
+          const d = Math.sqrt(dx*dx + dy*dy) || 0.01;
+          const nx = dx/d, ny = dy/d;
+          b.x = peg.x + nx*min; b.y = peg.y + ny*min;
+          const dot = b.vx*nx + b.vy*ny;
+          b.vx = (b.vx - 2*dot*nx) * rest;
+          b.vy = (b.vy - 2*dot*ny) * rest;
+          b.vx += (Math.random()-0.5) * 1.1;  // the jitter that makes a distribution
+          peg.hit = 1;
+          hit = true;
+          break;
+        }
       }
+      if (hit) break;
     }
 
     if (b.x < ballR){ b.x = ballR; b.vx = Math.abs(b.vx)*rest; }
     if (b.x > W - ballR){ b.x = W - ballR; b.vx = -Math.abs(b.vx)*rest; }
 
-    const sp = Math.hypot(b.vx, b.vy);
-    if (sp > 14){ b.vx *= 14/sp; b.vy *= 14/sp; }   // no tunnelling through a row
+    const sp2 = b.vx*b.vx + b.vy*b.vy;             // sqrt only when it matters
+    if (sp2 > 196){ const sp = Math.sqrt(sp2); b.vx *= 14/sp; b.vy *= 14/sp; }
 
     if (slots.length && b.y > slots[0].y){
       let idx = -1;
@@ -1462,7 +1731,9 @@ function physics(){
       if (b.gold){
         won *= peff('shine');
         S.goldHits = (S.goldHits||0) + 1;
-        S.flux = (S.flux||0) + 1 + seff('spark') + nEff('flux2') + genTotal('flux') + orbEff('flux');
+        let fg = 1 + seff('spark') + nEff('flux2') + genTotal('flux') + orbEff('flux');
+        if (Math.random() < fEff('arc')) fg *= 2;      // Arc Welder
+        S.flux = (S.flux||0) + fg;
       }
       if (b.kind === 'heavy') won *= 1.6;
       if (Math.random() < eff('jackpot')){ won *= 5; slots[idx].flash = 1.8; }
@@ -1476,6 +1747,7 @@ function physics(){
       if (idx === 0 || idx === slots.length - 1){
         S.rimHits = (S.rimHits||0) + 1;
         if (seff('spark') > 0) S.flux = (S.flux||0) + seff('spark') * 0.25;
+        if (fEff('static') > 0) S.flux = (S.flux||0) + fEff('static');   // Static Charge
       }
 
       S.cash += won; S.earned += won;
@@ -1500,6 +1772,28 @@ function physics(){
 /* ---------------- drawing ---------------- */
 function draw(){
   ctx.clearRect(0, 0, W, H);
+
+  if (S.opt.hideBalls){
+    /* nothing is being simulated, so paint the slots and stop */
+    for (const sl of slots){
+      const t = sl.edge;
+      ctx.globalAlpha = 0.10 + t*0.30;
+      ctx.fillStyle = t > 0.55 ? TH.slotHot : TH.slotInk;
+      ctx.fillRect(sl.x0 + 1, sl.y + sl.h - 3 - t*10, sl.x1 - sl.x0 - 2, 3 + t*10);
+      ctx.globalAlpha = 1;
+      if (S.opt.showLabels){
+        ctx.fillStyle = TH.label;
+        ctx.font = '500 9px "IBM Plex Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('×' + fmt(slotMult(sl)), (sl.x0+sl.x1)/2, sl.y + 13);
+      }
+    }
+    ctx.fillStyle = TH.label;
+    ctx.font = '500 11px "IBM Plex Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('BALLS HIDDEN — STILL EARNING', W/2, H/2);
+    return;
+  }
 
   for (const s of slots){
     const t = s.edge;
@@ -1560,7 +1854,8 @@ function frame(now){
   const dt = Math.min((now - last)/1000, 0.25);
   last = now;
 
-  const rate = eff('auto') * nEff('cadence') * cEff('engine') * genTotal('rate') * orbEff('rate');
+  const rate = eff('auto') * nEff('cadence') * cEff('engine') * genTotal('rate') * orbEff('rate')
+             * (surgeActive() ? fEff('overcharge') : 1);
   if (rate > 0){
     carry += rate * dt * (eff('multi') + nEff('cascade'));
     while (carry >= 1){ dropBall(); carry--; }
@@ -1571,9 +1866,12 @@ function frame(now){
 
   acc += dt;
   if (acc > 0.12){
+    const trickle = fEff('reservoir');
+    if (trickle > 0) S.flux = (S.flux || 0) + trickle * 0.12;
     acc = 0; paintHud(); paintDist(); checkMilestones(); checkQuests();
     if (currentTab === 'tree') paintTree();
     if (currentTab === 'cosmos') paintCosmos();
+    if (currentTab === 'flux') paintFlux();
   }
   requestAnimationFrame(frame);
 }
@@ -1643,7 +1941,7 @@ function paintHud(){
   $('cosmosTab').style.display = transcendUnlocked() ? '' : 'none';
 
   $('pNote').textContent =
-      surgeActive() ? 'Surge active · ×' + SURGE_MULT + ' for ' + surgeLeft() + 's'
+      surgeActive() ? 'Surge active · ×' + SURGE_MULT().toFixed(1) + ' for ' + surgeLeft() + 's'
     : gain > 0 ? 'Recalibrating resets chips and upgrades. Prisms are kept.'
     : collapseUnlocked() && cGain > 0 ? 'Collapse resets prisms too, and pays spectra.'
     : !collapseUnlocked() ? 'Next prism at ' + fmt(nextPrismAt()) + ' lifetime chips. Collapse unlocks at ' + COLLAPSE_AT + ' lifetime prisms.'
@@ -1941,6 +2239,82 @@ function orbHTML(t){
     '<span class="bs">' + o.show + '</span>';
 }
 
+function paintFlux(){
+  const box = $('fluxList');
+  const surge = surgeActive();
+
+  box.innerHTML =
+    '<div class="chead">' +
+      '<div><span class="n" style="color:#B8860B">' + fmt(Math.floor(S.flux || 0)) + '</span>' +
+      '<span class="k">flux</span></div>' +
+      '<div><span class="n">×' + SURGE_MULT().toFixed(1) + '</span><span class="k">surge</span></div>' +
+    '</div>' +
+
+    '<div class="opt"><div class="t"><b>Surge</b><span>' +
+      '×' + SURGE_MULT().toFixed(1) + ' on everything for ' + SURGE_SECS + ' seconds. Stacks if you fire it again.' +
+    '</span></div><button class="sw" id="surgeBtn2" style="min-width:78px"></button></div>' +
+
+    '<div class="opt"><div class="t"><b>Discharge</b><span>' +
+      'Dump the whole reserve at once for an instant payout — worth more the more you have banked.' +
+    '</span></div><button class="sw" id="dischargeBtn" style="min-width:78px"></button></div>' +
+
+    '<div class="sect"><h4>The grid · permanent</h4></div>' +
+    '<div id="fluxRows"></div>';
+
+  const sb = $('surgeBtn2');
+  sb.textContent = surge ? surgeLeft() + 's' : SURGE_COST + ' flux';
+  sb.classList.toggle('on', surge);
+  sb.disabled = S.flux < SURGE_COST;
+  sb.onclick = () => { startSurge(); paintFlux(); };
+
+  const db = $('dischargeBtn');
+  const pot = dischargeValue();
+  db.textContent = S.flux >= 25 ? fmt(pot) : '25 flux';
+  db.disabled = S.flux < 25;
+  db.onclick = () => {
+    if (S.flux < 25) return;
+    const got = dischargeValue();
+    S.fluxSpent = (S.fluxSpent || 0) + S.flux;
+    S.flux = 0;
+    S.cash += got; S.earned += got;
+    save(); paintFlux(); paintHud();
+    toast('Discharged · +' + fmt(got));
+  };
+
+  const rows = $('fluxRows');
+  FLUX_UP.forEach(u => {
+    const lv = fLvl(u.id), max = lv >= u.max, cost = u.cost(lv);
+    const b = document.createElement('button');
+    b.className = 'up fx';
+    b.dataset.fx = u.id;
+    b.disabled = max || S.flux < cost;
+    b.innerHTML =
+      '<div class="r"><span class="nm">' + u.name + '</span>' +
+      '<span class="eff">' + u.show(fEff(u.id)) + '</span></div>' +
+      '<div class="ds">' + u.desc + '</div>' +
+      '<div class="foot"><span class="cost">' + (max ? 'Maxed' : fmt(cost) + ' flux') + '</span>' +
+      '<span class="lv">lv ' + lv + ' / ' + u.max + '</span></div>';
+    b.onclick = () => {
+      if (max || S.flux < cost) return;
+      S.flux -= cost;
+      S.fx = S.fx || {};
+      S.fx[u.id] = lv + 1;
+      save(); paintFlux(); paintHud();
+      toast(u.name + ' → level ' + (lv+1));
+    };
+    rows.appendChild(b);
+  });
+}
+
+/* the reserve is worth more the fuller it is, so hoarding has a point */
+function dischargeValue(){
+  const f = S.flux || 0;
+  if (f < 25) return 0;
+  const perSec = eff('auto') * (eff('multi') + nEff('cascade')) *
+                 (slots.length ? slotMult(slots[Math.floor(slots.length/2)]) * 2.4 : 1);
+  return perSec * Math.pow(f, 1.15) * 0.6;
+}
+
 function paintForge(){
   const box = $('forgeList');
   const bench = S.bench || [], eq = S.equipped || [];
@@ -2148,7 +2522,7 @@ const TOGGLES = [
   ['sci',        'Scientific notation', 'Show 1.23e15 instead of 1.23Qa. Useful once names run out.']
 ];
 
-const BALL_CAPS = [150, 420, 900];
+const BALL_CAPS = [150, 420, 900, 2000];
 
 function buildSettings(){
   const box = $('setList');
@@ -2217,20 +2591,48 @@ function buildSettings(){
   s3.innerHTML = '<h4>Performance</h4>';
   box.appendChild(s3);
 
+  const hide = document.createElement('div');
+  hide.className = 'opt';
+  hide.innerHTML = '<div class="t"><b>Hide the balls</b>' +
+    '<span>Stops drawing and simulating them. Drops resolve instantly ' +
+    'against the board\'s real landing distribution, so you earn exactly ' +
+    'the same — it is simply far cheaper to run.</span></div>';
+  const hb = document.createElement('button');
+  hb.className = 'sw' + (opt('hideBalls') ? ' on' : '');
+  hb.textContent = opt('hideBalls') ? 'On' : 'Off';
+  hb.onclick = () => { setOpt('hideBalls', !opt('hideBalls')); balls.length = 0; };
+  hide.appendChild(hb);
+  box.appendChild(hide);
+
   const perf = document.createElement('div');
   perf.className = 'opt';
   perf.innerHTML = '<div class="t"><b>Balls on screen</b>' +
-    '<span>Lower this if the board stutters. Payouts are unaffected — ' +
-    'balls over the cap simply are not spawned.</span></div>';
-  BALL_CAPS.forEach(n => {
-    const b = document.createElement('button');
-    b.className = 'sw' + (opt('maxBalls') === n ? ' on' : '');
-    b.style.minWidth = '46px';
-    b.textContent = n;
-    b.onclick = () => setOpt('maxBalls', n);
-    perf.appendChild(b);
-  });
+    '<span>Anything above this is not spawned. Payouts are unaffected. ' +
+    'Type any number from 10 to 5000.</span></div>';
+  const inp = document.createElement('input');
+  inp.type = 'number'; inp.min = '10'; inp.max = '5000'; inp.step = '10';
+  inp.value = opt('maxBalls');
+  inp.className = 'numin';
+  inp.onchange = () => {
+    const v = Math.max(10, Math.min(5000, Math.floor(Number(inp.value) || 420)));
+    inp.value = v;
+    setOpt('maxBalls', v);
+  };
+  perf.appendChild(inp);
   box.appendChild(perf);
+
+  const quick = document.createElement('div');
+  quick.className = 'opt';
+  quick.innerHTML = '<div class="t"><span>Common values</span></div>';
+  BALL_CAPS.forEach(v => {
+    const b = document.createElement('button');
+    b.className = 'sw' + (opt('maxBalls') === v ? ' on' : '');
+    b.style.minWidth = '52px';
+    b.textContent = v;
+    b.onclick = () => setOpt('maxBalls', v);
+    quick.appendChild(b);
+  });
+  box.appendChild(quick);
 
   // save data
   const s4 = document.createElement('div');
@@ -2292,6 +2694,7 @@ document.querySelectorAll('.tabs button').forEach(t => {
     $('prismList').style.display = tab === 'prism' ? '' : 'none';
     $('treeList').style.display  = tab === 'tree'  ? '' : 'none';
     $('cosmosList').style.display= tab === 'cosmos'? '' : 'none';
+    $('fluxList').style.display  = tab === 'flux'  ? '' : 'none';
     $('forgeList').style.display = tab === 'forge' ? '' : 'none';
     $('statList').style.display  = tab === 'stats' ? '' : 'none';
     $('setList').style.display   = tab === 'set'   ? '' : 'none';
@@ -2301,6 +2704,7 @@ document.querySelectorAll('.tabs button').forEach(t => {
     if (tab === 'prism') paintPrisms();
     if (tab === 'tree') { buildTree(); paintTree(); }
     if (tab === 'cosmos') paintCosmos();
+    if (tab === 'flux') paintFlux();
     if (tab === 'forge') paintForge();
   };
 });
@@ -2455,6 +2859,7 @@ function load(){
     S.ball = d.ball || 'std';
     S.bench = Array.isArray(d.bench) ? d.bench : [];
     S.equipped = Array.isArray(d.equipped) ? d.equipped : [];
+    S.fx = d.fx || {};
     S.selOrb = null;
     S.ms  = d.ms || {};
   }catch(e){ /* corrupt save: start clean rather than break */ }
@@ -2537,6 +2942,7 @@ function initCloud(){
           S.ball = d.ball || 'std';
           S.bench = Array.isArray(d.bench) ? d.bench : [];
           S.equipped = Array.isArray(d.equipped) ? d.equipped : [];
+          S.fx = d.fx || {};
           S.selOrb = null;
           S.ms   = d.ms || {};
           balls.length = 0;
@@ -2618,6 +3024,7 @@ buildSettings();
 if (!S.quests || !S.quests.length) rollQuests();
 paintCosmos();
 paintForge();
+paintFlux();
 offline();
 paintHud();
 addEventListener('resize', layout);
