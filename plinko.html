@@ -1021,8 +1021,12 @@ const GEN_KINDS = [
 const GEN_PREFIX = ['Deep','Outer','Silent','Hollow','Bright','Iron','Pale','Vast',
                     'First','Last','Quiet','Wandering','Folded','Endless'];
 
-/* deterministic: tier number in, same three nodes out, every time */
+/* deterministic: tier number in, same three nodes out, every time.
+   Cached, because this used to be rebuilt on every lookup and the
+   lookups happen thousands of times a second. */
+const tierCache = {};
 function genTier(t){
+  if (tierCache[t]) return tierCache[t];
   const out = [];
   for (let i = 0; i < 3; i++){
     /* 5 and 11 are coprime with the pool sizes (6 and 14), so the same
@@ -1043,6 +1047,7 @@ function genTier(t){
       show: kind.show
     });
   }
+  tierCache[t] = out;
   return out;
 }
 
@@ -1075,20 +1080,29 @@ function allTiers(){
 
 /* generated nodes are summed by kind, so the economy does not need to
    know how many exist */
+/* Totals only move when a node is bought or a reset wipes the tree,
+   so they are computed once and reused until then. Recomputing them
+   per slot per frame was the single most expensive thing on screen. */
+let genCache = null;
+function invalidateGen(){ genCache = null; }
+
 function genTotal(kind){
-  let mult = 1, add = 0;
-  if (!S.tree) return kind === 'gold' || kind === 'flux' ? 0 : 1;
-  Object.keys(S.tree).forEach(id => {
-    const m = /^g(\d+)_(\d+)$/.exec(id);
-    if (!m) return;
-    const t = +m[1], i = +m[2], lv = S.tree[id];
-    if (!lv) return;
-    const nd = genTier(t)[i];
-    if (!nd || nd.kind !== kind) return;
-    const v = nd.eff(lv);
-    if (kind === 'gold' || kind === 'flux') add += v; else mult *= v;
-  });
-  return (kind === 'gold' || kind === 'flux') ? add : mult;
+  if (genCache) return genCache[kind];
+  genCache = { mult:1, rate:1, gain:1, slot:1, gold:0, flux:0 };
+  if (S.tree){
+    Object.keys(S.tree).forEach(id => {
+      const m = /^g(\d+)_(\d+)$/.exec(id);
+      if (!m) return;
+      const lv = S.tree[id];
+      if (!lv) return;
+      const nd = genTier(+m[1])[+m[2]];
+      if (!nd) return;
+      const v = nd.eff(lv);
+      if (nd.kind === 'gold' || nd.kind === 'flux') genCache[nd.kind] += v;
+      else genCache[nd.kind] *= v;
+    });
+  }
+  return genCache[kind];
 }
 
 const TN = {};
@@ -1770,24 +1784,58 @@ function physics(){
 }
 
 /* ---------------- drawing ---------------- */
+/* ================================================================
+   The pegs and the slot labels barely change, so they are drawn once
+   to an offscreen canvas and blitted. Redrawing 300 arcs and 24 text
+   labels every frame was most of the render cost — text in particular
+   is expensive to lay out.
+   ================================================================ */
+let bg = null, bgCtx = null, bgSig = '';
+
+function slotSig(){
+  return slots.length + ':' + (slots.length ? Math.round(slotMult(slots[0])) + ':' +
+         Math.round(slotMult(slots[Math.floor(slots.length/2)])) : '') + ':' +
+         S.opt.showLabels + ':' + S.opt.theme;
+}
+
+function drawStatic(){
+  if (!bg){ bg = document.createElement('canvas'); bgCtx = bg.getContext('2d'); }
+  if (bg.width !== Math.floor(W*DPR) || bg.height !== Math.floor(H*DPR)){
+    bg.width = Math.floor(W*DPR); bg.height = Math.floor(H*DPR);
+  }
+  bgCtx.setTransform(DPR,0,0,DPR,0,0);
+  bgCtx.clearRect(0,0,W,H);
+
+  for (const sl of slots){
+    const t = sl.edge;
+    bgCtx.globalAlpha = 0.10 + t*0.30;
+    bgCtx.fillStyle = t > 0.55 ? TH.slotHot : TH.slotInk;
+    bgCtx.fillRect(sl.x0 + 1, sl.y + sl.h - 3 - t*10, sl.x1 - sl.x0 - 2, 3 + t*10);
+    bgCtx.globalAlpha = 1;
+    if (S.opt.showLabels){
+      bgCtx.fillStyle = TH.label;
+      bgCtx.font = '500 9px "IBM Plex Mono", monospace';
+      bgCtx.textAlign = 'center';
+      bgCtx.fillText('×' + fmt(slotMult(sl)), (sl.x0+sl.x1)/2, sl.y + 13);
+    }
+  }
+  for (const p of pegs){
+    bgCtx.beginPath();
+    bgCtx.arc(p.x, p.y, pegR, 0, 6.2832);
+    bgCtx.fillStyle = TH.peg;
+    bgCtx.fill();
+  }
+  bgSig = slotSig();
+  staticDirty = false;
+}
+
 function draw(){
   ctx.clearRect(0, 0, W, H);
 
+  if (staticDirty || !bg || bgSig !== slotSig()) drawStatic();
+  ctx.drawImage(bg, 0, 0, W, H);
+
   if (S.opt.hideBalls){
-    /* nothing is being simulated, so paint the slots and stop */
-    for (const sl of slots){
-      const t = sl.edge;
-      ctx.globalAlpha = 0.10 + t*0.30;
-      ctx.fillStyle = t > 0.55 ? TH.slotHot : TH.slotInk;
-      ctx.fillRect(sl.x0 + 1, sl.y + sl.h - 3 - t*10, sl.x1 - sl.x0 - 2, 3 + t*10);
-      ctx.globalAlpha = 1;
-      if (S.opt.showLabels){
-        ctx.fillStyle = TH.label;
-        ctx.font = '500 9px "IBM Plex Mono", monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('×' + fmt(slotMult(sl)), (sl.x0+sl.x1)/2, sl.y + 13);
-      }
-    }
     ctx.fillStyle = TH.label;
     ctx.font = '500 11px "IBM Plex Mono", monospace';
     ctx.textAlign = 'center';
@@ -1795,31 +1843,30 @@ function draw(){
     return;
   }
 
+  /* only slots currently flashing need repainting over the cached layer */
   for (const s of slots){
-    const t = s.edge;
-    ctx.globalAlpha = 0.10 + t*0.30 + s.flash*0.55;
-    ctx.fillStyle = t > 0.55 ? TH.slotHot : TH.slotInk;
-    ctx.fillRect(s.x0 + 1, s.y + s.h - 3 - t*10, s.x1 - s.x0 - 2, 3 + t*10);
-    ctx.globalAlpha = 1;
-
-    if (S.opt.showLabels){
-      ctx.fillStyle = s.flash > 0.2 ? TH.slotHot : TH.label;
-      ctx.font = '500 9px "IBM Plex Mono", monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText('×' + fmt(slotMult(s)), (s.x0+s.x1)/2, s.y + 13);
-    }
-    s.flash *= 0.86;
+    if (s.flash > 0.02){
+      const t = s.edge;
+      ctx.globalAlpha = Math.min(1, s.flash*0.55);
+      ctx.fillStyle = TH.slotHot;
+      ctx.fillRect(s.x0 + 1, s.y + s.h - 3 - t*10, s.x1 - s.x0 - 2, 3 + t*10);
+      ctx.globalAlpha = 1;
+      s.flash *= 0.86;
+    } else s.flash = 0;
   }
 
+  /* likewise only pegs still lit from a recent hit */
+  ctx.fillStyle = TH.slotHot;
   for (const p of pegs){
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, pegR, 0, 6.2832);
-    ctx.fillStyle = p.hit > 0.05 ? TH.slotHot : TH.peg;
-    ctx.globalAlpha = p.hit > 0.05 ? (0.4 + p.hit*0.6) : 1;
-    ctx.fill();
-    ctx.globalAlpha = 1;
-    p.hit *= 0.9;
+    if (p.hit > 0.05){
+      ctx.globalAlpha = 0.4 + p.hit*0.6;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, pegR, 0, 6.2832);
+      ctx.fill();
+      p.hit *= 0.9;
+    } else p.hit = 0;
   }
+  ctx.globalAlpha = 1;
 
   for (const b of balls){
     ctx.beginPath();
@@ -1862,6 +1909,8 @@ let lastSig = {}, scrollingUntil = 0;
    is the problem this is here to avoid. The totals are refreshed in
    place by touchPanel() instead. */
 function panelSig(kind){
+  if (kind === 'tree')
+    return Math.floor(Math.log10(Math.max(1, S.quanta))*20) + '|' + JSON.stringify(S.tree || {});
   if (kind === 'flux')
     return JSON.stringify(S.fx || {});
   return [JSON.stringify(S.cons||{}), (S.active||[]).join(','),
@@ -1952,7 +2001,7 @@ function frame(now){
     if (trickle > 0) S.flux = (S.flux || 0) + trickle * acc;
     acc = 0;
     paintHud(); paintDist(); checkMilestones(); checkQuests();
-    if (currentTab === 'tree') paintTree();
+    if (currentTab === 'tree') maybePaint('tree', paintTree);
     /* these three rebuild their whole panel, so they only refresh when
        something they display has actually changed */
     if (currentTab === 'cosmos'){ maybePaint('cosmos', paintCosmos); touchPanel('cosmos'); }
@@ -2213,8 +2262,9 @@ function buyNode(id){
   const before = allTiers().length;
   S.quanta -= c;
   S.tree[id] = node(id) + 1;
+  invalidateGen();
   if (id === 'deep') buildBoard();     // the board can physically grow
-  save(); paintTree(); paintHud();
+  save(); lastSig.tree = null; paintTree(); paintHud();
   const d = nodeDef(id);
   toast(d.name + ' → level ' + node(id));
   if (allTiers().length > before) toast('A new tier opened up');
@@ -2890,7 +2940,7 @@ $('tBtn').onclick = () => {
   S.spectra = 0; S.spectraEarned = 0;
   S.quanta = 0; S.quantaEarned = 0;
   S.lv = FRESH().lv; S.pv = FRESH().pv; S.sv = FRESH().sv;
-  S.tree = {};
+  S.tree = {}; invalidateGen();
 
   balls.length = 0;
   buildBoard(); buildVault(); buildTree(); paintTree(); paintCosmos(); save(); paintHud();
@@ -2911,7 +2961,7 @@ $('rBtn').onclick = () => {
   S.quanta = 0; S.quantaEarned = 0;
   S.aether = 0; S.aetherEarned = 0;
   S.lv = FRESH().lv; S.pv = FRESH().pv; S.sv = FRESH().sv;
-  S.tree = {}; S.cons = {}; S.active = [];
+  S.tree = {}; invalidateGen(); S.cons = {}; S.active = [];
 
   balls.length = 0;
   treeRows = -1;
@@ -2936,7 +2986,7 @@ function load(){
     S.opt = Object.assign({}, DEFAULT_OPT, d.opt || {});   // new options get defaults
     S.pv  = Object.assign(FRESH().pv, d.pv || {});
     S.sv  = Object.assign(FRESH().sv, d.sv || {});
-    S.tree = d.tree || {};
+    S.tree = d.tree || {}; invalidateGen();
     S.cons = d.cons || {};
     S.active = Array.isArray(d.active) ? d.active : [];
     S.bz  = d.bz || {};
@@ -3019,7 +3069,7 @@ function initCloud(){
           S.pv   = Object.assign(FRESH().pv, d.pv || {});
           S.sv   = Object.assign(FRESH().sv, d.sv || {});
           S.opt  = Object.assign({}, DEFAULT_OPT, d.opt || {});
-          S.tree = d.tree || {};
+          S.tree = d.tree || {}; invalidateGen(); invalidateGen();
           S.cons = d.cons || {};
           S.active = Array.isArray(d.active) ? d.active : [];
           S.bz   = d.bz || {};
