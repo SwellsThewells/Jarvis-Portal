@@ -82,7 +82,10 @@ button{ font:inherit; color:inherit; }
   text-transform:uppercase; color:var(--faint); margin-top:5px;
 }
 
-canvas{ display:block; width:100%; flex:1; min-height:0; }
+canvas{
+  display:block; width:100%; flex:1; min-height:0;
+  contain:layout paint; will-change:transform;
+}
 @media(max-width:940px){ canvas{ height:58vh; flex:none; } }
 
 .dist{ display:flex; align-items:flex-end; gap:1px; height:26px; padding:0 26px; flex:none; opacity:.6; }
@@ -133,7 +136,22 @@ canvas{ display:block; width:100%; flex:1; min-height:0; }
   cursor:pointer; white-space:nowrap;
 }
 .tabs button.on{ color:var(--ink); border-bottom-color:var(--hot); }
-.scroll{ overflow-y:auto; flex:1 1 auto; min-height:140px; }
+.scroll{
+  overflow-y:auto; flex:1 1 auto; min-height:140px;
+  contain:paint;                 /* scrolling can't invalidate the canvas */
+  overscroll-behavior:contain;   /* and can't chain to the page */
+}
+/* rows outside the viewport are not laid out or painted at all, which
+   is what makes a long tree cheap to scroll */
+.up, .tnode, .con, .orb, .ms, .quest{
+  content-visibility:auto;
+}
+.up{ contain-intrinsic-size:auto 92px; }
+.tnode{ contain-intrinsic-size:auto 104px; }
+.con{ contain-intrinsic-size:auto 96px; }
+.orb{ contain-intrinsic-size:auto 74px; }
+.ms{ contain-intrinsic-size:auto 38px; }
+.quest{ contain-intrinsic-size:auto 74px; }
 
 .bulk{ display:flex; padding:10px 20px; border-bottom:1px solid var(--rule2); }
 .bulk button{
@@ -429,13 +447,18 @@ body.dark .con{ background:rgba(255,255,255,.03); }
 .wrap{ position:relative; z-index:1; }
 
 /* Paper — grain drifting like dust in light */
+/* The layer is oversized and slid with transform. Animating
+   background-position instead forces a full-viewport repaint on every
+   frame, which is exactly what makes scrolling stutter. */
 body.theme-paper .bg{
   background-image:radial-gradient(circle, rgba(22,19,14,.22) .6px, transparent .7px);
   background-size:22px 22px;
   animation:drift 90s linear infinite;
   opacity:.35;
+  inset:-240px; width:auto; height:auto;
+  will-change:transform;
 }
-@keyframes drift{ to{ background-position:220px 220px; } }
+@keyframes drift{ to{ transform:translate3d(220px,220px,0); } }
 
 /* Ink — slow embers rising */
 body.theme-ink .bg{
@@ -465,8 +488,10 @@ body.theme-blueprint .bg{
     linear-gradient(90deg, rgba(220,233,242,.07) 1px, transparent 1px);
   background-size:46px 46px;
   animation:sheet 70s linear infinite;
+  inset:-60px; width:auto; height:auto;
+  will-change:transform;
 }
-@keyframes sheet{ to{ background-position:46px 46px; } }
+@keyframes sheet{ to{ transform:translate3d(46px,46px,0); } }
 
 /* Sepia — a soft vignette that swells and settles */
 body.theme-sepia .bg{
@@ -2027,7 +2052,13 @@ function paintHud(){
   $('ballCount').textContent = balls.length;
   $('best').textContent = fmt(S.best);
 
-  document.querySelectorAll('.up[data-id]').forEach(btn => {
+  /* Re-pricing every row calls affordable(), which can loop 500 times
+     per row in Max mode. Mid-scroll the browser is already busy, so let
+     it wait — nothing here changes meaningfully in 400ms. The prestige
+     rail below still updates. */
+  const busy = performance.now() < scrollingUntil;
+
+  if (!busy) document.querySelectorAll('.up[data-id]').forEach(btn => {
     const id = btn.dataset.id;
     if (!U[id]) return;
     const isMax = maxed(id);
@@ -2041,7 +2072,7 @@ function paintHud(){
     btn.querySelector('.lv').textContent = isMax ? 'lv ' + lvl(id) + ' · max' : 'lv ' + lvl(id);
     btn.querySelector('.eff').textContent = U[id].show(eff(id));
   });
-  paintPrisms();
+  if (!busy) paintPrisms();
 
   const gain = prismsOnReset();
   $('pBtn').disabled = gain < 1;
