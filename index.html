@@ -3,1038 +3,2831 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Jarvis Portal</title>
+<meta name="theme-color" content="#0E0D0C">
+<title>Jarvis Plinko</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
-  :root{
-    --bg:    #050505;
-    --white: #FFFFFF;
-    --dim:   #6E6E6E;
-    --edge:  rgba(255,255,255,.16);
-    --gap:   14px;
-  }
+/* ================================================================
+   JARVIS PLINKO — precision instrument
 
-  *{ box-sizing:border-box; }
-  html,body{ margin:0; padding:0; }
+   Warm paper stock, ink-black type, hairline rules, one vermillion
+   accent. Upgrades are ledger rows, not cards.
+   ================================================================ */
 
-  body{
-    min-height:100vh;
-    background:var(--bg);
-    color:var(--white);
-    font-family:"JetBrains Mono", ui-monospace, monospace;
-    -webkit-font-smoothing:antialiased;
-  }
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
 
-  /* ---- halftone dot field, dense up top, dissolving outward ---- */
-  body::before{
-    content:"";
-    position:fixed; inset:0; z-index:0; pointer-events:none;
-    background-image:radial-gradient(circle, #fff 1px, transparent 1px);
-    background-size:13px 13px;
-    -webkit-mask-image:radial-gradient(ellipse 85% 65% at 50% 4%, #000 0%, rgba(0,0,0,.55) 45%, transparent 78%);
-            mask-image:radial-gradient(ellipse 85% 65% at 50% 4%, #000 0%, rgba(0,0,0,.55) 45%, transparent 78%);
-    opacity:.22;
-  }
-  body::after{
-    content:"";
-    position:fixed; inset:0; z-index:0; pointer-events:none;
-    background-image:linear-gradient(90deg, #fff 1px, transparent 1px);
-    background-size:104px 100%;
-    -webkit-mask-image:linear-gradient(#000, transparent 65%);
-            mask-image:linear-gradient(#000, transparent 65%);
-    opacity:.05;
-  }
+:root{
+  --paper:  #F2EFE7;
+  --card:   #FBF9F4;
+  --ink:    #16130E;
+  --muted:  #6C665B;
+  --faint:  #A39C8E;
+  --rule:   rgba(22,19,14,.13);
+  --rule2:  rgba(22,19,14,.07);
+  --hot:    #C6402A;
+  --cool:   #2C5C86;
 
-  .wrap{
-    position:relative; z-index:1;
-    max-width:880px;
-    margin:0 auto;
-    padding:84px 20px 90px;
-  }
+  --serif: "Instrument Serif", Georgia, serif;
+  --sans:  "IBM Plex Sans", system-ui, sans-serif;
+  --mono:  "IBM Plex Mono", ui-monospace, monospace;
+}
 
-  header{ text-align:center; margin-bottom:56px; }
-  h1{
-    margin:0;
-    font-size:clamp(19px, 4.4vw, 30px);
-    font-weight:700;
-    letter-spacing:.42em;
-    text-indent:.42em;
-    text-transform:uppercase;
-  }
-  .sub{
-    margin:20px 0 0;
-    font-size:11px; font-weight:400; letter-spacing:.3em;
-    text-transform:uppercase; color:var(--dim);
-  }
+*{ box-sizing:border-box; }
+html,body{ margin:0; height:100%; }
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:var(--sans); font-size:14px;
+  -webkit-font-smoothing:antialiased; overflow:hidden;
+}
+button{ font:inherit; color:inherit; }
+::-webkit-scrollbar{ width:9px; }
+::-webkit-scrollbar-thumb{ background:var(--rule); }
 
-  .hidden{ display:none !important; }
+.wrap{ display:grid; grid-template-columns:minmax(0,1fr) 348px; height:100vh; }
+@media(max-width:940px){
+  body{ overflow:auto; }
+  .wrap{ grid-template-columns:1fr; height:auto; }
+}
 
-  /* ---------- sign-in panel ---------- */
-  .gate{
-    max-width:340px; margin:0 auto;
-    border:1px solid var(--edge);
-    border-radius:2px;
-    background:rgba(10,10,10,.72);
-    padding:26px 24px 24px;
-  }
-  .gate h2{
-    margin:0 0 22px;
-    font-size:11px; font-weight:500; letter-spacing:.28em;
-    text-transform:uppercase; color:var(--dim); text-align:center;
-  }
-  .field{ margin-bottom:12px; }
-  .field label{
-    display:block; margin-bottom:7px;
-    font-size:9.5px; letter-spacing:.24em; text-transform:uppercase; color:var(--dim);
-  }
-  .field input{
-    width:100%;
-    padding:11px 12px;
-    background:#0B0B0B;
-    border:1px solid var(--edge);
-    border-radius:2px;
-    color:var(--white);
-    font-family:inherit; font-size:13px; letter-spacing:.06em;
-  }
-  .field input:focus{ outline:none; border-color:var(--white); }
+/* ---------------- the machine ---------------- */
+.machine{ display:flex; flex-direction:column; min-width:0; border-right:1px solid var(--rule); }
 
-  .btn{
-    width:100%; margin-top:10px; padding:12px;
-    background:var(--white); color:#000;
-    border:1px solid var(--white); border-radius:2px;
-    font-family:inherit; font-size:10.5px; font-weight:700;
-    letter-spacing:.24em; text-transform:uppercase;
-    cursor:pointer;
-    transition:opacity .15s ease;
-  }
-  .btn:hover{ opacity:.82; }
-  .btn:disabled{ opacity:.4; cursor:default; }
+.head{
+  display:flex; align-items:flex-end; gap:16px;
+  padding:20px 26px 15px; border-bottom:1px solid var(--rule); flex:none;
+}
+.back{
+  font-family:var(--mono); font-size:15px; line-height:1;
+  color:var(--faint); text-decoration:none; padding-bottom:5px;
+}
+.back:hover{ color:var(--hot); }
+.wordmark{ font-family:var(--serif); font-size:31px; line-height:.9; letter-spacing:-.01em; }
+.wordmark i{ font-style:italic; color:var(--hot); }
+.sub{
+  font-family:var(--mono); font-size:9.5px; letter-spacing:.2em;
+  text-transform:uppercase; color:var(--faint); padding-bottom:6px;
+}
 
-  .swap{
-    width:100%; margin-top:14px; padding:0;
-    background:none; border:0; color:var(--dim);
-    font-family:inherit; font-size:10px; letter-spacing:.16em;
-    text-transform:uppercase; cursor:pointer;
-  }
-  .swap:hover{ color:var(--white); }
+.readout{ margin-left:auto; text-align:right; }
+.readout .n{
+  font-family:var(--mono); font-variant-numeric:tabular-nums;
+  font-size:29px; font-weight:500; line-height:1; letter-spacing:-.02em;
+}
+.readout .l{
+  font-family:var(--mono); font-size:9px; letter-spacing:.24em;
+  text-transform:uppercase; color:var(--faint); margin-top:5px;
+}
 
-  .msg{
-    margin:14px 0 0; min-height:14px;
-    font-size:10.5px; line-height:1.6; letter-spacing:.05em;
-    color:var(--dim); text-align:center;
-  }
-  .msg.bad{ color:var(--white); }
+canvas{ display:block; width:100%; flex:1; min-height:0; }
+@media(max-width:940px){ canvas{ height:58vh; flex:none; } }
 
-  /* ---------- grid ---------- */
-  .grid{
-    display:grid;
-    grid-template-columns:repeat(3, 1fr);
-    gap:var(--gap);
-  }
-  @media (max-width:760px){ .grid{ grid-template-columns:repeat(2,1fr); } }
-  @media (max-width:440px){ .grid{ grid-template-columns:1fr; } }
+.dist{ display:flex; align-items:flex-end; gap:1px; height:26px; padding:0 26px; flex:none; opacity:.6; }
+.dist i{ flex:1; background:var(--ink); min-height:1px; transition:height .25s ease; }
 
-  .tile{
-    position:relative;
-    display:block;
-    aspect-ratio:1 / 1;
-    overflow:hidden;
-    background:#0B0B0B;
-    border:1px solid var(--edge);
-    border-radius:2px;
-    text-decoration:none;
-    color:inherit;
-    transition:border-color .2s ease, transform .2s ease;
-    animation:in .4s ease backwards;
-    animation-delay:calc(var(--i) * 55ms);
-  }
-  @keyframes in{ from{ opacity:0; } to{ opacity:1; } }
+.deck{
+  display:flex; align-items:center; gap:18px;
+  padding:13px 26px 16px; border-top:1px solid var(--rule); flex:none;
+}
+.drop{
+  padding:11px 30px; background:var(--ink); color:var(--paper);
+  border:0; border-radius:2px;
+  font-family:var(--mono); font-size:11px; font-weight:500;
+  letter-spacing:.18em; text-transform:uppercase; cursor:pointer;
+}
+.drop:hover{ background:var(--hot); }
+.drop:active{ transform:translateY(1px); }
 
-  .tile:hover, .tile:focus-visible{
-    border-color:var(--white);
-    transform:translateY(-2px);
-    outline:none;
-  }
+.gauges{ display:flex; gap:24px; }
+.g .v{ font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:14px; font-weight:500; }
+.g .k{
+  font-family:var(--mono); font-size:8.5px; letter-spacing:.2em;
+  text-transform:uppercase; color:var(--faint); margin-top:3px;
+}
+.hint{
+  margin-left:auto; font-family:var(--mono);
+  font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); cursor:default;
+}
+.hint.synced{ color:var(--cool); }
+.hint.saving{ color:var(--hot); }
 
-  .shot{ position:absolute; inset:0; overflow:hidden; }
-  .shot iframe{
-    width:1280px; height:1600px; border:0;
-    transform-origin:top left;
-    pointer-events:none;
-    opacity:0;
-    filter:grayscale(1) contrast(.92) brightness(.78);
-    transition:opacity .4s ease, filter .25s ease;
-  }
-  .tile.ready .shot iframe{ opacity:1; }
+/* ---------------- ledger ---------------- */
+.ledger{
+  display:flex; flex-direction:column; min-height:0; height:100vh;
+  background:var(--card); overflow:hidden;
+}
+@media(max-width:940px){ .ledger{ height:auto; } }
+.tabs{
+  display:flex; flex:none; border-bottom:1px solid var(--rule);
+  overflow-x:auto; scrollbar-width:none;
+}
+.tabs::-webkit-scrollbar{ height:0; }
+.tabs button{
+  flex:0 0 auto; padding:14px 13px; background:none; border:0;
+  border-bottom:1px solid transparent; margin-bottom:-1px;
+  font-family:var(--mono); font-size:9px; font-weight:500;
+  letter-spacing:.12em; text-transform:uppercase; color:var(--faint);
+  cursor:pointer; white-space:nowrap;
+}
+.tabs button.on{ color:var(--ink); border-bottom-color:var(--hot); }
+.scroll{ overflow-y:auto; flex:1 1 auto; min-height:140px; }
 
-  /* Screenshot tiles use the same treatment as live previews.
-     (Set in CSS, not inline, so :hover can actually override it.) */
-  .shot img{
-    width:100%; height:100%;
-    object-fit:cover; object-position:top center;
-    filter:grayscale(1) contrast(.92) brightness(.78);
-    transition:filter .25s ease;
-  }
+.bulk{ display:flex; padding:10px 20px; border-bottom:1px solid var(--rule2); }
+.bulk button{
+  flex:1; padding:7px 0; background:none;
+  border:1px solid var(--rule2); border-right:0;
+  font-family:var(--mono); font-size:9.5px; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--muted); cursor:pointer;
+}
+.bulk button:last-child{ border-right:1px solid var(--rule2); }
+.bulk button.on{ background:var(--ink); border-color:var(--ink); color:var(--card); }
 
-  /* Colour only while the pointer is on the tile. Gated behind
-     hover:hover so phones don't get stuck in the hovered state
-     after a tap. */
-  @media (hover: hover){
-    .tile:hover .shot iframe,
-    .tile:hover .shot img{ filter:none; }
-  }
-  .tile:focus-visible .shot iframe,
-  .tile:focus-visible .shot img{ filter:none; }
+.up{
+  display:block; width:100%; text-align:left;
+  padding:14px 20px; background:none; border:0;
+  border-bottom:1px solid var(--rule2); cursor:pointer;
+}
+.up:hover:not(:disabled){ background:rgba(198,64,42,.05); }
+.up:disabled{ cursor:default; }
+.up:disabled .nm, .up:disabled .cost{ color:var(--faint); }
+.up .r{ display:flex; align-items:baseline; gap:10px; }
+.up .nm{ font-size:14px; font-weight:600; letter-spacing:-.005em; }
+.up .eff{
+  margin-left:auto; font-family:var(--mono);
+  font-variant-numeric:tabular-nums; font-size:11px; color:var(--cool);
+}
+.up .ds{ font-size:11.5px; color:var(--muted); line-height:1.5; margin:5px 0 8px; }
+.up .foot{ display:flex; align-items:baseline; }
+.up .cost{ font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:11.5px; font-weight:500; }
+.up.afford .cost{ color:var(--hot); }
+.up .lv{
+  margin-left:auto; font-family:var(--mono); font-size:9.5px;
+  letter-spacing:.14em; text-transform:uppercase; color:var(--faint);
+}
+.up.pr .cost{ color:var(--cool); }
+.up.pr:hover:not(:disabled){ background:rgba(44,92,134,.06); }
+.up.sp .cost{ color:var(--hot); }
+.up.sp:hover:not(:disabled){ background:rgba(198,64,42,.05); }
+.up.bz .cost{ color:#2F7F6B; }
+.up.bz:hover:not(:disabled){ background:rgba(47,127,107,.07); }
 
-  /* Touch screens can't hover, so nothing would ever go colour.
-     Show them as they are. */
-  @media (hover: none){
-    .shot iframe, .shot img{ filter:none; }
-  }
+.prismhead, .qhead{
+  display:flex; align-items:baseline; gap:10px;
+  padding:18px; border-bottom:1px solid var(--rule);
+}
+.prismhead .n, .qhead .n{ font-family:var(--mono); font-size:22px; font-weight:500; color:var(--cool); }
+.qhead .n{ color:var(--hot); }
+.prismhead .k, .qhead .k{
+  font-family:var(--mono); font-size:9px; letter-spacing:.22em;
+  text-transform:uppercase; color:var(--faint);
+}
 
-  .stub{
-    position:absolute; inset:0;
-    display:grid; place-items:center;
-    font-size:26px; font-weight:700; letter-spacing:.16em;
-    color:rgba(255,255,255,.14);
-    background:
-      repeating-linear-gradient(45deg, transparent 0 6px, rgba(255,255,255,.03) 6px 7px),
-      #0B0B0B;
-    transition:opacity .3s ease;
-  }
-  .tile.ready .stub{ opacity:0; }
+.sect{ padding:16px 20px 6px; }
+.sect h4{
+  margin:0 0 2px; font-family:var(--mono); font-size:9px; font-weight:500;
+  letter-spacing:.24em; text-transform:uppercase; color:var(--faint);
+}
 
-  .meta{
-    position:absolute; left:0; right:0; bottom:0;
-    padding:30px 12px 11px;
-    background:linear-gradient(transparent, rgba(0,0,0,.9) 55%);
-    font-size:11px; letter-spacing:.16em; text-transform:uppercase;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  }
-  .meta span{ color:var(--dim); }
-  .tile:hover .meta span{ color:var(--white); }
+/* tree */
+.trow{ position:relative; padding:0 14px; }
+.trow .tier{
+  font-family:var(--mono); font-size:8.5px; letter-spacing:.2em;
+  text-transform:uppercase; color:var(--faint); padding:14px 6px 7px;
+}
+.tnodes{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.tnode{
+  position:relative; text-align:left; padding:10px 9px;
+  border:1px solid var(--rule); border-radius:6px;
+  background:var(--card); cursor:pointer; color:inherit;
+  transition:border-color .16s, transform .14s, background .16s;
+}
+.tnode:hover:not(:disabled){ transform:translateY(-2px); border-color:var(--ink); }
+.tnode:disabled{ cursor:default; }
+.tnode.locked{ opacity:.38; }
+.tnode.owned{ border-color:var(--hot); background:rgba(198,64,42,.06); }
+.tnode .nm{ font-size:11.5px; font-weight:600; line-height:1.25; }
+.tnode .lv{ font-family:var(--mono); font-size:9px; color:var(--faint); margin-top:3px; }
+.tnode .ef{ font-family:var(--mono); font-size:9.5px; color:var(--cool); margin-top:5px; }
+.tnode .cs{ font-family:var(--mono); font-size:10px; margin-top:5px; color:var(--hot); }
+.tnode.locked .cs, .tnode:disabled .cs{ color:var(--faint); }
+.tnode.child::before{
+  content:''; position:absolute; left:50%; top:-15px;
+  width:1px; height:15px; background:var(--rule);
+}
+.tnode.owned.child::before{ background:var(--hot); }
+.tdesc{ font-size:10.5px; color:var(--muted); line-height:1.5; margin-top:6px; }
 
-  .empty{
-    grid-column:1 / -1;
-    border:1px dashed var(--edge);
-    padding:44px 20px; text-align:center;
-    font-size:12px; letter-spacing:.1em; color:var(--dim);
-  }
+/* record */
+.stats{ padding:18px 20px; }
+.row{ display:flex; align-items:baseline; gap:6px; padding:7px 0; font-size:12.5px; }
+.row .k{ color:var(--muted); white-space:nowrap; }
+.row .dots{ flex:1; border-bottom:1px dotted var(--rule); transform:translateY(-3px); }
+.row .v{ font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:12px; }
 
-  /* ---------- account bar ---------- */
-  .account{
-    display:flex; justify-content:center; align-items:center; gap:14px;
-    margin:0 0 30px;
-    font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--dim);
-  }
-  .account b{ color:var(--white); font-weight:500; }
-  .account button{
-    background:none; border:0; padding:0;
-    color:var(--dim); font-family:inherit; font-size:10px;
-    letter-spacing:.2em; text-transform:uppercase;
-    text-decoration:underline; text-underline-offset:3px; cursor:pointer;
-  }
-  .account button:hover{ color:var(--white); }
+.ms{
+  display:flex; align-items:center; gap:10px;
+  padding:10px 20px; border-bottom:1px solid var(--rule2); font-size:12.5px;
+}
+.ms .dot{ width:7px; height:7px; border-radius:50%; flex:none; border:1px solid var(--faint); }
+.ms.done .dot{ background:var(--hot); border-color:var(--hot); }
+.ms.done .lbl{ color:var(--muted); text-decoration:line-through; }
+.ms .req{
+  margin-left:auto; font-family:var(--mono);
+  font-variant-numeric:tabular-nums; font-size:10.5px; color:var(--faint);
+}
 
-  /* ---------- in-portal viewer ---------- */
-  .viewer{
-    position:fixed; inset:0; z-index:6;
-    background:var(--bg);
-    display:none; flex-direction:column;
-  }
-  .viewer.open{ display:flex; }
-  .viewerbar{
-    display:flex; align-items:center; gap:12px;
-    padding:9px 14px; flex:none;
-    border-bottom:1px solid var(--edge);
-    font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--dim);
-  }
-  .viewerbar b{ color:var(--white); font-weight:500; }
-  .viewerbar .sp{ margin-left:auto; display:flex; gap:8px; }
-  .viewerbar button{
-    background:none; border:1px solid var(--edge); border-radius:2px;
-    color:var(--dim); font-family:inherit; font-size:9.5px;
-    letter-spacing:.2em; text-transform:uppercase;
-    padding:6px 11px; cursor:pointer;
-  }
-  .viewerbar button:hover{ color:var(--white); border-color:var(--white); }
-  .viewer iframe{ flex:1; width:100%; border:0; background:#000; }
+/* settings */
+.opt{ display:flex; align-items:center; gap:12px; padding:12px 20px; border-bottom:1px solid var(--rule2); }
+.opt .t{ min-width:0; flex:1; }
+.opt .t b{ display:block; font-size:13px; font-weight:600; }
+.opt .t span{ display:block; font-size:11px; color:var(--muted); line-height:1.45; margin-top:2px; }
+.sw{
+  flex:none; min-width:62px; padding:6px 0;
+  background:none; border:1px solid var(--rule); border-radius:2px;
+  font-family:var(--mono); font-size:9px; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--muted); cursor:pointer;
+}
+.sw:hover{ border-color:var(--faint); color:var(--ink); }
+.numin{
+  flex:none; width:92px; padding:7px 9px;
+  background:var(--paper); border:1px solid var(--rule); border-radius:2px;
+  color:var(--ink); font-family:var(--mono); font-size:12px; text-align:right;
+}
+.numin:focus{ outline:none; border-color:var(--hot); }
+.sw.on{ background:var(--ink); border-color:var(--ink); color:var(--paper); }
 
-  /* ---------- sound toggle ---------- */
-  .sound{
-    position:fixed; right:18px; bottom:18px; z-index:3;
-    display:flex; align-items:center; gap:9px;
-    padding:9px 13px;
-    background:rgba(5,5,5,.75);
-    border:1px solid var(--edge);
-    border-radius:2px;
-    color:var(--dim);
-    font:inherit; font-size:10px; letter-spacing:.24em; text-transform:uppercase;
-    cursor:pointer;
-    transition:color .2s ease, border-color .2s ease;
-  }
-  .sound:hover, .sound:focus-visible{ color:var(--white); border-color:var(--white); outline:none; }
+.swatches{ display:flex; gap:8px; padding:4px 20px 16px; flex-wrap:wrap; }
+.sws{ width:60px; padding:0; cursor:pointer; background:none; border:1px solid var(--rule); border-radius:2px; overflow:hidden; }
+.sws.on{ border-color:var(--hot); }
+.sws .bar{ display:flex; height:24px; }
+.sws .bar i{ flex:1; }
+.sws .nm{
+  display:block; padding:4px 0 5px;
+  font-family:var(--mono); font-size:8px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--muted);
+}
+.sws.on .nm{ color:var(--ink); }
 
-  .bars{ display:flex; align-items:flex-end; gap:2px; height:11px; }
-  .bars i{ width:2px; height:100%; background:currentColor; transform:scaleY(.18); transform-origin:bottom; }
-  .sound.on .bars i{ animation:bounce .9s ease-in-out infinite; }
-  .sound.on .bars i:nth-child(2){ animation-delay:.18s; }
-  .sound.on .bars i:nth-child(3){ animation-delay:.36s; }
-  @keyframes bounce{ 0%,100%{ transform:scaleY(.18); } 50%{ transform:scaleY(1); } }
+/* prestige rail */
+.prestige{
+  padding:16px 20px; border-top:1px solid var(--rule); flex:none;
+  max-height:46vh; overflow-y:auto;
+}
+.meter{ height:2px; background:var(--rule); margin-bottom:13px; }
+.meter i{ display:block; height:100%; background:var(--cool); width:0; transition:width .4s ease; }
+.pbtn{
+  width:100%; padding:12px;
+  background:none; border:1px solid var(--cool); border-radius:2px;
+  color:var(--cool); font-family:var(--mono); font-size:10px; font-weight:500;
+  letter-spacing:.18em; text-transform:uppercase; cursor:pointer;
+}
+.pbtn:hover:not(:disabled){ background:var(--cool); color:var(--card); }
+.pbtn:disabled{ border-color:var(--rule); color:var(--faint); cursor:default; }
+.cBtn{ border-color:var(--hot); color:var(--hot); }
+.cBtn:hover:not(:disabled){ background:var(--hot); color:var(--paper); }
+.aBtn{ border-color:#7A5EA8; color:#7A5EA8; }
+.aBtn:hover:not(:disabled){ background:#7A5EA8; color:var(--card); }
+.rBtn{ border-color:#9C6B2F; color:#9C6B2F; }
+.rBtn:hover:not(:disabled){ background:#9C6B2F; color:var(--card); }
+.tBtn{ border-color:#2F7F6B; color:#2F7F6B; }
+.tBtn:hover:not(:disabled){ background:#2F7F6B; color:var(--card); }
+.pnote{ margin:10px 0 0; font-size:11px; color:var(--muted); line-height:1.6; }
 
-  /* ---------- settings ---------- */
-  .cog{
-    position:fixed; left:18px; bottom:18px; z-index:4;
-    display:flex; align-items:center; gap:8px;
-    padding:9px 13px;
-    background:rgba(5,5,5,.75);
-    border:1px solid var(--edge);
-    border-radius:2px;
-    color:var(--dim);
-    font:inherit; font-size:10px; letter-spacing:.24em; text-transform:uppercase;
-    cursor:pointer;
-    transition:color .2s ease, border-color .2s ease;
-  }
-  .cog:hover, .cog:focus-visible{ color:var(--white); border-color:var(--white); outline:none; }
+.foot2{ display:flex; border-top:1px solid var(--rule); flex:none; }
+.foot2 button{
+  flex:1; padding:11px; background:none; border:0;
+  border-right:1px solid var(--rule);
+  font-family:var(--mono); font-size:9px; letter-spacing:.18em;
+  text-transform:uppercase; color:var(--faint); cursor:pointer;
+}
+.foot2 button:last-child{ border-right:0; }
+.foot2 button:hover{ color:var(--hot); }
 
-  .panel{
-    position:fixed; left:18px; bottom:62px; z-index:5;
-    width:272px; padding:18px;
-    background:rgba(6,6,6,.96);
-    border:1px solid var(--edge);
-    border-radius:2px;
-    display:none;
-  }
-  .panel.open{ display:block; }
-  .panel h3{
-    margin:0 0 16px;
-    font-size:10px; font-weight:500; letter-spacing:.28em;
-    text-transform:uppercase; color:var(--dim);
-  }
-  .set{ margin-bottom:18px; }
-  .set label{
-    display:flex; justify-content:space-between; align-items:baseline;
-    margin-bottom:9px;
-    font-size:9.5px; letter-spacing:.2em; text-transform:uppercase; color:var(--dim);
-  }
-  .set label b{ color:var(--white); font-weight:500; letter-spacing:.1em; }
+.toast{
+  position:fixed; left:50%; bottom:24px; transform:translateX(-50%);
+  background:var(--ink); color:var(--paper);
+  padding:10px 20px; border-radius:2px;
+  font-family:var(--mono); font-size:11px; letter-spacing:.06em;
+  opacity:0; pointer-events:none; transition:opacity .3s ease;
+}
+.toast.show{ opacity:1; }
 
-  input[type=range]{
-    -webkit-appearance:none; appearance:none;
-    width:100%; height:1px; background:var(--edge); outline:none;
-  }
-  input[type=range]::-webkit-slider-thumb{
-    -webkit-appearance:none; appearance:none;
-    width:11px; height:11px; border-radius:0;
-    background:var(--white); cursor:pointer;
-  }
-  input[type=range]::-moz-range-thumb{
-    width:11px; height:11px; border:0; border-radius:0;
-    background:var(--white); cursor:pointer;
-  }
+/* ---------------- cosmos: constellations, bazaar, quests ---------------- */
+.chead{
+  display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;
+  padding:18px; border-bottom:1px solid var(--rule);
+}
+.chead div{ display:flex; align-items:baseline; gap:7px; }
+.chead .n{ font-family:var(--mono); font-size:20px; font-weight:500; }
+.chead .n.ae{ color:#7A5EA8; }
+.chead .n.sh{ color:#2F7F6B; }
+.chead .k{
+  font-family:var(--mono); font-size:8.5px; letter-spacing:.22em;
+  text-transform:uppercase; color:var(--faint);
+}
 
-  .keybtn{
-    width:100%; padding:10px;
-    background:#0B0B0B; border:1px solid var(--edge); border-radius:2px;
-    color:var(--white); font-family:inherit; font-size:11px;
-    letter-spacing:.18em; text-transform:uppercase; cursor:pointer;
-  }
-  .keybtn:hover{ border-color:var(--white); }
-  .keybtn.off{ color:var(--dim); }
-  .keybtn.off:hover{ color:var(--white); }
-  .keybtn:disabled{ opacity:.45; cursor:default; }
-  .keybtn.listening{ border-color:var(--white); color:var(--dim); }
+.cons{ display:grid; grid-template-columns:repeat(2,1fr); gap:8px; padding:0 14px 14px; }
+.con{
+  position:relative; text-align:left; padding:11px 10px;
+  border:1px solid var(--rule); border-radius:6px;
+  background:var(--card); cursor:pointer; color:inherit;
+  transition:border-color .16s, background .16s;
+}
+.con:hover:not(:disabled){ border-color:var(--ink); }
+.con:disabled{ cursor:default; opacity:.5; }
+.con.active{ border-color:#7A5EA8; background:rgba(122,94,168,.08); }
+.con .nm{ font-size:12px; font-weight:600; }
+.con .ds{ font-size:10.5px; color:var(--muted); line-height:1.4; margin-top:4px; }
+.con .ef{ font-family:var(--mono); font-size:9.5px; color:var(--cool); margin-top:5px; }
+.con .cs{ font-family:var(--mono); font-size:10px; color:#7A5EA8; margin-top:4px; }
+.con .tag{
+  position:absolute; top:8px; right:9px;
+  font-family:var(--mono); font-size:7.5px; letter-spacing:.14em;
+  text-transform:uppercase; color:#7A5EA8;
+}
 
-  .panel .note{
-    margin:0; font-size:9.5px; line-height:1.7; letter-spacing:.04em; color:var(--dim);
-  }
+.quest{
+  padding:14px 20px; border-bottom:1px solid var(--rule2);
+}
+.quest .qt{ display:flex; align-items:baseline; gap:8px; }
+.quest .qn{ font-size:13px; font-weight:600; }
+.quest .qr{
+  margin-left:auto; font-family:var(--mono); font-size:10px; color:#2F7F6B;
+}
+.quest .qd{ font-size:11px; color:var(--muted); margin:4px 0 8px; }
+.qbar{ height:3px; background:var(--rule); }
+.qbar i{ display:block; height:100%; background:#2F7F6B; width:0; transition:width .3s ease; }
+.quest.done{ opacity:.55; }
 
-  @media (prefers-reduced-motion: reduce){
-    *{ animation:none !important; transition-duration:.01ms !important; }
-  }
+.balls{ display:flex; gap:7px; padding:0 20px 16px; flex-wrap:wrap; }
+.ballb{
+  padding:8px 12px; border:1px solid var(--rule); border-radius:2px;
+  background:none; cursor:pointer;
+  font-family:var(--mono); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--muted);
+}
+.ballb.on{ background:var(--ink); border-color:var(--ink); color:var(--paper); }
+.ballb:disabled{ opacity:.35; cursor:default; }
+
+body.dark .drop{ background:var(--hot); color:#120C0A; }
+body.dark .drop:hover{ background:var(--ink); color:var(--paper); }
+body.dark .sw.on{ background:var(--hot); border-color:var(--hot); color:#120C0A; }
+body.dark .bulk button.on{ background:var(--hot); border-color:var(--hot); color:#120C0A; }
+body.dark .toast{ background:var(--hot); color:#120C0A; }
+body.dark ::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.16); }
+body.dark .tnode{ background:rgba(255,255,255,.03); }
+body.dark .tnode.owned{ background:rgba(232,103,78,.12); }
+body.dark .con{ background:rgba(255,255,255,.03); }
+
+/* ---------------- the forge ---------------- */
+.fbench{ display:grid; grid-template-columns:repeat(auto-fill,minmax(74px,1fr)); gap:8px; padding:0 18px 16px; }
+.orb{
+  position:relative; aspect-ratio:1; border:1px solid var(--rule); border-radius:8px;
+  background:var(--card); cursor:pointer; color:inherit; padding:6px 4px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+  transition:border-color .14s, transform .14s;
+}
+.orb:hover{ transform:translateY(-2px); border-color:var(--ink); }
+.orb.sel{ border-color:var(--hot); box-shadow:0 0 0 1px var(--hot); }
+.orb .ball{
+  width:26px; height:26px; border-radius:50%;
+  box-shadow:inset -3px -3px 6px rgba(0,0,0,.35), inset 2px 2px 4px rgba(255,255,255,.35);
+}
+.orb .tt{ font-family:var(--mono); font-size:9px; color:var(--faint); }
+.orb .nm2{ font-size:9px; line-height:1.1; text-align:center; color:var(--muted); }
+.orb .bs{ font-family:var(--mono); font-size:8.5px; color:var(--cool); }
+.fslots{ display:grid; grid-template-columns:repeat(auto-fill,minmax(74px,1fr)); gap:8px; padding:0 18px 16px; }
+.fslot{
+  aspect-ratio:1; border:1px dashed var(--rule); border-radius:8px;
+  display:grid; place-items:center; font-family:var(--mono); font-size:9px; color:var(--faint);
+}
+.frow{ display:flex; gap:8px; padding:0 18px 14px; }
+.frow button{
+  flex:1; padding:9px; background:none; border:1px solid var(--rule); border-radius:2px;
+  font-family:var(--mono); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--muted); cursor:pointer;
+}
+.frow button:hover:not(:disabled){ border-color:var(--hot); color:var(--hot); }
+.frow button:disabled{ opacity:.4; cursor:default; }
+
+@media(prefers-reduced-motion: reduce){
+  *{ animation:none !important; transition-duration:.01ms !important; }
+}
 </style>
 </head>
 
 <body>
 <div class="wrap">
 
-  <header>
-    <h1>Jarvis Portal</h1>
-    <p class="sub" id="sub">Checking your session</p>
-  </header>
-
-  <!-- ===== SIGN IN ===== -->
-  <section class="gate hidden" id="gate">
-    <h2 id="gateTitle">Sign in</h2>
-
-    <div class="field">
-      <label for="u">Username</label>
-      <input id="u" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="20">
+  <div class="machine">
+    <div class="head">
+      <a class="back" href="index.html" title="Back to the portal">&#8592;</a>
+      <div>
+        <div class="wordmark">Jarvis <i>Plinko</i></div>
+      </div>
+      <div class="sub">Probability<br>Engine</div>
+      <div class="readout">
+        <div class="n" id="cash">0</div>
+        <div class="l">Chips</div>
+      </div>
     </div>
 
-    <div class="field">
-      <label for="p">Password</label>
-      <input id="p" type="password" autocomplete="current-password">
+    <canvas id="board"></canvas>
+    <div class="dist" id="dist"></div>
+
+    <div class="deck">
+      <button class="drop" id="dropBtn">Drop</button>
+      <div class="gauges">
+        <div class="g"><div class="v" id="perSec">0</div><div class="k">per sec</div></div>
+        <div class="g"><div class="v" id="ballCount">0</div><div class="k">in play</div></div>
+        <div class="g"><div class="v" id="best">0</div><div class="k">best hit</div></div>
+      </div>
+      <div class="hint" id="cloud" title="Cloud save">local only</div>
+    </div>
+  </div>
+
+  <div class="ledger">
+    <div class="tabs">
+      <button class="on" data-tab="up">Upgrades</button>
+      <button data-tab="prism">Prisms</button>
+      <button data-tab="tree" id="treeTab">Tree</button>
+      <button data-tab="cosmos" id="cosmosTab">Cosmos</button>
+      <button data-tab="forge" id="forgeTab">Forge</button>
+      <button data-tab="stats">Record</button>
+      <button data-tab="set">Settings</button>
     </div>
 
-    <button class="btn" id="go" type="button">Sign in</button>
-    <button class="swap" id="swap" type="button">No account? Create one</button>
-
-    <p class="msg" id="msg"></p>
-  </section>
-
-  <!-- ===== PORTAL ===== -->
-  <div id="portal" class="hidden">
-    <div class="account">
-      <span>Signed in as <b id="who"></b></span>
-      <button id="out" type="button">Sign out</button>
+    <div class="bulk" id="bulk">
+      <button class="on" data-buy="1">Buy ×1</button>
+      <button data-buy="10">×10</button>
+      <button data-buy="max">Max</button>
     </div>
-    <main class="grid" id="grid"></main>
-  </div>
 
+    <div class="scroll" id="upList"></div>
+    <div class="scroll" id="prismList" style="display:none"></div>
+    <div class="scroll" id="treeList" style="display:none"></div>
+    <div class="scroll" id="cosmosList" style="display:none"></div>
+    <div class="scroll" id="forgeList" style="display:none"></div>
+    <div class="scroll stats" id="statList" style="display:none"></div>
+    <div class="scroll" id="setList" style="display:none"></div>
+
+    <div class="prestige">
+      <div class="meter"><i id="pMeter"></i></div>
+      <button class="pbtn" id="pBtn" disabled>Recalibrate</button>
+      <button class="pbtn cBtn" id="cBtn" style="display:none;margin-top:8px">Collapse</button>
+      <button class="pbtn aBtn" id="aBtn" style="display:none;margin-top:8px">Ascend</button>
+      <button class="pbtn tBtn" id="tBtn" style="display:none;margin-top:8px">Transcend</button>
+      <button class="pbtn rBtn" id="rBtn" style="display:none;margin-top:8px">Reforge</button>
+      <p class="pnote" id="pNote"></p>
+    </div>
+
+    <div class="foot2">
+      <button id="saveBtn">Save</button>
+      <button id="wipeBtn">Wipe</button>
+    </div>
+  </div>
 </div>
 
-<div class="viewer" id="viewer">
-  <div class="viewerbar">
-    <span>Viewing <b id="viewerName"></b></span>
-    <span class="sp">
-      <button id="viewerTab" type="button">Open in tab</button>
-      <button id="viewerClose" type="button">Close</button>
-    </span>
-  </div>
-  <iframe id="viewerFrame" title="Embedded page"></iframe>
-</div>
-
-<audio id="track" src="bloom.mp3" loop preload="auto"></audio>
-
-<button class="cog" id="cogBtn" type="button" aria-expanded="false">Settings</button>
-
-<div class="panel" id="panel">
-  <h3>Settings</h3>
-
-  <div class="set">
-    <label for="vol">Music volume <b id="volVal">10%</b></label>
-    <input id="vol" type="range" min="0" max="100" step="1" value="10">
-  </div>
-
-  <div class="set">
-    <label for="onBtn">Privacy screen <b id="onVal">On</b></label>
-    <button class="keybtn" id="onBtn" type="button">Turn off</button>
-  </div>
-
-  <div class="set" id="keyRow">
-    <label for="keyBtn">Panic key <b id="keyVal">Escape</b></label>
-    <button class="keybtn" id="keyBtn" type="button">Click, then press a key</button>
-  </div>
-
-  <div class="set">
-    <label for="tabBtn">Open pages <b id="tabVal">In this tab</b></label>
-    <button class="keybtn" id="tabBtn" type="button">Change</button>
-  </div>
-
-  <div class="set" id="blurRow">
-    <label for="blurBtn">Cover on window switch <b id="blurVal">Off</b></label>
-    <button class="keybtn" id="blurBtn" type="button">Turn on</button>
-  </div>
-
-  <p class="note">The panic key hides the page behind a cover screen, and applies to every page on this site. Three fast taps of Shift always works too. Click the cover's logo three times to come back.</p>
-</div>
-
-<button class="sound" id="soundBtn" type="button" aria-pressed="false">
-  <span class="bars" aria-hidden="true"><i></i><i></i><i></i></span>
-  <span id="soundLabel">Sound off</span>
-</button>
-
-<script>
-/* =========================================================
-   BACKGROUND MUSIC
-   Deliberately its own <script>. If anything in the Firebase
-   block below fails, the music keeps working — and vice versa.
-
-   VOLUME is the only number you normally touch.
-   ========================================================= */
-(function(){
-  const VOLUME  = 0.10;
-  const FADE_MS = 1400;
-
-  const track = document.getElementById('track');
-  const btn   = document.getElementById('soundBtn');
-  const label = document.getElementById('soundLabel');
-  let fadeTimer, broken = false;
-
-  track.volume = 0;
-
-  // the file isn't there / wrong name / wrong folder
-  track.addEventListener('error', () => {
-    broken = true;
-    label.textContent = 'No track';
-    btn.title = 'bloom.mp3 was not found next to index.html';
-    console.error('Audio failed to load:', track.currentSrc || track.src);
-  });
-
-  function fadeTo(target){
-    clearInterval(fadeTimer);
-    const steps = 28, from = track.volume, step = (target - from) / steps;
-    let n = 0;
-    fadeTimer = setInterval(() => {
-      n++;
-      track.volume = Math.min(1, Math.max(0, from + step * n));
-      if(n >= steps){
-        clearInterval(fadeTimer);
-        track.volume = Math.min(1, Math.max(0, target));
-        if(target === 0) track.pause();
-      }
-    }, FADE_MS / steps);
-  }
-
-  function setState(on){
-    btn.classList.toggle('on', on);
-    btn.setAttribute('aria-pressed', String(on));
-    label.textContent = on ? 'Sound on' : 'Sound off';
-  }
-
-  function play(){
-    if(broken) return Promise.reject();
-    const attempt = track.play();
-    // older browsers return undefined instead of a promise
-    return (attempt || Promise.resolve()).then(() => { setState(true); fadeTo(VOLUME); });
-  }
-
-  btn.addEventListener('click', () => {
-    if(track.paused) play().catch(() => {});
-    else { setState(false); fadeTo(0); }
-  });
-
-  /* Browsers refuse to start audio on a page you haven't touched.
-     Rather than a one-shot fallback, keep listening until it
-     actually plays — the first click, tap or keypress wins,
-     including the one on the sign-in form. */
-  function arm(){
-    const kick = () => {
-      play().then(disarm).catch(() => {});
-    };
-    function disarm(){
-      ['pointerdown','keydown','touchstart'].forEach(e =>
-        document.removeEventListener(e, kick));
-    }
-    ['pointerdown','keydown','touchstart'].forEach(e =>
-      document.addEventListener(e, kick));
-  }
-
-  play().catch(arm);
-
-  // the settings panel drives volume through this
-  window.portalAudio = {
-    setVolume(v){
-      const target = Math.min(1, Math.max(0, v));
-      clearInterval(fadeTimer);
-      track.volume = target;
-      if (target === 0) { track.pause(); setState(false); }
-      else if (track.paused) play().catch(() => {});
-    },
-    defaultVolume: VOLUME
-  };
-})();
-</script>
+<div class="toast" id="toast"></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-
-<!-- your Firebase keys — edit firebase-config.js, not this file -->
 <script src="firebase-config.js"></script>
 
 <script>
-/* =========================================================
-   1. YOUR PAGES
-   file  — the .html file, sitting next to this one
-   name  — the label on the square
-   image — OPTIONAL screenshot path instead of a live preview
-   ========================================================= */
-const SITES = [
-  { name: "Kick the Siamese", file: "kickthesiamese.html" },
-  { name: "JarvisBet", file: "jarvisbet.html" },
-  { name: "Jarvis Plinko", file: "plinko.html" },
-  { name: "Jarvis Playables", file: "playables.html" },
-  { name: "JarvisGPT", file: "jarvisgpt.html" },
-  { name: "Jarvia",   file: "Jarvia.html" },
-  { name: "Siamese Clicker",   file: "siameseclicker.html" },
-  { name: "iMessage", file: "imessage.html" },
-  { name: "Idle Dice",   file: "dice/dice.html" },
-  { name: "Antimatter Dimentions", file: "antimatter/anti.html" },
+/* ================================================================
+   JARVIS PLINKO
+
+   The balls genuinely bounce. Every peg contact is a circle collision
+   with reflection, restitution and a little jitter — which slot a ball
+   ends in is emergent, not rolled. The bell curve under the board is
+   the real landing distribution, filling in as you play.
+   ================================================================ */
+
+const C = document.getElementById('board');
+const ctx = C.getContext('2d');
+const $ = id => document.getElementById(id);
+
+/* small element builder — the cosmos and forge panels rely on it */
+function el(tag, cls, html){
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (html != null) n.innerHTML = html;
+  return n;
+}
+
+/* ---------------- numbers ----------------
+   Idle games outrun every built-in formatter: suffixes while they
+   last, then scientific. Doubles give out around 1e308. */
+const SUF = ['','K','M','B','T','Qa','Qi','Sx','Sp','Oc','No','Dc','Ud','Dd','Td','Qad','Qid'];
+
+function fmt(n){
+  if (!isFinite(n)) return '∞';
+  if (n < 0) return '-' + fmt(-n);
+  if (n < 1000) return n < 10 ? (Math.round(n*10)/10).toString() : Math.floor(n).toString();
+  if (S && S.opt && S.opt.sci) return n.toExponential(2).replace('e+','e');
+  const tier = Math.floor(Math.log10(n) / 3);
+  if (tier < SUF.length){
+    const s = n / Math.pow(1000, tier);
+    return (s < 10 ? s.toFixed(2) : s < 100 ? s.toFixed(1) : Math.floor(s)) + SUF[tier];
+  }
+  return n.toExponential(2).replace('e+','e');
+}
+
+/* ---------------- themes ----------------
+   Each one carries both the CSS variables and the canvas colours, so
+   the board repaints in the same palette as the panel around it. */
+const THEMES = {
+  paper: { name:'Paper', vars:{
+      paper:'#F2EFE7', card:'#FBF9F4', ink:'#16130E', muted:'#6C665B', faint:'#A39C8E',
+      rule:'rgba(22,19,14,.13)', rule2:'rgba(22,19,14,.07)', hot:'#C6402A', cool:'#2C5C86' },
+    peg:'rgba(22,19,14,.20)', ball:'#C6402A', slotInk:'#16130E', slotHot:'#C6402A',
+    label:'rgba(22,19,14,.5)' },
+
+  ink: { name:'Ink', dark:true, vars:{
+      paper:'#0E0D0C', card:'#161514', ink:'#F0ECE4', muted:'#A29B90', faint:'#6B655C',
+      rule:'rgba(240,236,228,.16)', rule2:'rgba(240,236,228,.075)', hot:'#E8674E', cool:'#84B9E0' },
+    peg:'rgba(240,236,228,.24)', ball:'#E8674E', slotInk:'#F0ECE4', slotHot:'#E8674E',
+    label:'rgba(240,236,228,.58)' },
+
+  midnight: { name:'Midnight', dark:true, vars:{
+      paper:'#080A0F', card:'#101319', ink:'#E8ECF3', muted:'#98A2B3', faint:'#5E6879',
+      rule:'rgba(232,236,243,.15)', rule2:'rgba(232,236,243,.07)', hot:'#F2925B', cool:'#7FC4D8' },
+    peg:'rgba(232,236,243,.22)', ball:'#F2925B', slotInk:'#E8ECF3', slotHot:'#F2925B',
+    label:'rgba(232,236,243,.55)' },
+
+  blueprint: { name:'Blueprint', vars:{
+      paper:'#0D1B26', card:'#122430', ink:'#DCE9F2', muted:'#8AA6BA', faint:'#54728A',
+      rule:'rgba(220,233,242,.16)', rule2:'rgba(220,233,242,.08)', hot:'#FFB845', cool:'#5FD0E0' },
+    peg:'rgba(220,233,242,.24)', ball:'#FFB845', slotInk:'#DCE9F2', slotHot:'#FFB845',
+    label:'rgba(220,233,242,.55)' },
+
+  sepia: { name:'Sepia', vars:{
+      paper:'#EDE2CE', card:'#F6EEDF', ink:'#2E2417', muted:'#6F6046', faint:'#A8977A',
+      rule:'rgba(46,36,23,.16)', rule2:'rgba(46,36,23,.08)', hot:'#8C5A2B', cool:'#3D6B63' },
+    peg:'rgba(46,36,23,.22)', ball:'#8C5A2B', slotInk:'#2E2417', slotHot:'#8C5A2B',
+    label:'rgba(46,36,23,.55)' }
+};
+
+let TH = THEMES.paper;
+
+function applyTheme(key){
+  TH = THEMES[key] || THEMES.paper;
+  const root = document.documentElement.style;
+  for (const k in TH.vars) root.setProperty('--' + k, TH.vars[k]);
+  /* form controls, scrollbars and the browser's own chrome follow this */
+  document.documentElement.style.colorScheme = TH.dark ? 'dark' : 'light';
+  document.body.classList.toggle('dark', !!TH.dark);
+  document.querySelectorAll('.sws').forEach(b => b.classList.toggle('on', b.dataset.theme === key));
+  const m = document.querySelector('meta[name="theme-color"]');
+  if (m) m.setAttribute('content', TH.vars.paper);
+}
+
+const isDark = () => !!(THEMES[S.opt.theme] || {}).dark;
+
+/* the toggle remembers which light and dark theme you last used
+   rather than always snapping back to the defaults */
+function toggleDark(){
+  if (isDark()){
+    S.opt.lastDark = S.opt.theme;
+    setOpt('theme', S.opt.lastLight || 'paper');
+  } else {
+    S.opt.lastLight = S.opt.theme;
+    setOpt('theme', S.opt.lastDark || 'ink');
+  }
+}
+
+/* ---------------- state ---------------- */
+const DEFAULT_OPT = {
+  /* dark by default; the light themes are still a click away */
+  theme: 'ink',
+  lastLight: 'paper',
+  lastDark: 'ink',
+  showDist: true,      // landing histogram under the board
+  showLabels: true,    // × multiplier printed in each slot
+  confirmReset: true,  // ask before prestiging
+  offline: true,       // credit time away
+  sci: false,          // scientific notation instead of suffixes
+  maxBalls: 420,       // hard cap on balls in flight
+  hideBalls: false     // resolve drops instantly instead of drawing them
+};
+
+const FRESH = () => ({
+  cash:0, earned:0, best:0, drops:0,
+  prisms:0, prismsEarned:0,
+  started: Date.now(), lastSeen: Date.now(),
+  opt: Object.assign({}, DEFAULT_OPT),
+  lv:{ value:0, auto:0, multi:0, slots:0, luck:0, rows:0, bounce:0 },
+  pv:{ gain:0, gold:0, boost:0, head:0 },   // prism shop — lost on collapse
+  sv:{ res:0, yield:0, found:0, spark:0 },  // spectra shop — permanent
+  spectra:0, spectraEarned:0,
+  quanta:0, quantaEarned:0,
+  tree:{},                                   // quanta tree — lost on transcension
+  aether:0, aetherEarned:0,
+  cons:{}, active:[],                        // constellations owned / equipped
+  shards:0, bz:{},                           // quest currency and the bazaar
+  quests:[], questAt:0,
+  ball:'std',
+  alloy:0, alloyEarned:0,
+  bench:[], equipped:[], mergeCount:0, bestOrb:0,
+  selOrb:null,
+  flux:0, surgeUntil:0,
+  ms:{}                                      // milestones already claimed
+});
+let S = FRESH();
+
+/* ---------------- upgrades ----------------
+   Costs deliberately outgrow their effects, so each level buys
+   proportionally less. Without that the whole thing runs away to
+   Infinity inside an afternoon. */
+const MAX_ROW_LV = 8;      // 8 base rows + 8. Deeper than 16 is both
+                           // undrawable and mathematically fatal, since
+                           // payout scales exponentially with rows.
+
+const UPGRADES = [
+  { id:'value', name:'Chip Weight',
+    desc:'Every ball is worth more before its slot multiplier applies.',
+    cost: l => 10 * Math.pow(1.16, l),
+    eff:  l => 1 + l * 0.5,
+    show: v => '×' + fmt(v) },
+  { id:'auto', name:'Auto Dropper',
+    desc:'Drops balls for you, without the clicking.',
+    cost: l => 60 * Math.pow(1.30, l),
+    eff:  l => l === 0 ? 0 : 0.5 * Math.pow(1.12, l - 1),
+    show: v => fmt(v) + '/s' },
+  { id:'multi', name:'Extra Balls',
+    desc:'Each drop releases more than one ball.',
+    cost: l => 500 * Math.pow(2.2, l),
+    eff:  l => 1 + l,
+    show: v => v + ' per drop' },
+  { id:'slots', name:'Slot Payouts',
+    desc:'Raises every slot multiplier across the board.',
+    cost: l => 300 * Math.pow(1.34, l),
+    eff:  l => 1 + l * 0.22,
+    show: v => '×' + (Math.round(v*100)/100) },
+  { id:'luck', name:'Edge Bias',
+    desc:'Nudges balls outward, where the big multipliers live.',
+    cost: l => 900 * Math.pow(1.45, l),
+    eff:  l => Math.min(0.5, l * 0.05),
+    show: v => '+' + Math.round(v*100) + '% drift',
+    max: 10 },
+  { id:'rows', name:'Deeper Board',
+    desc:'Another row of pegs. More rows, richer extremes.',
+    cost: l => 4000 * Math.pow(3.6, l),
+    eff:  l => 8 + Math.min(l, MAX_ROW_LV + nEff('deep')),
+    show: v => v + ' rows',
+    max: () => MAX_ROW_LV + nEff('deep') },
+  { id:'bounce', name:'Livelier Pegs',
+    desc:'Bouncier collisions. Balls scatter further from centre.',
+    cost: l => 1500 * Math.pow(1.6, l),
+    eff:  l => Math.min(0.86, 0.45 + l * 0.03),
+    show: v => Math.round(v*100) + '% bounce',
+    max: 14 },
+  { id:'floor', name:'Backstop',
+    desc:'Lifts what the crowded middle slots pay — where most balls actually land.',
+    cost: l => 3000 * Math.pow(1.6, l),
+    eff:  l => l * 0.18,
+    show: v => '+' + v.toFixed(2) + ' base' },
+  { id:'jackpot', name:'Jackpot Pins',
+    desc:'A chance for any landing to pay five times over.',
+    cost: l => 6000 * Math.pow(1.7, l),
+    eff:  l => Math.min(0.4, l * 0.02),
+    show: v => Math.round(v*100) + '% for 5×',
+    max: 20 },
+  { id:'echo', name:'Ricochet',
+    desc:'A chance a landed ball kicks a free one back up the board.',
+    cost: l => 12000 * Math.pow(1.8, l),
+    eff:  l => Math.min(0.5, l * 0.025),
+    show: v => Math.round(v*100) + '% free ball',
+    max: 20 },
+  { id:'funnel', name:'Funnel',
+    desc:'Narrows the drop, so balls start with a harder push outward.',
+    cost: l => 20000 * Math.pow(1.9, l),
+    eff:  l => l * 0.6,
+    show: v => '+' + v.toFixed(1) + ' spread',
+    max: 15 }
 ];
 
-/* =========================================================
-   2. FIREBASE
-   firebaseConfig and USER_DOMAIN both come from
-   firebase-config.js, loaded just above. imessage.html reads
-   the same file, so signing in here signs you in there too.
-   ========================================================= */
-if (typeof firebaseConfig === 'undefined' || firebaseConfig.apiKey === 'PASTE_YOURS') {
-  document.getElementById('sub').textContent = 'firebase-config.js is not filled in yet';
-  console.error('Fill in firebase-config.js before using the portal.');
-} else {
-  startPortal();
-}
+const U = {};
+UPGRADES.forEach(u => U[u.id] = u);
+const lvl  = id => S.lv[id] || 0;
+const eff  = id => U[id].eff(lvl(id));
+const cost = id => U[id].cost(lvl(id));
+const capOf = u => !u ? undefined : (typeof u.max === 'function' ? u.max() : u.max);
+const maxed = id => { const c = capOf(U[id]); return c !== undefined && lvl(id) >= c; };
 
-function startPortal(){
+const prismMult = () =>
+  (1 + S.prisms * 0.5) * peff('boost') * msMult() *
+  seff('res') * nEff('density') * nEff('singularity') *
+  cEff('forge') * bz('purse') * nEff('well') * genTotal('mult') * orbEff('mult') *
+  (surgeActive() ? SURGE_MULT : 1);
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const firestore = firebase.firestore();
+/* Exponent below 1 on purpose. At 1 or above each prestige feeds the
+   next and it runs away. At 0.4 numbers climb forever, watchably. */
+const PRISM_EXP = 0.4;
+const prismsAvailable = () => Math.floor(Math.pow(Math.max(0, S.earned) / 1e6, PRISM_EXP));
+const gainMult = () => nEff('prism2') * genTotal('gain') * cEff('crown') * (1 + orbEff('gain'));
+const prismsOnReset = () => Math.max(0, Math.floor((prismsAvailable() - S.prismsEarned) * peff('gain') * nEff('facet') * gainMult()));
+const nextPrismAt = () => 1e6 * Math.pow(S.prismsEarned + 1, 1 / PRISM_EXP);
 
-const emailFor = name => name.trim().toLowerCase() + USER_DOMAIN;
+/* ---------------- the prism shop ----------------
+   Bought with prisms, kept through every recalibration. This is the
+   layer that makes the second hour different from the first rather
+   than just larger. */
+const PRISM_UP = [
+  { id:'boost', name:'Refraction',
+    desc:'Multiplies every payout. Straightforward, and never stops.',
+    cost: l => Math.ceil(2 * Math.pow(3, l)),
+    eff:  l => Math.pow(1.4, l),
+    show: v => '×' + fmt(v) },
+  { id:'gold', name:'Gilding',
+    desc:'Chance for a ball to come out golden and pay twenty-five times.',
+    cost: l => Math.ceil(4 * Math.pow(2.6, l)),
+    eff:  l => Math.min(0.25, l * 0.015),
+    show: v => (v*100).toFixed(1) + '% golden',
+    max: 17 },
+  { id:'gain', name:'Clarity',
+    desc:'More prisms from each recalibration.',
+    cost: l => Math.ceil(6 * Math.pow(3.4, l)),
+    eff:  l => 1 + l * 0.15,
+    show: v => '×' + (Math.round(v*100)/100) + ' prisms' },
+  { id:'head', name:'Momentum',
+    desc:'Start every run with free levels of Chip Weight and Auto Dropper.',
+    cost: l => Math.ceil(5 * Math.pow(2.8, l)),
+    eff:  l => l * 3,
+    show: v => v + ' free levels' },
+  { id:'shine', name:'Lustre',
+    desc:'Golden balls pay more than the usual twenty-five times.',
+    cost: l => Math.ceil(8 * Math.pow(2.9, l)),
+    eff:  l => 25 + l * 12,
+    show: v => v + '× golden' },
+  { id:'tide', name:'Undertow',
+    desc:'Surges run longer for the same flux.',
+    cost: l => Math.ceil(6 * Math.pow(2.7, l)),
+    eff:  l => 1 + l * 0.4,
+    show: v => '×' + v.toFixed(1) + ' surge time',
+    max: 12 },
+  { id:'dawn', name:'Nightshift',
+    desc:'Time away is credited at a better rate.',
+    cost: l => Math.ceil(7 * Math.pow(2.6, l)),
+    eff:  l => 1 + l * 0.5,
+    show: v => '×' + v.toFixed(1) + ' offline',
+    max: 14 },
+  { id:'seed', name:'Float',
+    desc:'Begin each recalibration with chips already banked.',
+    cost: l => Math.ceil(10 * Math.pow(3, l)),
+    eff:  l => l,
+    show: v => v > 0 ? 'seeded start' : 'none' }
+];
+const PU = {};
+PRISM_UP.forEach(u => PU[u.id] = u);
+const plvl = id => (S.pv && S.pv[id]) || 0;
+const peff = id => PU[id].eff(plvl(id));
+const pcost = id => PU[id].cost(plvl(id));
+const pmaxed = id => !!PU[id] && PU[id].max !== undefined && plvl(id) >= PU[id].max;
 
-const $ = id => document.getElementById(id);
-const gate = $('gate'), portal = $('portal'), grid = $('grid');
-const u = $('u'), p = $('p'), go = $('go'), swap = $('swap'), msg = $('msg');
-const sub = $('sub'), who = $('who'), gateTitle = $('gateTitle');
+/* ================================================================
+   LAYER TWO — COLLAPSE
 
-let mode = 'in';   // 'in' = sign in, 'up' = create account
+   Prisms reset chips. Collapsing resets the prisms themselves, and
+   pays out in SPECTRA. Same shape one level up: the prism shop goes,
+   the spectra shop stays, and every run afterwards starts richer.
+   ================================================================ */
+const COLLAPSE_AT = 500;          // prisms earned before it unlocks
+const SPECTRA_EXP = 0.5;
 
-function say(text, bad){
-  msg.textContent = text || '';
-  msg.classList.toggle('bad', !!bad);
-}
+const spectraAvailable = () =>
+  Math.floor(Math.pow(Math.max(0, S.prismsEarned) / COLLAPSE_AT, SPECTRA_EXP) * sYield() * nEff('lens') * gainMult());
+const spectraOnCollapse = () => Math.max(0, spectraAvailable() - S.spectraEarned);
+const collapseUnlocked = () => S.prismsEarned >= COLLAPSE_AT || S.spectraEarned > 0;
 
-function setMode(next){
-  mode = next;
-  const up = mode === 'up';
-  gateTitle.textContent = up ? 'Create account' : 'Sign in';
-  go.textContent        = up ? 'Create account' : 'Sign in';
-  swap.textContent      = up ? 'Already have an account? Sign in' : 'No account? Create one';
-  p.autocomplete        = up ? 'new-password' : 'current-password';
-  say('');
-}
-swap.onclick = () => setMode(mode === 'in' ? 'up' : 'in');
+const SPECTRA_UP = [
+  { id:'res', name:'Resonance',
+    desc:'A flat multiplier on everything you earn. Endless.',
+    cost: l => Math.ceil(1 * Math.pow(2.8, l)),
+    eff:  l => Math.pow(1.8, l),
+    show: v => '×' + fmt(v) },
+  { id:'yield', name:'Refinement',
+    desc:'More spectra from each collapse.',
+    cost: l => Math.ceil(3 * Math.pow(4, l)),
+    eff:  l => 1 + l * 0.35,
+    show: v => '×' + (Math.round(v*100)/100) + ' spectra' },
+  { id:'found', name:'Foundation',
+    desc:'Begin every collapse with free levels in each prism upgrade.',
+    cost: l => Math.ceil(4 * Math.pow(3.2, l)),
+    eff:  l => l,
+    show: v => v + ' free levels' },
+  { id:'spark', name:'Conduction',
+    desc:'Golden balls yield more flux, and rim landings start yielding it too.',
+    cost: l => Math.ceil(2 * Math.pow(2.4, l)),
+    eff:  l => l,
+    show: v => v > 0 ? '+' + v + ' flux' : 'none' }
+];
+const SU = {};
+SPECTRA_UP.forEach(u => SU[u.id] = u);
+const slvl = id => (S.sv && S.sv[id]) || 0;
+const seff = id => SU[id].eff(slvl(id));
+const scost = id => SU[id].cost(slvl(id));
+const sYield = () => SU.yield.eff(slvl('yield'));
 
-/* plain-language versions of Firebase's error codes */
-function explain(code){
-  switch(code){
-    case 'auth/invalid-credential':
-    case 'auth/wrong-password':
-    case 'auth/user-not-found':      return 'That username and password don\'t match.';
-    case 'auth/email-already-in-use':return 'That username is taken. Pick another.';
-    case 'auth/weak-password':       return 'Password needs to be at least 6 characters.';
-    case 'auth/invalid-email':       return 'Usernames can use letters, numbers, dots, dashes and underscores.';
-    case 'auth/too-many-requests':   return 'Too many tries. Wait a minute and go again.';
-    case 'auth/network-request-failed': return 'No connection to the server.';
-    case 'auth/operation-not-allowed':  return 'Email/Password sign-in is switched off in the Firebase console.';
-    default: return 'Something went wrong: ' + code;
+/* ================================================================
+   LAYER THREE — ASCEND
+
+   Chips reset for prisms. Prisms reset for spectra. Spectra reset for
+   QUANTA, which buy nodes on a tree that nothing ever takes away.
+
+   Where the earlier shops are flat lists you grind, the tree is a set
+   of choices: nodes unlock other nodes, so an early Quanta goes down
+   one branch rather than all of them.
+   ================================================================ */
+const ASCEND_AT = 40;             // lifetime spectra before it unlocks
+const QUANTA_EXP = 0.55;
+
+const quantaAvailable = () =>
+  Math.floor(Math.pow(Math.max(0, S.spectraEarned) / ASCEND_AT, QUANTA_EXP) * (1 + node('flux2')*0.25) * gainMult());
+const quantaOnAscend = () => Math.max(0, quantaAvailable() - S.quantaEarned);
+const ascendUnlocked = () => S.spectraEarned >= ASCEND_AT || S.quantaEarned > 0;
+
+/* Each node: cost in quanta, max levels, what it needs first, and the
+   row it sits on so the tree can be drawn without hand-placing anything. */
+const TREE = [
+  { id:'density', row:0, name:'Density',   max:99, cost: l => Math.ceil(1*Math.pow(2.3,l)),
+    desc:'A flat multiplier on everything. Never stops.',
+    eff: l => Math.pow(1.5,l), show: v => '×'+fmt(v) },
+  { id:'cadence', row:0, name:'Cadence',   max:20, cost: l => Math.ceil(1*Math.pow(2.1,l)),
+    desc:'The auto dropper releases faster.',
+    eff: l => 1 + l*0.25, show: v => '×'+v.toFixed(2)+' rate' },
+  { id:'facet',   row:0, name:'Facet',     max:20, cost: l => Math.ceil(2*Math.pow(2.4,l)),
+    desc:'More prisms from every recalibration.',
+    eff: l => 1 + l*0.2, show: v => '×'+v.toFixed(2)+' prisms' },
+
+  { id:'array',   row:1, needs:'density', max:20, name:'Refraction Array',
+    cost: l => Math.ceil(4*Math.pow(2.6,l)),
+    desc:'Every slot on the board pays more.',
+    eff: l => 1 + l*0.35, show: v => '×'+v.toFixed(2)+' slots' },
+  { id:'cascade', row:1, needs:'cadence', max:12, name:'Cascade',
+    cost: l => Math.ceil(5*Math.pow(3,l)),
+    desc:'An extra ball on every drop.',
+    eff: l => l, show: v => '+'+v+' balls' },
+  { id:'lens',    row:1, needs:'facet',   max:20, name:'Clarity Lens',
+    cost: l => Math.ceil(6*Math.pow(2.8,l)),
+    desc:'More spectra from every collapse.',
+    eff: l => 1 + l*0.3, show: v => '×'+v.toFixed(2)+' spectra' },
+
+  { id:'rain',    row:2, needs:'cascade', max:15, name:'Golden Rain',
+    cost: l => Math.ceil(12*Math.pow(2.7,l)),
+    desc:'Raises the golden ball chance beyond the prism cap.',
+    eff: l => l*0.02, show: v => '+'+(v*100).toFixed(0)+'% golden' },
+  { id:'core',    row:2, needs:'lens',    max:10, name:'Momentum Core',
+    cost: l => Math.ceil(15*Math.pow(3.2,l)),
+    desc:'Start every collapse with free prism shop levels.',
+    eff: l => l*2, show: v => v+' free levels' },
+  { id:'deep',    row:2, needs:'array',   max:6,  name:'Deeper Still',
+    cost: l => Math.ceil(20*Math.pow(4,l)),
+    desc:'Raises the board past sixteen rows.',
+    eff: l => l, show: v => '+'+v+' rows' },
+
+  { id:'flux2',   row:3, needs:'rain',    max:12, name:'Conduit',
+    cost: l => Math.ceil(40*Math.pow(3,l)),
+    desc:'More flux per golden ball, and more quanta when you ascend.',
+    eff: l => l, show: v => '+'+v+' flux' },
+  { id:'singularity', row:3, needs:'core', max:99, name:'Singularity',
+    cost: l => Math.ceil(60*Math.pow(3.6,l)),
+    desc:'The heaviest multiplier in the game. Endless, and priced like it.',
+    eff: l => Math.pow(2.2,l), show: v => '×'+fmt(v) },
+  { id:'echo',    row:3, needs:'deep',    max:8,  name:'Echo',
+    cost: l => Math.ceil(50*Math.pow(3.4,l)),
+    desc:'Keep a share of the spectra shop through an ascension.',
+    eff: l => Math.min(0.8, l*0.12), show: v => (v*100).toFixed(0)+'% kept' }
+];
+/* ---- a fifth handcrafted tier ---- */
+TREE.push(
+  { id:'prism2', row:4, needs:'singularity', max:99, name:'Refractor',
+    cost: l => Math.ceil(120*Math.pow(3.4,l)),
+    desc:'Multiplies every prestige currency you collect.',
+    eff: l => 1 + l*0.4, show: v => '×'+v.toFixed(2)+' all gains' },
+  { id:'storm',  row:4, needs:'echo', max:40, name:'Storm Front',
+    cost: l => Math.ceil(90*Math.pow(3,l)),
+    desc:'Golden balls, ricochets and flux all at once.',
+    eff: l => l*0.02, show: v => '+'+Math.round(v*100)+'% everything' },
+  { id:'well',   row:4, needs:'flux2', max:99, name:'The Well',
+    cost: l => Math.ceil(150*Math.pow(3.8,l)),
+    desc:'A flat multiplier that never stops climbing.',
+    eff: l => Math.pow(2.5,l), show: v => '×'+fmt(v) }
+);
+
+/* ================================================================
+   THE TREE KEEPS GROWING
+
+   Past the handcrafted tiers the tree generates its own. Clear a
+   tier — one level in every node — and the next appears. Names and
+   effects are derived from the tier number rather than randomised,
+   so the same tier is identical on every device and after every
+   reload; nothing about your tree depends on when you looked at it.
+   ================================================================ */
+const BASE_TIERS = 5;
+
+const GEN_KINDS = [
+  { k:'mult', label:'Amplifier', desc:'A flat multiplier on everything you earn.',
+    eff:(l,t) => Math.pow(1.3 + t*0.02, l), show:v => '×'+fmt(v) },
+  { k:'rate', label:'Governor',  desc:'The auto dropper runs faster.',
+    eff:(l,t) => 1 + l*(0.25 + t*0.02), show:v => '×'+v.toFixed(2)+' rate' },
+  { k:'gain', label:'Distiller', desc:'More of every prestige currency.',
+    eff:(l,t) => 1 + l*(0.1 + t*0.01), show:v => '×'+v.toFixed(2)+' gains' },
+  { k:'slot', label:'Escapement',desc:'Every slot on the board pays more.',
+    eff:(l,t) => 1 + l*(0.2 + t*0.015), show:v => '×'+v.toFixed(2)+' slots' },
+  { k:'gold', label:'Gilder',    desc:'Raises the golden ball chance.',
+    eff:(l,t) => Math.min(0.4, l*0.012), show:v => '+'+Math.round(v*100)+'% golden' },
+  { k:'flux', label:'Dynamo',    desc:'More flux from every golden ball.',
+    eff:(l,t) => l, show:v => '+'+v+' flux' }
+];
+
+const GEN_PREFIX = ['Deep','Outer','Silent','Hollow','Bright','Iron','Pale','Vast',
+                    'First','Last','Quiet','Wandering','Folded','Endless'];
+
+/* deterministic: tier number in, same three nodes out, every time */
+function genTier(t){
+  const out = [];
+  for (let i = 0; i < 3; i++){
+    /* 5 and 11 are coprime with the pool sizes (6 and 14), so the same
+       three names don't come back around for 42 tiers. Multiplying by
+       3 and 7 as I first had it repeated every second tier. */
+    const kind = GEN_KINDS[(t*5 + i) % GEN_KINDS.length];
+    const pre  = GEN_PREFIX[(t*11 + i*5) % GEN_PREFIX.length];
+    const id   = 'g' + t + '_' + i;
+    const scale = Math.pow(4.2, t - BASE_TIERS);
+    out.push({
+      id, row:t, gen:true, kind:kind.k, tier:t,
+      name: pre + ' ' + kind.label,
+      desc: kind.desc,
+      max: 99,
+      needs: null,                       // a whole tier gates the next
+      cost: l => Math.ceil(220 * scale * (1 + i*0.4) * Math.pow(2.6 + t*0.06, l)),
+      eff:  l => kind.eff(l, t),
+      show: kind.show
+    });
   }
+  return out;
 }
 
-async function submit(){
-  const name = u.value.trim();
-  const pass = p.value;
-
-  if(!/^[a-zA-Z0-9._-]{3,20}$/.test(name)){
-    return say('Username: 3–20 characters, letters/numbers/. _ - only.', true);
+/* how deep the tree currently goes: clear every node in a tier to
+   open the next one */
+function treeDepth(){
+  let t = BASE_TIERS;
+  while (t < BASE_TIERS + 200){
+    const tier = genTier(t);
+    if (!tier.every(nd => (S.tree && S.tree[nd.id]) > 0)) return t;
+    t++;
   }
-  if(pass.length < 6) return say('Password must be at least 6 characters.', true);
+  return t;
+}
 
-  go.disabled = true;
-  say(mode === 'up' ? 'Creating account…' : 'Signing in…');
+/* base tier 4 must be cleared before generation starts */
+function baseCleared(){
+  return TREE.filter(t => t.row === BASE_TIERS - 1).every(t => node(t.id) > 0);
+}
 
-  try{
-    if(mode === 'up'){
-      const cred = await auth.createUserWithEmailAndPassword(emailFor(name), pass);
-      // imessage.html reads this document for the display name
-      await firestore.collection('users').doc(cred.user.uid).set({
-        username: name,
-        profilePic: '',
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-    } else {
-      await auth.signInWithEmailAndPassword(emailFor(name), pass);
+function allTiers(){
+  const rows = [];
+  for (let r = 0; r < BASE_TIERS; r++) rows.push(TREE.filter(t => t.row === r));
+  if (baseCleared()){
+    const depth = treeDepth();
+    for (let t = BASE_TIERS; t <= depth; t++) rows.push(genTier(t));
+  }
+  return rows;
+}
+
+/* generated nodes are summed by kind, so the economy does not need to
+   know how many exist */
+function genTotal(kind){
+  let mult = 1, add = 0;
+  if (!S.tree) return kind === 'gold' || kind === 'flux' ? 0 : 1;
+  Object.keys(S.tree).forEach(id => {
+    const m = /^g(\d+)_(\d+)$/.exec(id);
+    if (!m) return;
+    const t = +m[1], i = +m[2], lv = S.tree[id];
+    if (!lv) return;
+    const nd = genTier(t)[i];
+    if (!nd || nd.kind !== kind) return;
+    const v = nd.eff(lv);
+    if (kind === 'gold' || kind === 'flux') add += v; else mult *= v;
+  });
+  return (kind === 'gold' || kind === 'flux') ? add : mult;
+}
+
+const TN = {};
+TREE.forEach(t => TN[t.id] = t);
+
+/* look a node up whether it is handcrafted or generated */
+function nodeDef(id){
+  if (TN[id]) return TN[id];
+  const m = /^g(\d+)_(\d+)$/.exec(id);
+  return m ? genTier(+m[1])[+m[2]] : null;
+}
+const node  = id => (S.tree && S.tree[id]) || 0;
+const nEff  = id => { const d = nodeDef(id); return d ? d.eff(node(id)) : 1; };
+const nCost = id => { const d = nodeDef(id); return d ? d.cost(node(id)) : Infinity; };
+const nMax  = id => { const d = nodeDef(id); return d ? node(id) >= d.max : true; };
+const nOpen = id => {
+  const d = nodeDef(id);
+  if (!d) return false;
+  if (d.gen){
+    /* a generated tier opens once the tier above it is cleared */
+    if (d.tier === BASE_TIERS) return baseCleared();
+    return genTier(d.tier - 1).every(x => node(x.id) > 0);
+  }
+  return !d.needs || node(d.needs) > 0;
+};
+
+/* ================================================================
+   LAYER FOUR — TRANSCEND
+
+   Quanta reset for AETHER. Where the tree is a permanent ladder,
+   aether buys CONSTELLATIONS — powerful effects you own but can
+   only run a few of at once. The interesting decision is not what
+   to buy, it's what to leave switched off.
+   ================================================================ */
+const TRANSCEND_AT = 20;             // lifetime quanta before it unlocks
+const AETHER_EXP = 0.5;
+
+const aetherAvailable = () =>
+  Math.floor(Math.pow(Math.max(0, S.quantaEarned) / TRANSCEND_AT, AETHER_EXP) * (1 + bz('yield')*0.3));
+const aetherOnTranscend = () => Math.max(0, aetherAvailable() - S.aetherEarned);
+const transcendUnlocked = () => S.quantaEarned >= TRANSCEND_AT || S.aetherEarned > 0;
+
+/* How many constellations can run at once. Hard-capped at six of the
+   eight: if you could equip them all, there would be no decision left,
+   and the decision is the mechanic. */
+const CON_SLOT_CAP = 6;
+const conSlots = () =>
+  Math.min(CON_SLOT_CAP, 1 + bz('slots') + Math.floor(S.aetherEarned / 60));
+
+const CONS = [
+  { id:'forge',   name:'The Forge',    cost: l => Math.ceil(3*Math.pow(2.6,l)),
+    desc:'Every payout multiplied, and it keeps climbing.',
+    eff: l => Math.pow(1.9,l), show: v => '×'+fmt(v) },
+  { id:'engine',  name:'The Engine',   cost: l => Math.ceil(3*Math.pow(2.4,l)),
+    desc:'The auto dropper runs far faster.',
+    eff: l => 1 + l*0.6, show: v => '×'+v.toFixed(1)+' rate' },
+  { id:'crown',   name:'The Crown',    cost: l => Math.ceil(4*Math.pow(2.7,l)),
+    desc:'Prisms, spectra and quanta all arrive faster.',
+    eff: l => 1 + l*0.25, show: v => '×'+v.toFixed(2)+' prestige' },
+  { id:'shower',  name:'The Shower',   cost: l => Math.ceil(5*Math.pow(2.5,l)),
+    desc:'Golden balls become common rather than rare.',
+    eff: l => Math.min(0.6, l*0.06), show: v => '+'+Math.round(v*100)+'% golden' },
+  { id:'anvil',   name:'The Anvil',    cost: l => Math.ceil(4*Math.pow(2.5,l)),
+    desc:'The crowded middle slots pay far more.',
+    eff: l => l*0.9, show: v => '+'+v.toFixed(1)+' base' },
+  { id:'chain',   name:'The Chain',    cost: l => Math.ceil(6*Math.pow(2.8,l)),
+    desc:'Landed balls ricochet back up the board more often.',
+    eff: l => Math.min(0.65, l*0.07), show: v => '+'+Math.round(v*100)+'% ricochet' },
+  { id:'hourglass',name:'The Hourglass',cost: l => Math.ceil(5*Math.pow(2.6,l)),
+    desc:'Surges last longer and time away pays better.',
+    eff: l => 1 + l*0.7, show: v => '×'+v.toFixed(1)+' surge & offline' },
+  { id:'lantern', name:'The Lantern',  cost: l => Math.ceil(7*Math.pow(3,l)),
+    desc:'Quests appear faster and pay more shards.',
+    eff: l => 1 + l*0.5, show: v => '×'+v.toFixed(1)+' shards' }
+];
+const CN = {};
+CONS.forEach(c => CN[c.id] = c);
+const conLvl = id => (S.cons && S.cons[id]) || 0;
+const conOn  = id => (S.active || []).indexOf(id) !== -1 && conLvl(id) > 0;
+/* an effect only counts while the constellation is equipped */
+const cEff = id => conOn(id) ? CN[id].eff(conLvl(id)) : CN[id].eff(0);
+
+/* ================================================================
+   LAYER FIVE — REFORGE
+
+   Aether resets for ALLOY, and alloy runs the Forge: a bench of
+   plinko balls you merge two at a time. Two of a kind make the next
+   kind up, forever, and anything on the bench can be equipped for a
+   small passive boost.
+   ================================================================ */
+const REFORGE_AT = 15;                 // lifetime aether before it unlocks
+const ALLOY_EXP = 0.45;
+
+const alloyAvailable = () =>
+  Math.floor(Math.pow(Math.max(0, S.aetherEarned) / REFORGE_AT, ALLOY_EXP) * (1 + orbEff('gain')));
+const alloyOnReforge = () => Math.max(0, alloyAvailable() - S.alloyEarned);
+const reforgeUnlocked = () => S.aetherEarned >= REFORGE_AT || S.alloyEarned > 0;
+
+/* ---- the balls themselves ----
+   Tier 1 is bought; every tier above it only exists because two of
+   the tier below were merged. Names and effects come from the tier
+   number, so tier 40 is the same ball for everyone. */
+const ORB_KIND = [
+  { k:'mult', n:'Weighted',  desc:'payouts',        eff:t => 1 + t*0.05,  show:v => '×'+v.toFixed(2)+' pay' },
+  { k:'rate', n:'Quick',     desc:'drop rate',      eff:t => 1 + t*0.04,  show:v => '×'+v.toFixed(2)+' rate' },
+  { k:'gold', n:'Gilded',    desc:'golden chance',  eff:t => t*0.004,     show:v => '+'+(v*100).toFixed(1)+'% gold' },
+  { k:'slot', n:'Faceted',   desc:'slot values',    eff:t => 1 + t*0.045, show:v => '×'+v.toFixed(2)+' slots' },
+  { k:'flux', n:'Charged',   desc:'flux',           eff:t => Math.floor(t/2), show:v => '+'+v+' flux' },
+  { k:'gain', n:'Prismatic', desc:'prestige gains', eff:t => t*0.03,      show:v => '+'+(v*100).toFixed(0)+'% gains' }
+];
+const ORB_MAT = ['Glass','Clay','Copper','Bronze','Iron','Steel','Silver','Gold','Cobalt',
+                 'Onyx','Opal','Amber','Jade','Ruby','Sapphire','Obsidian','Platinum','Void'];
+
+function orb(t){
+  const kind = ORB_KIND[(t*5) % ORB_KIND.length];
+  const mat  = ORB_MAT[(t*7) % ORB_MAT.length];
+  const hue  = (t * 47) % 360;
+  return {
+    t, kind:kind.k,
+    name: kind.n + ' ' + mat + (t > ORB_MAT.length ? ' ' + Math.ceil(t/ORB_MAT.length) : ''),
+    boost: kind.eff(t),
+    show: kind.show(kind.eff(t)),
+    what: kind.desc,
+    hue
+  };
+}
+
+/* what the equipped balls are worth, summed by kind */
+function orbEff(kind){
+  let mult = 1, add = 0;
+  (S.equipped || []).forEach(t => {
+    const o = orb(t);
+    if (o.kind !== kind) return;
+    if (kind === 'gold' || kind === 'flux' || kind === 'gain') add += o.boost;
+    else mult *= o.boost;
+  });
+  return (kind === 'gold' || kind === 'flux' || kind === 'gain') ? add : mult;
+}
+
+const equipSlots = () => Math.min(8, 2 + Math.floor(S.alloyEarned / 12));
+const orbCost = () => Math.ceil(2 * Math.pow(1.16, (S.bench || []).length + (S.equipped || []).length));
+
+function buyOrb(){
+  const c = orbCost();
+  if (S.alloy < c) return toast('Need ' + fmt(c - S.alloy) + ' more alloy');
+  S.alloy -= c;
+  S.bench = (S.bench || []).concat(1);
+  save(); paintForge(); paintHud();
+}
+
+/* two of a kind become one of the next kind up */
+function mergeOrbs(a, b){
+  const bench = S.bench || [];
+  if (a === b || bench[a] !== bench[b]) return;
+  const t = bench[a];
+  const keep = bench.filter((_, i) => i !== a && i !== b);
+  keep.push(t + 1);
+  S.bench = keep;
+  S.mergeCount = (S.mergeCount || 0) + 1;
+  if (t + 1 > (S.bestOrb || 0)) S.bestOrb = t + 1;
+  save(); paintForge(); paintHud();
+  toast('Merged into ' + orb(t+1).name);
+  if (typeof sfx !== 'undefined') {}
+}
+
+function mergeAll(){
+  let did = 0, guard = 0;
+  while (guard++ < 500){
+    const bench = S.bench || [];
+    const seen = {};
+    let pair = null;
+    for (let i = 0; i < bench.length; i++){
+      if (seen[bench[i]] !== undefined){ pair = [seen[bench[i]], i]; break; }
+      seen[bench[i]] = i;
     }
-    p.value = '';
-  }catch(err){
-    say(explain(err.code || err.message), true);
-  }finally{
-    go.disabled = false;
+    if (!pair) break;
+    const t = bench[pair[0]];
+    const keep = bench.filter((_, i) => i !== pair[0] && i !== pair[1]);
+    keep.push(t + 1);
+    S.bench = keep;
+    if (t + 1 > (S.bestOrb || 0)) S.bestOrb = t + 1;
+    did++;
+  }
+  S.mergeCount = (S.mergeCount || 0) + did;
+  save(); paintForge(); paintHud();
+  toast(did ? did + ' merges' : 'Nothing left to pair up');
+}
+
+function equipOrb(i){
+  const bench = S.bench || [];
+  if (bench[i] === undefined) return;
+  if ((S.equipped || []).length >= equipSlots()) return toast('All ' + equipSlots() + ' slots are full');
+  S.equipped = (S.equipped || []).concat(bench[i]);
+  S.bench = bench.filter((_, k) => k !== i);
+  save(); paintForge(); paintHud();
+}
+
+function unequipOrb(i){
+  const eq = S.equipped || [];
+  if (eq[i] === undefined) return;
+  S.bench = (S.bench || []).concat(eq[i]);
+  S.equipped = eq.filter((_, k) => k !== i);
+  save(); paintForge(); paintHud();
+}
+
+/* ================================================================
+   QUESTS — rotating objectives paying SHARDS
+   ================================================================ */
+const QUEST_EVERY = () => 180000 / cEff('lantern');
+
+const QUEST_POOL = [
+  { id:'drop',  text: g => 'Drop ' + fmt(g) + ' balls',        goal: () => 40 + Math.floor(S.drops/50),  track:'drops' },
+  { id:'earn',  text: g => 'Earn ' + fmt(g) + ' chips',        goal: () => Math.max(1000, S.earned*0.02), track:'earned' },
+  { id:'rim',   text: g => 'Land ' + fmt(g) + ' rim slots',    goal: () => 8 + Math.floor((S.rimHits||0)/60), track:'rimHits' },
+  { id:'gold',  text: g => 'Catch ' + fmt(g) + ' golden balls',goal: () => 3 + Math.floor((S.goldHits||0)/40), track:'goldHits' }
+];
+
+function rollQuests(){
+  S.quests = [];
+  const pool = QUEST_POOL.slice();
+  for (let i = 0; i < 3 && pool.length; i++){
+    const q = pool.splice(Math.floor(Math.random()*pool.length), 1)[0];
+    const goal = Math.ceil(q.goal());
+    S.quests.push({ id:q.id, goal, base:(S[q.track]||0), reward: Math.ceil((2 + i*2) * cEff('lantern')), done:false });
+  }
+  S.questAt = Date.now();
+  save();
+}
+
+function questProgress(q){
+  const def = QUEST_POOL.find(x => x.id === q.id);
+  return Math.max(0, (S[def.track]||0) - q.base);
+}
+
+function checkQuests(){
+  if (!S.quests || !S.quests.length || Date.now() - S.questAt > QUEST_EVERY()){ rollQuests(); return; }
+  let paid = 0;
+  S.quests.forEach(q => {
+    if (!q.done && questProgress(q) >= q.goal){ q.done = true; S.shards += q.reward; paid += q.reward; }
+  });
+  if (paid){
+    toast('Quest complete · +' + paid + ' shards');
+    save();
+    if (currentTab === 'cosmos') paintCosmos();
   }
 }
 
-go.onclick = submit;
-[u,p].forEach(el => el.addEventListener('keydown', e => { if(e.key === 'Enter') submit(); }));
-$('out').onclick = () => auth.signOut();
+/* ================================================================
+   BAZAAR — permanent perks bought with shards
+   ================================================================ */
+const BAZAAR = [
+  { id:'slots', name:'Star Chart', max:3, cost: l => Math.ceil(12*Math.pow(2.3,l)),
+    desc:'Run another constellation at the same time.',
+    eff: l => l, show: v => '+'+v+' slots' },
+  { id:'yield', name:'Ledger',    max:20, cost: l => Math.ceil(8*Math.pow(1.9,l)),
+    desc:'More aether from every transcension.',
+    eff: l => l, show: v => '×'+(1+v*0.3).toFixed(1)+' aether' },
+  { id:'purse', name:'Deep Purse',max:30, cost: l => Math.ceil(6*Math.pow(1.8,l)),
+    desc:'A flat bonus to everything you earn.',
+    eff: l => 1 + l*0.35, show: v => '×'+v.toFixed(2) },
+  { id:'balls', name:'Ball Rack', max:3, cost: l => Math.ceil(25*Math.pow(3,l)),
+    desc:'Unlocks another ball type for the rack.',
+    eff: l => l, show: v => v+' unlocked' }
+];
+const BZ = {};
+BAZAAR.forEach(b => BZ[b.id] = b);
+const bzLvl = id => (S.bz && S.bz[id]) || 0;
+const bz    = id => BZ[id].eff(bzLvl(id));
 
-/* ---- the session decides which half of the page you see ---- */
-auth.onAuthStateChanged(async user => {
-  if(user){
-    let name = (user.email || '').split('@')[0];
-    try{
-      const doc = await firestore.collection('users').doc(user.uid).get();
-      if(doc.exists && doc.data().username) name = doc.data().username;
-    }catch(e){ /* fall back to the username from the address */ }
+/* ================================================================
+   BALL TYPES — a loadout choice that changes how a drop behaves
+   ================================================================ */
+const BALLS = [
+  { id:'std',   name:'Standard', need:0, desc:'No trick to it.' },
+  { id:'heavy', name:'Heavy',    need:1, desc:'Falls hard and pays 1.6×, but drifts less.' },
+  { id:'split', name:'Splitter', need:2, desc:'Breaks into two halves partway down.' },
+  { id:'charge',name:'Charged',  need:3, desc:'Pushed outward hard — rim or nothing.' }
+];
+const ballOK = b => b.need <= bz('balls');
+const curBall = () => BALLS.find(b => b.id === S.ball && ballOK(b)) || BALLS[0];
 
-    who.textContent = name;
-    sub.textContent = 'Select a destination';
-    loadSettings(user);
-    gate.classList.add('hidden');
-    portal.classList.remove('hidden');
-    build();
-    fitThumbnails();
-  } else {
-    sub.textContent = 'Sign in to continue';
-    portal.classList.add('hidden');
-    gate.classList.remove('hidden');
-    grid.innerHTML = '';
-    built = false;
-    setMode('in');
-    u.focus();
+/* ---------------- flux ----------------
+   A small active currency. Golden balls pay it out; you spend it on a
+   short surge, so there's a reason to actually watch the board. */
+const SURGE_COST = 12;
+const SURGE_SECS = 90;
+const SURGE_MULT = 5;
+const surgeActive = () => Date.now() < (S.surgeUntil || 0);
+const surgeLeft = () => Math.max(0, Math.ceil(((S.surgeUntil || 0) - Date.now())/1000));
+
+function startSurge(){
+  if (S.flux < SURGE_COST) return;
+  S.flux -= SURGE_COST;
+  S.surgeUntil = Math.max(Date.now(), S.surgeUntil || 0) + SURGE_SECS * 1000 * peff('tide') * cEff('hourglass');
+  save(); paintHud();
+  toast('Surge · ×' + SURGE_MULT + ' for ' + SURGE_SECS + 's');
+}
+
+/* ---------------- milestones ----------------
+   Small permanent bonuses, mostly there to give the early hours a
+   shape. Each one is +4% to everything, forever. */
+const MILESTONES = [
+  { id:'d100',  label:'Drop 100 balls',            test: () => S.drops >= 100 },
+  { id:'d10k',  label:'Drop 10,000 balls',         test: () => S.drops >= 1e4 },
+  { id:'d1m',   label:'Drop a million balls',      test: () => S.drops >= 1e6 },
+  { id:'e1k',   label:'Earn 1K chips',             test: () => S.earned >= 1e3 },
+  { id:'e1m',   label:'Earn 1M chips',             test: () => S.earned >= 1e6 },
+  { id:'e1b',   label:'Earn 1B chips',             test: () => S.earned >= 1e9 },
+  { id:'e1t',   label:'Earn 1T chips',             test: () => S.earned >= 1e12 },
+  { id:'e1qa',  label:'Earn 1Qa chips',            test: () => S.earned >= 1e15 },
+  { id:'p1',    label:'Recalibrate once',          test: () => S.prismsEarned >= 1 },
+  { id:'p25',   label:'Hold 25 prisms',            test: () => S.prisms >= 25 },
+  { id:'p1k',   label:'Hold 1,000 prisms',         test: () => S.prisms >= 1000 },
+  { id:'rows',  label:'Fill the board to 16 rows', test: () => eff('rows') >= 16 },
+  { id:'rim',   label:'Land a rim slot',           test: () => S.rimHits >= 1 },
+  { id:'rim1k', label:'Land 1,000 rim slots',      test: () => S.rimHits >= 1000 },
+  { id:'gold',  label:'Catch a golden ball',       test: () => S.goldHits >= 1 }
+];
+
+const msDone = () => MILESTONES.filter(m => S.ms && S.ms[m.id]).length;
+const msMult = () => 1 + msDone() * 0.04;
+
+function checkMilestones(){
+  let got = 0;
+  MILESTONES.forEach(m => {
+    if (!S.ms[m.id] && m.test()){ S.ms[m.id] = 1; got++; }
+  });
+  if (got){
+    toast(got === 1 ? 'Milestone reached · +4% forever' : got + ' milestones · +' + (got*4) + '% forever');
+    if (currentTab === 'stats') paintStats();
   }
-});
+}
 
-/* =========================================================
-   3. THE GRID
-   ========================================================= */
-const BASE_WIDTH = 1280;
-const LOAD_TIMEOUT = 7000;
-let built = false;
+/* ---------------- board ---------------- */
+let W = 0, H = 0, DPR = 1;
+let pegs = [], slots = [], pegR = 5, ballR = 5;
+let landed = [];          // histogram of where balls actually finish
 
-const initials = n => n.split(/\s+/).map(w => w[0] || '').join('').slice(0,2).toUpperCase() || '—';
+function layout(){
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  const r = C.getBoundingClientRect();
+  W = r.width; H = r.height;
+  C.width = Math.floor(W * DPR);
+  C.height = Math.floor(H * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  buildBoard();
+}
 
-function build(){
-  if(built) return;
-  built = true;
+/* Pegs bucketed by row. A falling ball only ever touches the row it is
+   passing through, so collisions stop being balls x every peg — the
+   difference is roughly tenfold on a full board. */
+let pegRows = [], rowTop = 0, rowGap = 1;
 
-  if(!SITES.length){
-    grid.innerHTML = '<div class="empty">No pages listed. Add one to the SITES list in this file.</div>';
+function indexPegs(){
+  pegRows = [];
+  if (!pegs.length){ return; }
+  const ys = [...new Set(pegs.map(p => Math.round(p.y)))].sort((a,b) => a-b);
+  rowTop = ys[0];
+  rowGap = ys.length > 1 ? (ys[1] - ys[0]) : 1;
+  pegs.forEach(p => {
+    const r = Math.max(0, Math.round((p.y - rowTop) / rowGap));
+    (pegRows[r] = pegRows[r] || []).push(p);
+  });
+}
+
+function buildBoard(){
+  const rows = eff('rows');
+  const top = 44, slotH = 40;
+  const gapY = (H - top - slotH - 14) / rows;
+  const gapX = Math.min(gapY * 1.15, (W - 70) / (rows + 1));
+
+  pegR = Math.max(2.5, Math.min(5, gapX * 0.13));
+  ballR = Math.max(3, pegR * 1.05);
+
+  pegs = [];
+  for (let r = 0; r < rows; r++){
+    const count = r + 3, y = top + r * gapY;
+    const spread = (count - 1) * gapX;
+    for (let i = 0; i < count; i++) pegs.push({ x: W/2 - spread/2 + i*gapX, y, hit:0 });
+  }
+
+  const lastY = top + (rows-1) * gapY;
+  const bottom = pegs.filter(p => Math.abs(p.y - lastY) < 0.5);
+  slots = [];
+  const n = bottom.length - 1;
+  for (let i = 0; i < n; i++){
+    const mid = (i - (n-1)/2) / ((n-1)/2 || 1);
+    slots.push({ x0:bottom[i].x, x1:bottom[i+1].x, y:H - slotH - 6, h:slotH, edge:Math.abs(mid), flash:0 });
+  }
+  landed = new Array(slots.length).fill(0);
+  indexPegs();
+  staticDirty = true;
+  sampleDist();
+  buildDist();
+}
+
+/* Payout climbs steeply toward the rim; the exponent scales with row
+   count, so a deeper board makes the outer slots dramatically richer. */
+function slotMult(slot){
+  const peak = Math.pow(1.75, eff('rows') / 2.4);
+  return (0.2 + eff('floor') + cEff('anvil') + Math.pow(slot.edge, 3.1) * peak)
+         * eff('slots') * nEff('array') * genTotal('slot') * orbEff('slot') * prismMult() * eff('value');
+}
+
+/* ================================================================
+   HIDDEN BALLS
+
+   With the board hidden there is nothing to look at, so simulating
+   every bounce is wasted work. Instead the board is sampled once —
+   real physics, a few thousand balls — and the resulting landing
+   distribution is used to resolve drops instantly.
+
+   The payouts are the genuine article, not a guess: the curve comes
+   from the same collision code you watch when the board is visible,
+   so hiding the balls changes the frame cost and nothing else.
+   ================================================================ */
+let distTable = null, staticDirty = true;
+
+function sampleDist(){
+  distTable = null;
+  if (!slots.length || !pegs.length) return;
+
+  const N = 2500;
+  const counts = new Array(slots.length).fill(0);
+  const rest = eff('bounce'), drift = eff('luck');
+  const min = pegR + ballR, min2 = min * min;
+  const spread = 1.2 + eff('funnel');
+
+  for (let k = 0; k < N; k++){
+    let x = W/2 + (Math.random()-0.5)*14, y = 16;
+    let vx = (Math.random()-0.5)*spread, vy = 0;
+
+    for (let step = 0; step < 900; step++){
+      vy += GRAV;
+      if (drift > 0){
+        const off = (x - W/2) / (W/2);
+        vx += Math.sign(off || (Math.random()-0.5)) * drift * 0.5;
+      }
+      x += vx; y += vy;
+
+      const row = ((y - rowTop) / rowGap) | 0;
+      for (let r = row - 1; r <= row + 1; r++){
+        const bucket = pegRows[r];
+        if (!bucket) continue;
+        let hit = false;
+        for (let p = 0; p < bucket.length; p++){
+          const peg = bucket[p];
+          const dx = x - peg.x, dy = y - peg.y;
+          if (dx*dx + dy*dy < min2){
+            const d = Math.sqrt(dx*dx + dy*dy) || 0.01;
+            const nx = dx/d, ny = dy/d;
+            x = peg.x + nx*min; y = peg.y + ny*min;
+            const dot = vx*nx + vy*ny;
+            vx = (vx - 2*dot*nx) * rest;
+            vy = (vy - 2*dot*ny) * rest;
+            vx += (Math.random()-0.5) * 1.1;
+            hit = true; break;
+          }
+        }
+        if (hit) break;
+      }
+
+      if (x < ballR){ x = ballR; vx = Math.abs(vx)*rest; }
+      if (x > W - ballR){ x = W - ballR; vx = -Math.abs(vx)*rest; }
+      const sp2 = vx*vx + vy*vy;
+      if (sp2 > 196){ const sp = Math.sqrt(sp2); vx *= 14/sp; vy *= 14/sp; }
+
+      if (y > slots[0].y){
+        let idx = -1;
+        for (let i2 = 0; i2 < slots.length; i2++)
+          if (x >= slots[i2].x0 && x < slots[i2].x1){ idx = i2; break; }
+        if (idx < 0) idx = x < W/2 ? 0 : slots.length - 1;
+        counts[idx]++;
+        break;
+      }
+    }
+  }
+
+  /* cumulative table, so a drop is one random number and a scan */
+  const total = counts.reduce((a,b) => a+b, 0) || 1;
+  let acc = 0;
+  distTable = counts.map(c => (acc += c / total));
+}
+
+function sampleSlot(){
+  if (!distTable) return Math.floor(slots.length/2);
+  const r = Math.random();
+  for (let i = 0; i < distTable.length; i++) if (r <= distTable[i]) return i;
+  return distTable.length - 1;
+}
+
+/* resolve a drop without simulating it */
+function resolveHidden(gold, kind){
+  const idx = sampleSlot();
+  let won = slotMult(slots[idx]);
+  if (gold){
+    won *= peff('shine');
+    S.goldHits = (S.goldHits||0) + 1;
+    S.flux = (S.flux||0) + 1 + seff('spark') + nEff('flux2') + genTotal('flux') + orbEff('flux');
+  }
+  if (kind === 'heavy') won *= 1.6;
+  if (Math.random() < eff('jackpot')) won *= 5;
+  if (idx === 0 || idx === slots.length - 1) S.rimHits = (S.rimHits||0) + 1;
+
+  S.cash += won; S.earned += won;
+  if (won > S.best) S.best = won;
+  landed[idx] = (landed[idx] || 0) + 1;
+
+  /* ricochets still happen, they just resolve straight away too */
+  if (Math.random() < eff('echo') + cEff('chain') + nEff('storm')) resolveHidden(false, 'std');
+}
+
+/* ---------------- balls ---------------- */
+const balls = [];
+const GRAV = 0.42;
+
+function dropBall(){
+  S.drops++;
+  const hiddenNow = S.opt.hideBalls;
+
+  if (hiddenNow){
+    const g = Math.random() < Math.min(0.9, peff('gold') + nEff('rain') + cEff('shower')
+                                            + nEff('storm') + genTotal('gold') + orbEff('gold'));
+    resolveHidden(g, curBall().id);
     return;
   }
 
-  SITES.forEach((site, i) => {
-    const a = document.createElement('a');
-    a.className = 'tile';
-    a.href = site.file;
-    a.style.setProperty('--i', i);
-    a.setAttribute('aria-label', site.name);
-    if (openMode() === 'tab'){ a.target = '_blank'; a.rel = 'noopener'; }
-
-    a.addEventListener('click', (e) => {
-      // let ctrl/cmd/middle-click do what the browser normally would
-      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
-      if (openMode() !== 'portal') return;
-      e.preventDefault();
-      openInPortal(site);
-    });
-
-    const shot = document.createElement('div');
-    shot.className = 'shot';
-
-    const stub = document.createElement('div');
-    stub.className = 'stub';
-    stub.textContent = initials(site.name);
-
-    if(site.image){
-      const img = document.createElement('img');
-      img.src = site.image; img.alt = ''; img.loading = 'lazy';
-      img.addEventListener('load', () => a.classList.add('ready'));
-      shot.appendChild(img);
-    } else {
-      const frame = document.createElement('iframe');
-      frame.src = site.file;
-      frame.setAttribute('scrolling', 'no');
-      frame.setAttribute('tabindex', '-1');
-      frame.setAttribute('aria-hidden', 'true');
-      frame.setAttribute('loading', 'lazy');
-      frame.setAttribute('sandbox', 'allow-same-origin allow-scripts');
-      // deny autoplay outright; a same-origin frame would otherwise inherit
-      // this page's permission and start playing the moment it loads
-      frame.setAttribute('allow', "autoplay 'none'");
-      frame.addEventListener('load', () => { a.classList.add('ready'); hush(frame); });
-      setTimeout(() => a.classList.add('ready'), LOAD_TIMEOUT);
-      shot.appendChild(frame);
-    }
-
-    const meta = document.createElement('div');
-    meta.className = 'meta';
-    const label = document.createElement('span');
-    label.textContent = site.name;
-    meta.appendChild(label);
-
-    a.append(shot, stub, meta);
-    grid.appendChild(a);
+  if (balls.length >= (S.opt.maxBalls || 420)) return;
+  const kind = curBall().id;
+  let spread = 1.2 + eff('funnel');
+  if (kind === 'charge') spread += 7;        // flung outward
+  if (kind === 'heavy')  spread *= 0.5;      // barely drifts
+  balls.push({
+    x: W/2 + (Math.random()-0.5)*14, y: 16,
+    vx:(Math.random()-0.5)*spread, vy:0, life:0,
+    gold: Math.random() < Math.min(0.9, peff('gold') + nEff('rain') + cEff('shower')
+                                        + nEff('storm') + genTotal('gold') + orbEff('gold')),
+    kind: curBall().id
   });
 }
+function dropSet(){ const n = eff('multi') + nEff('cascade'); for (let i=0;i<n;i++) dropBall(); }
 
-/* ---------------------------------------------------------
-   Tile previews are the real pages, so a page with music starts
-   playing from the menu. These frames are same-origin, so rather
-   than guessing we can reach in and silence them properly.
-   --------------------------------------------------------- */
-function hush(frame){
-  let w, d;
-  try{ w = frame.contentWindow; d = frame.contentDocument; }catch(e){ return; }
-  if (!w || !d) return;
+function physics(){
+  const rest = eff('bounce'), drift = eff('luck');
 
-  const quiet = () => {
-    try{
-      d.querySelectorAll('audio, video').forEach(m => {
-        m.muted = true; m.volume = 0;
-        if (!m.paused) m.pause();
-      });
-    }catch(e){}
-  };
+  for (let i = balls.length - 1; i >= 0; i--){
+    const b = balls[i];
+    b.vy += GRAV;
 
-  try{
-    // anything created later gets muted as it tries to play
-    const M = w.HTMLMediaElement && w.HTMLMediaElement.prototype;
-    if (M && !M.__hushed){
-      const play = M.play;
-      M.play = function(){
-        try{ this.muted = true; this.volume = 0; }catch(e){}
-        return play.apply(this, arguments);
-      };
-      M.__hushed = true;
+    if (drift > 0){
+      const off = (b.x - W/2) / (W/2);
+      b.vx += Math.sign(off || (Math.random()-0.5)) * drift * 0.5;
     }
 
-    // and the Web Audio route
-    const A = w.AudioContext || w.webkitAudioContext;
-    if (A && !w.__hushedAudio){
-      const Wrapped = function(){
-        const c = new A();
-        try{ c.suspend(); }catch(e){}
-        c.resume = function(){ return Promise.resolve(); };
-        return c;
-      };
-      Wrapped.prototype = A.prototype;
-      w.AudioContext = Wrapped;
-      w.webkitAudioContext = Wrapped;
-      w.__hushedAudio = true;
+    b.x += b.vx; b.y += b.vy; b.life++;
+
+    /* only the row the ball is in, plus its neighbours */
+    const min = pegR + ballR, min2 = min * min;
+    const row = ((b.y - rowTop) / rowGap) | 0;
+    for (let r = row - 1; r <= row + 1; r++){
+      const bucket = pegRows[r];
+      if (!bucket) continue;
+      let hit = false;
+      for (let p = 0; p < bucket.length; p++){
+        const peg = bucket[p];
+        const dx = b.x - peg.x, dy = b.y - peg.y;
+        if (dx*dx + dy*dy < min2){
+          const d = Math.sqrt(dx*dx + dy*dy) || 0.01;
+          const nx = dx/d, ny = dy/d;
+          b.x = peg.x + nx*min; b.y = peg.y + ny*min;
+          const dot = b.vx*nx + b.vy*ny;
+          b.vx = (b.vx - 2*dot*nx) * rest;
+          b.vy = (b.vy - 2*dot*ny) * rest;
+          b.vx += (Math.random()-0.5) * 1.1;  // the jitter that makes a distribution
+          peg.hit = 1;
+          hit = true;
+          break;
+        }
+      }
+      if (hit) break;
     }
-  }catch(e){}
 
-  quiet();
-  // a few sweeps catch anything that starts a beat after load
-  let n = 0;
-  const timer = setInterval(() => {
-    quiet();
-    if (++n > 12 || !frame.isConnected) clearInterval(timer);
-  }, 700);
-}
+    if (b.x < ballR){ b.x = ballR; b.vx = Math.abs(b.vx)*rest; }
+    if (b.x > W - ballR){ b.x = W - ballR; b.vx = -Math.abs(b.vx)*rest; }
 
-function fitThumbnails(){
-  document.querySelectorAll('.shot').forEach(shot => {
-    const frame = shot.querySelector('iframe');
-    if(frame) frame.style.transform = 'scale(' + (shot.clientWidth / BASE_WIDTH) + ')';
-  });
-}
-addEventListener('resize', fitThumbnails);
+    const sp2 = b.vx*b.vx + b.vy*b.vy;             // sqrt only when it matters
+    if (sp2 > 196){ const sp = Math.sqrt(sp2); b.vx *= 14/sp; b.vy *= 14/sp; }
 
-/* =========================================================
-   5. SETTINGS
-   Saved on your account document, so they follow you to any
-   device you sign in on. Nothing is kept in the browser.
-   ========================================================= */
-const cogBtn = $('cogBtn'), panel = $('panel');
-const vol = $('vol'), volVal = $('volVal');
-const keyBtn = $('keyBtn'), keyVal = $('keyVal');
+    if (slots.length && b.y > slots[0].y){
+      let idx = -1;
+      for (let k = 0; k < slots.length; k++){
+        if (b.x >= slots[k].x0 && b.x < slots[k].x1){ idx = k; break; }
+      }
+      if (idx < 0) idx = b.x < W/2 ? 0 : slots.length - 1;
 
-let settings = { volume: 10, hotkey: 'Escape', privacyOn: true, coverOnBlur: false, openMode: 'here' };
+      let won = slotMult(slots[idx]);
+      if (b.gold){
+        won *= peff('shine');
+        S.goldHits = (S.goldHits||0) + 1;
+        S.flux = (S.flux||0) + 1 + seff('spark') + nEff('flux2') + genTotal('flux') + orbEff('flux');
+      }
+      if (b.kind === 'heavy') won *= 1.6;
+      if (Math.random() < eff('jackpot')){ won *= 5; slots[idx].flash = 1.8; }
+      if (Math.random() < eff('echo') + cEff('chain') + nEff('storm')){
+        // a free ball kicked straight back up, no stake attached
+        balls.push({ x: (slots[idx].x0 + slots[idx].x1) / 2,
+                     y: slots[idx].y - 14,
+                     vx:(Math.random()-0.5)*3, vy:-9 - Math.random()*4,
+                     life:0, gold:false });
+      }
+      if (idx === 0 || idx === slots.length - 1){
+        S.rimHits = (S.rimHits||0) + 1;
+        if (seff('spark') > 0) S.flux = (S.flux||0) + seff('spark') * 0.25;
+      }
 
-cogBtn.onclick = (e) => {
-  e.stopPropagation();
-  const open = panel.classList.toggle('open');
-  cogBtn.setAttribute('aria-expanded', String(open));
-};
-document.addEventListener('click', (e) => {
-  if (!panel.contains(e.target) && e.target !== cogBtn) panel.classList.remove('open');
-});
+      S.cash += won; S.earned += won;
+      if (won > S.best) S.best = won;
+      slots[idx].flash = b.gold ? 1.6 : 1;
+      landed[idx]++;
+      balls.splice(i, 1);
+      continue;
+    }
 
-function applySettings(){
-  vol.value = settings.volume;
-  volVal.textContent = settings.volume + '%';
-  keyVal.textContent = prettyKey(settings.hotkey);
-  if (window.portalAudio) window.portalAudio.setVolume(settings.volume / 100);
-  paintPrivacy();
-  paintTabs();
-  // these also mirror into browser storage, which is how pages without
-  // Firebase (the games, etc.) pick up the same settings
-  if (window.privacyScreen) {
-    window.privacyScreen.setHotkey(settings.hotkey);
-    window.privacyScreen.setEnabled(settings.privacyOn !== false);
-    window.privacyScreen.setCoverOnBlur(settings.coverOnBlur === true);
+    /* the Splitter breaks in two once it is a third of the way down */
+    if (b.kind === 'split' && !b.split && b.y > H * 0.35){
+      b.split = true; b.kind = 'std';
+      balls.push({ x:b.x, y:b.y, vx:-b.vx - 1.4, vy:b.vy, life:b.life, gold:b.gold, kind:'std', split:true });
+      b.vx += 1.4;
+    }
+
+    if (b.life > 1200) balls.splice(i, 1);
   }
 }
 
-const onBtn = $('onBtn'), onVal = $('onVal'), keyRow = $('keyRow');
+/* ---------------- drawing ---------------- */
+function draw(){
+  ctx.clearRect(0, 0, W, H);
 
-const tabBtn = $('tabBtn'), tabVal = $('tabVal');
+  if (S.opt.hideBalls){
+    /* nothing is being simulated, so paint the slots and stop */
+    for (const sl of slots){
+      const t = sl.edge;
+      ctx.globalAlpha = 0.10 + t*0.30;
+      ctx.fillStyle = t > 0.55 ? TH.slotHot : TH.slotInk;
+      ctx.fillRect(sl.x0 + 1, sl.y + sl.h - 3 - t*10, sl.x1 - sl.x0 - 2, 3 + t*10);
+      ctx.globalAlpha = 1;
+      if (S.opt.showLabels){
+        ctx.fillStyle = TH.label;
+        ctx.font = '500 9px "IBM Plex Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('×' + fmt(slotMult(sl)), (sl.x0+sl.x1)/2, sl.y + 13);
+      }
+    }
+    ctx.fillStyle = TH.label;
+    ctx.font = '500 11px "IBM Plex Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('BALLS HIDDEN — STILL EARNING', W/2, H/2);
+    return;
+  }
 
-/* here   — navigate away, as a normal link
-   portal — load it inside the portal, over the grid
-   tab    — a new browser tab */
-const MODES = ['here', 'portal', 'tab'];
-const MODE_LABEL = { here: 'In this tab', portal: 'Inside the portal', tab: 'In a new tab' };
+  for (const s of slots){
+    const t = s.edge;
+    ctx.globalAlpha = 0.10 + t*0.30 + s.flash*0.55;
+    ctx.fillStyle = t > 0.55 ? TH.slotHot : TH.slotInk;
+    ctx.fillRect(s.x0 + 1, s.y + s.h - 3 - t*10, s.x1 - s.x0 - 2, 3 + t*10);
+    ctx.globalAlpha = 1;
 
-function openMode(){
-  // old saves used a boolean
-  if (settings.openMode) return settings.openMode;
-  return settings.newTab === true ? 'tab' : 'here';
+    if (S.opt.showLabels){
+      ctx.fillStyle = s.flash > 0.2 ? TH.slotHot : TH.label;
+      ctx.font = '500 9px "IBM Plex Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('×' + fmt(slotMult(s)), (s.x0+s.x1)/2, s.y + 13);
+    }
+    s.flash *= 0.86;
+  }
+
+  for (const p of pegs){
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, pegR, 0, 6.2832);
+    ctx.fillStyle = p.hit > 0.05 ? TH.slotHot : TH.peg;
+    ctx.globalAlpha = p.hit > 0.05 ? (0.4 + p.hit*0.6) : 1;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    p.hit *= 0.9;
+  }
+
+  for (const b of balls){
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, b.gold ? ballR * 1.35 : ballR, 0, 6.2832);
+    ctx.fillStyle = b.gold ? '#E8A72C' : TH.ball;
+    ctx.fill();
+    if (b.gold){
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, ballR * 2.2, 0, 6.2832);
+      ctx.fillStyle = 'rgba(232,167,44,.18)';
+      ctx.fill();
+    }
+  }
 }
 
-function paintTabs(){
-  const m = openMode();
-  tabVal.textContent = MODE_LABEL[m] || MODE_LABEL.here;
-  applyTabTarget();
+/* ---------------- the distribution strip ---------------- */
+function buildDist(){
+  $('dist').innerHTML = slots.map(() => '<i></i>').join('');
+}
+function paintDist(){
+  const bars = $('dist').children;
+  const top = Math.max(1, ...landed);
+  for (let i = 0; i < bars.length; i++){
+    bars[i].style.height = Math.max(1, (landed[i] / top) * 100) + '%';
+  }
 }
 
-/* the grid may already be drawn, so retarget the tiles in place */
-function applyTabTarget(){
-  const m = openMode();
-  document.querySelectorAll('.tile').forEach(a => {
-    if (m === 'tab'){ a.target = '_blank'; a.rel = 'noopener'; }
-    else            { a.removeAttribute('target'); a.removeAttribute('rel'); }
+/* ---------------- loop ---------------- */
+let carry = 0, last = performance.now(), acc = 0;
+
+function frame(now){
+  const dt = Math.min((now - last)/1000, 0.25);
+  last = now;
+
+  const rate = eff('auto') * nEff('cadence') * cEff('engine') * genTotal('rate') * orbEff('rate');
+  if (rate > 0){
+    carry += rate * dt * (eff('multi') + nEff('cascade'));
+    while (carry >= 1){ dropBall(); carry--; }
+  }
+
+  physics();
+  draw();
+
+  acc += dt;
+  if (acc > 0.12){
+    acc = 0; paintHud(); paintDist(); checkMilestones(); checkQuests();
+    if (currentTab === 'tree') paintTree();
+    if (currentTab === 'cosmos') paintCosmos();
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ---------------- interface ---------------- */
+let lastEarned = 0, lastRateAt = 0, shownRate = 0;
+
+function paintHud(){
+  // actual chips/sec, measured rather than predicted
+  const now = performance.now();
+  if (lastRateAt && now > lastRateAt){
+    const inst = (S.earned - lastEarned) / ((now - lastRateAt) / 1000);
+    shownRate = shownRate * 0.8 + inst * 0.2;      // smoothed
+  }
+  lastEarned = S.earned; lastRateAt = now;
+
+  $('cash').textContent = fmt(S.cash);
+  $('perSec').textContent = fmt(shownRate);
+  $('ballCount').textContent = balls.length;
+  $('best').textContent = fmt(S.best);
+
+  document.querySelectorAll('.up[data-id]').forEach(btn => {
+    const id = btn.dataset.id;
+    if (!U[id]) return;
+    const isMax = maxed(id);
+    const { n, spend } = affordable(id, buyAmount);
+    const single = cost(id);
+    btn.disabled = isMax || n < 1;
+    btn.classList.toggle('afford', !isMax && n >= 1);
+    btn.querySelector('.cost').textContent = isMax ? 'Maxed'
+      : n > 1 ? fmt(spend) + ' chips · ' + n + ' levels'
+      : fmt(single) + ' chips';
+    btn.querySelector('.lv').textContent = isMax ? 'lv ' + lvl(id) + ' · max' : 'lv ' + lvl(id);
+    btn.querySelector('.eff').textContent = U[id].show(eff(id));
+  });
+  paintPrisms();
+
+  const gain = prismsOnReset();
+  $('pBtn').disabled = gain < 1;
+  $('pBtn').textContent = gain > 0 ? 'Recalibrate · ' + fmt(gain) + ' prisms' : 'Recalibrate';
+
+  const cGain = spectraOnCollapse();
+  const cb = $('cBtn');
+  cb.style.display = collapseUnlocked() ? '' : 'none';
+  cb.disabled = cGain < 1;
+  cb.textContent = cGain > 0 ? 'Collapse · ' + fmt(cGain) + ' spectra' : 'Collapse';
+
+  const aGain = quantaOnAscend();
+  const ab = $('aBtn');
+  ab.style.display = ascendUnlocked() ? '' : 'none';
+  ab.disabled = aGain < 1;
+  ab.textContent = aGain > 0 ? 'Ascend · ' + fmt(aGain) + ' quanta' : 'Ascend';
+  $('treeTab').style.display = ascendUnlocked() ? '' : 'none';
+
+  const rGain = alloyOnReforge();
+  const rb2 = $('rBtn');
+  rb2.style.display = reforgeUnlocked() ? '' : 'none';
+  rb2.disabled = rGain < 1;
+  rb2.textContent = rGain > 0 ? 'Reforge · ' + fmt(rGain) + ' alloy' : 'Reforge';
+  $('forgeTab').style.display = reforgeUnlocked() ? '' : 'none';
+
+  const tGain = aetherOnTranscend();
+  const tb = $('tBtn');
+  tb.style.display = transcendUnlocked() ? '' : 'none';
+  tb.disabled = tGain < 1;
+  tb.textContent = tGain > 0 ? 'Transcend · ' + fmt(tGain) + ' aether' : 'Transcend';
+  $('cosmosTab').style.display = transcendUnlocked() ? '' : 'none';
+
+  $('pNote').textContent =
+      surgeActive() ? 'Surge active · ×' + SURGE_MULT + ' for ' + surgeLeft() + 's'
+    : gain > 0 ? 'Recalibrating resets chips and upgrades. Prisms are kept.'
+    : collapseUnlocked() && cGain > 0 ? 'Collapse resets prisms too, and pays spectra.'
+    : !collapseUnlocked() ? 'Next prism at ' + fmt(nextPrismAt()) + ' lifetime chips. Collapse unlocks at ' + COLLAPSE_AT + ' lifetime prisms.'
+    : ascendUnlocked() && aGain > 0 ? 'Ascending resets spectra too, and pays quanta for the tree.'
+    : reforgeUnlocked() && rGain > 0 ? 'Reforging resets aether too, and pays alloy for the forge.'
+    : transcendUnlocked() && !reforgeUnlocked() ? 'Reforge unlocks at ' + REFORGE_AT + ' lifetime aether.'
+    : transcendUnlocked() && tGain > 0 ? 'Transcending resets the tree too, and pays aether for constellations.'
+    : ascendUnlocked() && !transcendUnlocked() ? 'Transcend unlocks at ' + TRANSCEND_AT + ' lifetime quanta.'
+    : !ascendUnlocked() ? 'Next prism at ' + fmt(nextPrismAt()) + ' chips. Ascend unlocks at ' + ASCEND_AT + ' lifetime spectra.'
+    : 'Next prism at ' + fmt(nextPrismAt()) + ' lifetime chips.';
+
+  $('pMeter').style.width = Math.min(100, (S.earned / nextPrismAt()) * 100) + '%';
+}
+
+function buildList(){
+  const box = $('upList');
+  box.innerHTML = '';
+  UPGRADES.forEach(u => {
+    const b = document.createElement('button');
+    b.className = 'up';
+    b.dataset.id = u.id;
+    b.innerHTML = '<div class="r"><span class="nm"></span><span class="eff"></span></div>' +
+                  '<div class="ds"></div>' +
+                  '<div class="foot"><span class="cost"></span><span class="lv"></span></div>';
+    b.querySelector('.nm').textContent = u.name;
+    b.querySelector('.ds').textContent = u.desc;
+    b.onclick = () => buy(u.id);
+    box.appendChild(b);
   });
 }
 
-tabBtn.onclick = () => {
-  const next = MODES[(MODES.indexOf(openMode()) + 1) % MODES.length];
-  settings.openMode = next;
-  delete settings.newTab;
-  paintTabs();
-  saveSettings();
-};
+let buyAmount = 1;   // 1, 10, or 'max'
 
-/* ---------- viewing a page inside the portal ----------
-   These are your own pages, so the frame is NOT sandboxed — iMessage
-   needs its Firebase session and the idle games need their saved
-   progress, both of which a sandbox would cut off. */
-const viewer = $('viewer'), viewerFrame = $('viewerFrame');
-let viewing = null;
-
-function openInPortal(site){
-  viewing = site;
-  $('viewerName').textContent = site.name;
-  viewerFrame.src = site.file;
-  viewer.classList.add('open');
-  document.body.style.overflow = 'hidden';
+/* How many levels are affordable right now, capped so a Max click on a
+   cheap upgrade can't lock the tab up counting to a million. */
+function affordable(id, want){
+  let n = 0, spend = 0, lv = lvl(id);
+  const cap = want === 'max' ? 500 : want;
+  while (n < cap){
+    const cap = capOf(U[id]);
+    if (cap !== undefined && lv + n >= cap) break;
+    const c = U[id].cost(lv + n);
+    if (spend + c > S.cash) break;
+    spend += c; n++;
+  }
+  return { n, spend };
 }
 
-function closeViewer(){
-  viewer.classList.remove('open');
-  viewerFrame.src = 'about:blank';   // stop it running, and its audio
-  document.body.style.overflow = '';
-  viewing = null;
+function buy(id){
+  if (maxed(id)) return;
+  const { n, spend } = affordable(id, buyAmount);
+  if (n < 1) return;
+  S.cash -= spend;
+  S.lv[id] = lvl(id) + n;
+  if (id === 'rows') buildBoard();
+  checkMilestones();
+  paintHud();
 }
 
-$('viewerClose').onclick = closeViewer;
-$('viewerTab').onclick = () => {
-  if (viewing) window.open(viewing.file, '_blank', 'noopener');
-};
-
-const blurBtn = $('blurBtn'), blurVal = $('blurVal'), blurRow = $('blurRow');
-
-function paintPrivacy(){
-  const on = settings.privacyOn !== false;
-  onVal.textContent = on ? 'On' : 'Off';
-  onBtn.textContent = on ? 'Turn off' : 'Turn on';
-  onBtn.classList.toggle('off', !on);
-  keyRow.style.opacity = on ? '1' : '.4';
-  keyBtn.disabled = !on;
-
-  const blur = settings.coverOnBlur === true;
-  blurVal.textContent = blur ? 'On' : 'Off';
-  blurBtn.textContent = blur ? 'Turn off' : 'Turn on';
-  blurBtn.classList.toggle('off', !blur);
-  blurRow.style.opacity = on ? '1' : '.4';
-  blurBtn.disabled = !on;
-}
-
-blurBtn.onclick = () => {
-  settings.coverOnBlur = settings.coverOnBlur !== true;
-  paintPrivacy();
-  if (window.privacyScreen) window.privacyScreen.setCoverOnBlur(settings.coverOnBlur);
-  saveSettings();
-};
-
-onBtn.onclick = () => {
-  settings.privacyOn = settings.privacyOn === false;   // flip
-  paintPrivacy();
-  if (window.privacyScreen) window.privacyScreen.setEnabled(settings.privacyOn);
-  saveSettings();
-};
-
-function prettyKey(k){
-  if (!k) return 'None';
-  return { ' ': 'Space', 'Escape': 'Escape', 'Control': 'Ctrl' }[k] ||
-         (k.length === 1 ? k.toUpperCase() : k);
-}
-
-let saveTimer;
-function saveSettings(){
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => {
-    const user = auth.currentUser;
-    if (!user) return;
-    firestore.collection('users').doc(user.uid)
-      .set({ settings }, { merge: true })
-      .catch(err => console.warn('Could not save settings:', err));
-  }, 400);   // slider drags would otherwise write on every pixel
-}
-
-vol.addEventListener('input', () => {
-  settings.volume = parseInt(vol.value, 10);
-  volVal.textContent = settings.volume + '%';
-  if (window.portalAudio) window.portalAudio.setVolume(settings.volume / 100);
-  saveSettings();
+document.querySelectorAll('#bulk button').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('#bulk button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    buyAmount = b.dataset.buy === 'max' ? 'max' : parseInt(b.dataset.buy, 10);
+    paintHud();
+  };
 });
 
-let listening = false;
-keyBtn.onclick = () => {
-  listening = true;
-  window.__psRebinding = true;   // stop the cover script acting on the next key
-  keyBtn.classList.add('listening');
-  keyBtn.textContent = 'Press any key…';
-};
+/* ---------------- prism shop ---------------- */
+function shopRow(u, kind, onclick){
+  const b = document.createElement('button');
+  b.className = 'up ' + kind;
+  b.dataset.pid = u.id;
+  b.innerHTML = '<div class="r"><span class="nm"></span><span class="eff"></span></div>' +
+                '<div class="ds"></div>' +
+                '<div class="foot"><span class="cost"></span><span class="lv"></span></div>';
+  b.querySelector('.nm').textContent = u.name;
+  b.querySelector('.ds').textContent = u.desc;
+  b.onclick = onclick;
+  return b;
+}
 
-document.addEventListener('keydown', (e) => {
-  if (!listening) return;
-  if (settings.privacyOn === false) { listening = false; window.__psRebinding = false; return; }
-  e.preventDefault();
-  // stopPropagation isn't enough: the privacy script listens on this same
-  // node, so binding Escape would trigger the cover as you set it.
-  e.stopImmediatePropagation();
-  listening = false;
-  window.__psRebinding = false;
-  keyBtn.classList.remove('listening');
-  keyBtn.textContent = 'Click, then press a key';
+function buildVault(){
+  const box = $('prismList');
+  box.innerHTML = '<div class="prismhead"><span class="n" id="prismN">0</span>' +
+                  '<span class="k">prisms</span>' +
+                  '<span class="n" id="fluxN" style="margin-left:auto;color:var(--hot)">0</span>' +
+                  '<span class="k">flux</span></div>';
 
-  settings.hotkey = e.key === 'Unidentified' ? e.code : e.key;
-  keyVal.textContent = prettyKey(settings.hotkey);
-  if (window.privacyScreen) window.privacyScreen.setHotkey(settings.hotkey);
-  saveSettings();
-}, true);   // capture, so the panic key itself can be rebound
+  // flux: the active spend
+  const surge = document.createElement('div');
+  surge.className = 'opt';
+  surge.innerHTML = '<div class="t"><b>Surge</b><span>×' + SURGE_MULT + ' on everything for ' +
+    SURGE_SECS + ' seconds. Golden balls pay flux.</span></div>';
+  const sBtn = document.createElement('button');
+  sBtn.className = 'sw'; sBtn.id = 'surgeBtn';
+  sBtn.style.minWidth = '76px';
+  sBtn.onclick = startSurge;
+  surge.appendChild(sBtn);
+  box.appendChild(surge);
 
-// the cover script is the last tag on the page, so it may not exist yet
-addEventListener('load', () => {
-  if (!window.privacyScreen) return;
-  window.privacyScreen.setHotkey(settings.hotkey);
-  window.privacyScreen.setEnabled(settings.privacyOn !== false);
-  window.privacyScreen.setCoverOnBlur(settings.coverOnBlur === true);
-});
+  const h1 = document.createElement('div');
+  h1.className = 'sect';
+  h1.innerHTML = '<h4>Prism shop · reset on collapse</h4>';
+  box.appendChild(h1);
+  PRISM_UP.forEach(u => box.appendChild(shopRow(u, 'pr', () => buyPrism(u.id))));
 
-async function loadSettings(user){
+  if (collapseUnlocked()){
+    const h2 = document.createElement('div');
+    h2.className = 'sect';
+    h2.innerHTML = '<h4 id="spectraHead">Spectra shop · permanent</h4>';
+    box.appendChild(h2);
+    SPECTRA_UP.forEach(u => box.appendChild(shopRow(u, 'sp', () => buySpectra(u.id))));
+  }
+}
+
+const TIERS = ['Foundation','Refinement','Convergence','Capstone','Ascendant'];
+const tierName = t => TIERS[t] || ('Depth ' + (t - BASE_TIERS + 1));
+
+function buildTree(){
+  const box = $('treeList');
+  box.innerHTML = '<div class="qhead"><span class="n" id="quantaN">0</span>' +
+                  '<span class="k">quanta</span>' +
+                  '<span class="k" id="treeDepth" style="margin-left:auto"></span></div>';
+
+  allTiers().forEach((tier, row) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'trow';
+    wrap.innerHTML = '<div class="tier">' + tierName(row) + '</div>';
+    const grid = document.createElement('div');
+    grid.className = 'tnodes';
+
+    tier.forEach(t => {
+      const b = document.createElement('button');
+      b.className = 'tnode' + (t.needs || t.gen ? ' child' : '');
+      b.dataset.node = t.id;
+      b.innerHTML =
+        '<div class="nm">' + t.name + '</div>' +
+        '<div class="lv"></div>' +
+        '<div class="tdesc">' + t.desc + '</div>' +
+        '<div class="ef"></div>' +
+        '<div class="cs"></div>';
+      b.onclick = () => buyNode(t.id);
+      grid.appendChild(b);
+    });
+
+    wrap.appendChild(grid);
+    box.appendChild(wrap);
+  });
+}
+
+let treeRows = -1;
+
+function paintTree(){
+  /* the tree grows, so rebuild whenever a new tier has opened */
+  const rows = allTiers().length;
+  if (rows !== treeRows){ treeRows = rows; buildTree(); }
+
+  const q = $('quantaN');
+  if (q) q.textContent = fmt(S.quanta);
+  const d = $('treeDepth');
+  if (d) d.textContent = rows + ' tiers';
+
+  document.querySelectorAll('.tnode').forEach(b => {
+    const id = b.dataset.node, t = nodeDef(id);
+    if (!t) return;
+    const open = nOpen(id), max = nMax(id), c = nCost(id);
+    b.classList.toggle('locked', !open);
+    b.classList.toggle('owned', node(id) > 0);
+    b.disabled = !open || max || S.quanta < c;
+    b.querySelector('.lv').textContent =
+      !open ? (t.gen ? 'clear the tier above' : 'needs ' + nodeDef(t.needs).name)
+      : max  ? 'level ' + node(id) + ' · max'
+             : 'level ' + node(id) + ' / ' + t.max;
+    b.querySelector('.ef').textContent = t.show(nEff(id));
+    b.querySelector('.cs').textContent = max ? '' : fmt(c) + ' quanta';
+  });
+}
+
+function buyNode(id){
+  if (!nOpen(id) || nMax(id)) return;
+  const c = nCost(id);
+  if (S.quanta < c) return;
+  const before = allTiers().length;
+  S.quanta -= c;
+  S.tree[id] = node(id) + 1;
+  if (id === 'deep') buildBoard();     // the board can physically grow
+  save(); paintTree(); paintHud();
+  const d = nodeDef(id);
+  toast(d.name + ' → level ' + node(id));
+  if (allTiers().length > before) toast('A new tier opened up');
+}
+
+function paintCosmos(){
+  const box = $('cosmosList');
+  const eq = (S.active || []).length, cap = conSlots();
+
+  box.innerHTML =
+    '<div class="chead">' +
+      '<div><span class="n ae">' + fmt(S.aether) + '</span><span class="k">aether</span></div>' +
+      '<div><span class="n sh">' + fmt(S.shards) + '</span><span class="k">shards</span></div>' +
+      '<div><span class="n">' + eq + '/' + cap + '</span><span class="k">equipped</span></div>' +
+    '</div>' +
+
+    '<div class="sect"><h4>Constellations · click to equip</h4></div>' +
+    '<div class="cons" id="consBox"></div>' +
+
+    '<div class="sect"><h4>Ball rack</h4></div>' +
+    '<div class="balls" id="ballBox"></div>' +
+
+    '<div class="sect"><h4>Quests · refresh every ' + Math.round(QUEST_EVERY()/60000) + ' min</h4></div>' +
+    '<div id="questBox"></div>' +
+
+    '<div class="sect"><h4>Bazaar · bought with shards</h4></div>' +
+    '<div id="bzBox"></div>';
+
+  /* constellations: buy with aether, then equip within your slots */
+  const cb = $('consBox');
+  CONS.forEach(c => {
+    const lv = conLvl(c.id), on = conOn(c.id), cost = c.cost(lv);
+    const b = document.createElement('button');
+    b.className = 'con' + (on ? ' active' : '');
+    b.innerHTML =
+      (lv ? '<span class="tag">' + (on ? 'equipped' : 'owned') + '</span>' : '') +
+      '<div class="nm">' + c.name + '</div>' +
+      '<div class="ds">' + c.desc + '</div>' +
+      '<div class="ef">' + c.show(c.eff(lv)) + (lv && !on ? '  (inactive)' : '') + '</div>' +
+      '<div class="cs">' + (S.aether >= cost ? 'buy lv ' + (lv+1) + ' · ' + fmt(cost) : fmt(cost) + ' aether') + '</div>';
+    b.onclick = (e) => {
+      if (e.shiftKey || !lv){ buyCon(c.id); return; }
+      toggleCon(c.id);
+    };
+    b.oncontextmenu = (e) => { e.preventDefault(); buyCon(c.id); };
+    b.title = lv ? 'Click to equip or unequip · shift-click to level up' : 'Click to buy';
+    cb.appendChild(b);
+  });
+
+  /* ball rack */
+  const bb = $('ballBox');
+  BALLS.forEach(bl => {
+    const ok = ballOK(bl);
+    const b = document.createElement('button');
+    b.className = 'ballb' + (S.ball === bl.id ? ' on' : '');
+    b.disabled = !ok;
+    b.textContent = bl.name;
+    b.title = ok ? bl.desc : 'Unlock with Ball Rack in the bazaar';
+    b.onclick = () => { S.ball = bl.id; save(); paintCosmos(); toast(bl.name + ' loaded'); };
+    bb.appendChild(b);
+  });
+
+  /* quests */
+  const qb = $('questBox');
+  (S.quests || []).forEach(q => {
+    const def = QUEST_POOL.find(x => x.id === q.id);
+    const p = Math.min(1, questProgress(q) / q.goal);
+    qb.appendChild(el('div', 'quest' + (q.done ? ' done' : ''),
+      '<div class="qt"><span class="qn">' + def.text(q.goal) + '</span>' +
+      '<span class="qr">' + (q.done ? 'paid ' : '+') + q.reward + ' shards</span></div>' +
+      '<div class="qd">' + fmt(Math.min(questProgress(q), q.goal)) + ' of ' + fmt(q.goal) + '</div>' +
+      '<div class="qbar"><i style="width:' + (p*100) + '%"></i></div>'));
+  });
+
+  /* bazaar */
+  const zb = $('bzBox');
+  BAZAAR.forEach(u => {
+    const lv = bzLvl(u.id), max = lv >= u.max, cost = u.cost(lv);
+    const b = document.createElement('button');
+    /* its own class: 'sp' belongs to the spectra shop, and sharing it
+       made both painters try to read this row as one of theirs */
+    b.className = 'up bz';
+    b.dataset.bz = u.id;
+    b.disabled = max || S.shards < cost;
+    b.innerHTML =
+      '<div class="r"><span class="nm">' + u.name + '</span>' +
+      '<span class="eff">' + u.show(u.eff(lv)) + '</span></div>' +
+      '<div class="ds">' + u.desc + '</div>' +
+      '<div class="foot"><span class="cost">' + (max ? 'Maxed' : fmt(cost) + ' shards') + '</span>' +
+      '<span class="lv">lv ' + lv + ' / ' + u.max + '</span></div>';
+    b.onclick = () => {
+      if (max || S.shards < cost) return;
+      S.shards -= cost; S.bz[u.id] = lv + 1;
+      save(); paintCosmos(); paintHud();
+      toast(u.name + ' → level ' + (lv+1));
+    };
+    zb.appendChild(b);
+  });
+}
+
+function orbHTML(t){
+  const o = orb(t);
+  return '<span class="ball" style="background:radial-gradient(circle at 34% 30%,' +
+    'hsl(' + o.hue + ',70%,72%), hsl(' + o.hue + ',65%,42%))"></span>' +
+    '<span class="tt">T' + t + '</span>' +
+    '<span class="nm2">' + o.name + '</span>' +
+    '<span class="bs">' + o.show + '</span>';
+}
+
+function paintForge(){
+  const box = $('forgeList');
+  const bench = S.bench || [], eq = S.equipped || [];
+  const slots = equipSlots();
+
+  box.innerHTML =
+    '<div class="chead">' +
+      '<div><span class="n" style="color:#9C6B2F">' + fmt(S.alloy) + '</span><span class="k">alloy</span></div>' +
+      '<div><span class="n">' + eq.length + '/' + slots + '</span><span class="k">equipped</span></div>' +
+      '<div><span class="n">T' + (S.bestOrb || 1) + '</span><span class="k">best ball</span></div>' +
+    '</div>' +
+
+    '<div class="sect"><h4>Equipped · click to take off</h4></div>' +
+    '<div class="fslots" id="fEq"></div>' +
+
+    '<div class="sect"><h4>Bench · click two of the same tier to merge</h4></div>' +
+    '<div class="frow">' +
+      '<button id="fBuy">Buy T1 · ' + fmt(orbCost()) + ' alloy</button>' +
+      '<button id="fMerge">Merge all</button>' +
+    '</div>' +
+    '<div class="fbench" id="fBench"></div>' +
+    '<div class="sect"><h4>Two of a kind make the next kind up, forever</h4></div>';
+
+  /* equipped row */
+  const eqBox = $('fEq');
+  eq.forEach((t, i) => {
+    const b = document.createElement('button');
+    b.className = 'orb';
+    b.innerHTML = orbHTML(t);
+    b.title = 'Boosts ' + orb(t).what + ' — click to take off';
+    b.onclick = () => unequipOrb(i);
+    eqBox.appendChild(b);
+  });
+  for (let i = eq.length; i < slots; i++){
+    eqBox.appendChild(el('div','fslot','empty'));
+  }
+
+  /* bench */
+  const bBox = $('fBench');
+  if (!bench.length){
+    bBox.innerHTML = '<div class="fslot" style="grid-column:1/-1;padding:18px">Buy a ball to start</div>';
+  }
+  bench.forEach((t, i) => {
+    const b = document.createElement('button');
+    b.className = 'orb' + (S.selOrb === i ? ' sel' : '');
+    b.innerHTML = orbHTML(t);
+    b.title = orb(t).name + ' — boosts ' + orb(t).what;
+    b.onclick = (e) => {
+      if (e.shiftKey){ equipOrb(i); return; }
+      if (S.selOrb === null || S.selOrb === undefined){ S.selOrb = i; paintForge(); return; }
+      if (S.selOrb === i){ S.selOrb = null; paintForge(); return; }
+      if (bench[S.selOrb] === bench[i]){
+        const a = S.selOrb; S.selOrb = null;
+        mergeOrbs(a, i);
+      } else {
+        S.selOrb = i; paintForge();
+      }
+    };
+    b.oncontextmenu = (e) => { e.preventDefault(); equipOrb(i); };
+    bBox.appendChild(b);
+  });
+
+  $('fBuy').disabled = S.alloy < orbCost();
+  $('fBuy').onclick = buyOrb;
+  $('fMerge').onclick = mergeAll;
+}
+
+function buyCon(id){
+  const c = CN[id], lv = conLvl(id), cost = c.cost(lv);
+  if (S.aether < cost) return toast('Need ' + fmt(cost - S.aether) + ' more aether');
+  S.aether -= cost;
+  S.cons[id] = lv + 1;
+  if (lv === 0 && (S.active||[]).length < conSlots()){ S.active = (S.active||[]).concat(id); }
+  save(); paintCosmos(); paintHud();
+  toast(c.name + ' → level ' + (lv+1));
+}
+
+function toggleCon(id){
+  S.active = S.active || [];
+  const i = S.active.indexOf(id);
+  if (i >= 0) S.active.splice(i,1);
+  else {
+    if (S.active.length >= conSlots()) return toast('All ' + conSlots() + ' slots are full — unequip one first');
+    S.active.push(id);
+  }
+  save(); paintCosmos(); paintHud();
+}
+
+function buySpectra(id){
+  const c = scost(id);
+  if (S.spectra < c) return;
+  S.spectra -= c;
+  S.sv[id] = slvl(id) + 1;
+  save(); buildVault(); paintHud();
+  toast(SU[id].name + ' → level ' + slvl(id));
+}
+
+function buyPrism(id){
+  if (pmaxed(id)) return;
+  const c = pcost(id);
+  if (S.prisms < c) return;
+  S.prisms -= c;
+  S.pv[id] = plvl(id) + 1;
+  save();
+  paintHud();
+  toast(PU[id].name + ' → level ' + plvl(id));
+}
+
+function paintPrisms(){
+  const n = $('prismN'); if (n) n.textContent = fmt(S.prisms);
+  const f = $('fluxN');  if (f) f.textContent = fmt(Math.floor(S.flux || 0));
+
+  const sb = $('surgeBtn');
+  if (sb){
+    if (surgeActive()){ sb.textContent = surgeLeft() + 's'; sb.classList.add('on'); sb.disabled = true; }
+    else { sb.textContent = SURGE_COST + ' flux'; sb.classList.remove('on'); sb.disabled = S.flux < SURGE_COST; }
+  }
+
+  document.querySelectorAll('.up.pr[data-pid]').forEach(btn => {
+    const id = btn.dataset.pid;
+    if (!PU[id]) return;
+    const isMax = pmaxed(id), c = pcost(id);
+    btn.disabled = isMax || S.prisms < c;
+    btn.querySelector('.cost').textContent = isMax ? 'Maxed' : fmt(c) + ' prisms';
+    btn.querySelector('.lv').textContent = isMax ? 'lv ' + plvl(id) + ' · max' : 'lv ' + plvl(id);
+    btn.querySelector('.eff').textContent = PU[id].show(peff(id));
+  });
+
+  document.querySelectorAll('.up.sp[data-pid]').forEach(btn => {
+    const id = btn.dataset.pid;
+    if (!SU[id]) return;
+    const c = scost(id);
+    btn.disabled = S.spectra < c;
+    btn.querySelector('.cost').textContent = fmt(c) + ' spectra';
+    btn.querySelector('.lv').textContent = 'lv ' + slvl(id);
+    btn.querySelector('.eff').textContent = SU[id].show(seff(id));
+  });
+
+  const head = $('spectraHead');
+  if (head) head.textContent = 'Spectra shop · permanent · ' + fmt(S.spectra) + ' held';
+}
+
+function paintStats(){
+  const mins = (Date.now() - S.started) / 60000;
+  const totalLanded = landed.reduce((a,b) => a+b, 0);
+  const rows = [
+    ['Lifetime chips', fmt(S.earned)],
+    ['Balls dropped', fmt(S.drops)],
+    ['Best single slot', fmt(S.best)],
+    ['Landed this board', fmt(totalLanded)],
+    ['Prisms held', fmt(S.prisms)],
+    ['Global multiplier', '×' + fmt(prismMult())],
+    ['Alloy held', fmt(S.alloy || 0)],
+    ['Lifetime alloy', fmt(S.alloyEarned || 0)],
+    ['Balls merged', fmt(S.mergeCount || 0)],
+    ['Best ball', 'T' + (S.bestOrb || 0) + (S.bestOrb ? ' · ' + orb(S.bestOrb).name : '')],
+    ['Aether held', fmt(S.aether || 0)],
+    ['Lifetime aether', fmt(S.aetherEarned || 0)],
+    ['Shards', fmt(S.shards || 0)],
+    ['Constellations equipped', (S.active||[]).length + ' / ' + conSlots()],
+    ['Ball loaded', curBall().name],
+    ['Quanta held', fmt(S.quanta || 0)],
+    ['Lifetime quanta', fmt(S.quantaEarned || 0)],
+    ['Tree nodes bought', Object.values(S.tree || {}).reduce((a,b) => a + b, 0)],
+    ['Spectra held', fmt(S.spectra || 0)],
+    ['Lifetime spectra', fmt(S.spectraEarned || 0)],
+    ['Flux', fmt(Math.floor(S.flux || 0))],
+    ['Golden balls caught', fmt(S.goldHits || 0)],
+    ['Rim landings', fmt(S.rimHits || 0)],
+    ['Rows', eff('rows')],
+    ['Slots', slots.length],
+    ['Rim slot pays', '×' + fmt(slots.length ? slotMult(slots[0]) : 0)],
+    ['Centre slot pays', '×' + fmt(slots.length ? slotMult(slots[Math.floor(slots.length/2)]) : 0)],
+    ['Session', mins < 60 ? Math.floor(mins) + ' min' : (mins/60).toFixed(1) + ' hr']
+  ];
+  $('statList').innerHTML =
+    rows.map(([k,v]) =>
+      '<div class="row"><span class="k">' + k + '</span><span class="dots"></span><span class="v">' + v + '</span></div>'
+    ).join('') +
+    '<div class="sect" style="padding-left:0;padding-right:0"><h4>Milestones · ' +
+      msDone() + ' of ' + MILESTONES.length + ' · ×' + (Math.round(msMult()*100)/100) + '</h4></div>' +
+    MILESTONES.map(m =>
+      '<div class="ms' + (S.ms[m.id] ? ' done' : '') + '">' +
+      '<span class="dot"></span><span class="lbl">' + m.label + '</span>' +
+      '<span class="req">' + (S.ms[m.id] ? 'done' : '') + '</span></div>'
+    ).join('');
+}
+
+/* ---------------- settings ---------------- */
+function opt(k){ return S.opt[k]; }
+
+function setOpt(k, v){
+  S.opt[k] = v;
+  if (k === 'theme') applyTheme(v);
+  if (k === 'showDist') $('dist').style.display = v ? '' : 'none';
+  save();
+  buildSettings();
+}
+
+const TOGGLES = [
+  ['showDist',   'Distribution strip', 'The live histogram under the board showing where balls actually land.'],
+  ['showLabels', 'Slot multipliers',   'Print the × value inside each slot. Off is cleaner at high row counts.'],
+  ['confirmReset','Confirm recalibrate','Ask before wiping chips and upgrades for prisms.'],
+  ['offline',    'Offline earnings',   'Credit time away at a reduced rate when you come back.'],
+  ['sci',        'Scientific notation', 'Show 1.23e15 instead of 1.23Qa. Useful once names run out.']
+];
+
+const BALL_CAPS = [150, 420, 900, 2000];
+
+function buildSettings(){
+  const box = $('setList');
+  box.innerHTML = '';
+
+  // dark mode first, then the full palette list
+  const dm = document.createElement('div');
+  dm.className = 'opt';
+  dm.innerHTML = '<div class="t"><b>Dark mode</b>' +
+    '<span>Switches the whole interface, the board and the browser chrome. ' +
+    'Defaults to whatever your system prefers.</span></div>';
+  const dmb = document.createElement('button');
+  dmb.className = 'sw' + (isDark() ? ' on' : '');
+  dmb.textContent = isDark() ? 'On' : 'Off';
+  dmb.onclick = () => { toggleDark(); };
+  dm.appendChild(dmb);
+  box.appendChild(dm);
+
+  const sect = document.createElement('div');
+  sect.className = 'sect';
+  sect.innerHTML = '<h4>Theme</h4>';
+  box.appendChild(sect);
+
+  const sw = document.createElement('div');
+  sw.className = 'swatches';
+  Object.keys(THEMES).forEach(key => {
+    const t = THEMES[key];
+    const b = document.createElement('button');
+    b.className = 'sws' + (opt('theme') === key ? ' on' : '');
+    b.dataset.theme = key;
+    b.innerHTML =
+      '<span class="bar">' +
+        '<i style="background:' + t.vars.paper + '"></i>' +
+        '<i style="background:' + t.vars.ink + '"></i>' +
+        '<i style="background:' + t.vars.hot + '"></i>' +
+        '<i style="background:' + t.vars.cool + '"></i>' +
+      '</span><span class="nm">' + t.name + '</span>';
+    b.onclick = () => setOpt('theme', key);
+    sw.appendChild(b);
+  });
+  box.appendChild(sw);
+
+  // toggles
+  const s2 = document.createElement('div');
+  s2.className = 'sect';
+  s2.innerHTML = '<h4>Display</h4>';
+  box.appendChild(s2);
+
+  TOGGLES.forEach(([k, label, note]) => {
+    const row = document.createElement('div');
+    row.className = 'opt';
+    row.innerHTML = '<div class="t"><b></b><span></span></div>';
+    row.querySelector('b').textContent = label;
+    row.querySelector('span').textContent = note;
+    const btn = document.createElement('button');
+    btn.className = 'sw' + (opt(k) ? ' on' : '');
+    btn.textContent = opt(k) ? 'On' : 'Off';
+    btn.onclick = () => setOpt(k, !opt(k));
+    row.appendChild(btn);
+    box.appendChild(row);
+  });
+
+  // performance
+  const s3 = document.createElement('div');
+  s3.className = 'sect';
+  s3.innerHTML = '<h4>Performance</h4>';
+  box.appendChild(s3);
+
+  const hide = document.createElement('div');
+  hide.className = 'opt';
+  hide.innerHTML = '<div class="t"><b>Hide the balls</b>' +
+    '<span>Stops drawing and simulating them. Drops resolve instantly ' +
+    'against the board\'s real landing distribution, so you earn exactly ' +
+    'the same — it is simply far cheaper to run.</span></div>';
+  const hb = document.createElement('button');
+  hb.className = 'sw' + (opt('hideBalls') ? ' on' : '');
+  hb.textContent = opt('hideBalls') ? 'On' : 'Off';
+  hb.onclick = () => { setOpt('hideBalls', !opt('hideBalls')); balls.length = 0; };
+  hide.appendChild(hb);
+  box.appendChild(hide);
+
+  const perf = document.createElement('div');
+  perf.className = 'opt';
+  perf.innerHTML = '<div class="t"><b>Balls on screen</b>' +
+    '<span>Anything above this is not spawned. Payouts are unaffected. ' +
+    'Type any number from 10 to 5000.</span></div>';
+  const inp = document.createElement('input');
+  inp.type = 'number'; inp.min = '10'; inp.max = '5000'; inp.step = '10';
+  inp.value = opt('maxBalls');
+  inp.className = 'numin';
+  inp.onchange = () => {
+    const v = Math.max(10, Math.min(5000, Math.floor(Number(inp.value) || 420)));
+    inp.value = v;
+    setOpt('maxBalls', v);
+  };
+  perf.appendChild(inp);
+  box.appendChild(perf);
+
+  const quick = document.createElement('div');
+  quick.className = 'opt';
+  quick.innerHTML = '<div class="t"><span>Common values</span></div>';
+  BALL_CAPS.forEach(v => {
+    const b = document.createElement('button');
+    b.className = 'sw' + (opt('maxBalls') === v ? ' on' : '');
+    b.style.minWidth = '52px';
+    b.textContent = v;
+    b.onclick = () => setOpt('maxBalls', v);
+    quick.appendChild(b);
+  });
+  box.appendChild(quick);
+
+  // save data
+  const s4 = document.createElement('div');
+  s4.className = 'sect';
+  s4.innerHTML = '<h4>Save data</h4>';
+  box.appendChild(s4);
+
+  const io = document.createElement('div');
+  io.className = 'opt';
+  io.innerHTML = '<div class="t"><b>Export or import</b>' +
+    '<span>Your save lives in this browser only. Export before clearing site data, ' +
+    'or to carry progress to another machine.</span></div>';
+  const ex = document.createElement('button');
+  ex.className = 'sw'; ex.textContent = 'Copy';
+  ex.onclick = exportSave;
+  const im = document.createElement('button');
+  im.className = 'sw'; im.textContent = 'Load';
+  im.onclick = importSave;
+  io.append(ex, im);
+  box.appendChild(io);
+}
+
+function exportSave(){
+  const code = btoa(unescape(encodeURIComponent(JSON.stringify(S))));
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(code)
+      .then(() => toast('Save copied to clipboard'))
+      .catch(() => window.prompt('Copy this:', code));
+  } else {
+    window.prompt('Copy this:', code);
+  }
+}
+
+function importSave(){
+  const code = window.prompt('Paste a save code. This replaces everything you have now.');
+  if (!code) return;
   try{
-    const doc = await firestore.collection('users').doc(user.uid).get();
-    const saved = doc.exists && doc.data().settings;
-    if (saved) settings = { ...settings, ...saved };
-  }catch(e){ /* defaults are fine */ }
-  applySettings();
+    const d = JSON.parse(decodeURIComponent(escape(atob(code.trim()))));
+    if (typeof d !== 'object' || !d.lv) throw new Error('not a save');
+    S = Object.assign(FRESH(), d);
+    S.lv  = Object.assign(FRESH().lv, d.lv || {});
+    S.opt = Object.assign({}, DEFAULT_OPT, d.opt || {});
+    balls.length = 0;
+    applyTheme(S.opt.theme);
+    buildBoard(); buildSettings(); paintHud(); save();
+    toast('Save loaded');
+  }catch(e){
+    toast('That save code is not valid');
+  }
 }
 
-} /* end startPortal */
+document.querySelectorAll('.tabs button').forEach(t => {
+  t.onclick = () => {
+    document.querySelectorAll('.tabs button').forEach(x => x.classList.remove('on'));
+    t.classList.add('on');
+    const tab = t.dataset.tab;
+    currentTab = tab;
+    $('upList').style.display    = tab === 'up'    ? '' : 'none';
+    $('prismList').style.display = tab === 'prism' ? '' : 'none';
+    $('treeList').style.display  = tab === 'tree'  ? '' : 'none';
+    $('cosmosList').style.display= tab === 'cosmos'? '' : 'none';
+    $('forgeList').style.display = tab === 'forge' ? '' : 'none';
+    $('statList').style.display  = tab === 'stats' ? '' : 'none';
+    $('setList').style.display   = tab === 'set'   ? '' : 'none';
+    $('bulk').style.display      = tab === 'up'    ? '' : 'none';
+    if (tab === 'stats') paintStats();
+    if (tab === 'set') buildSettings();
+    if (tab === 'prism') paintPrisms();
+    if (tab === 'tree') { buildTree(); paintTree(); }
+    if (tab === 'cosmos') paintCosmos();
+    if (tab === 'forge') paintForge();
+  };
+});
 
+let currentTab = 'up';
+
+$('dropBtn').onclick = dropSet;
+
+/* hold space to keep dropping — saves your finger in the early game */
+let holding = false, holdTimer = null;
+function startHold(){
+  if (holding) return;
+  holding = true;
+  dropSet();
+  holdTimer = setInterval(dropSet, 110);
+}
+function stopHold(){ holding = false; clearInterval(holdTimer); }
+$('dropBtn').addEventListener('pointerdown', startHold);
+['pointerup','pointerleave','pointercancel'].forEach(e =>
+  $('dropBtn').addEventListener(e, stopHold));
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space' && e.target === document.body){ e.preventDefault(); startHold(); }
+});
+document.addEventListener('keyup', e => { if (e.code === 'Space') stopHold(); });
+
+$('pBtn').onclick = () => {
+  const gain = prismsOnReset();
+  if (gain < 1) return;
+  if (S.opt.confirmReset &&
+      !confirm('Recalibrate for ' + fmt(gain) + ' prisms?\n\nChips and every upgrade reset. Prisms and their multiplier are kept forever.')) return;
+  S.prisms += gain; S.prismsEarned += gain;
+  S.cash = 0; S.lv = FRESH().lv;
+  // Float: begin the run with something already banked
+  if (peff('seed') > 0) S.cash = 1000 * Math.pow(6, peff('seed')) * prismMult();
+  const head = peff('head');
+  if (head > 0){ S.lv.value = head; S.lv.auto = head; }   // Momentum
+  balls.length = 0;
+  buildBoard(); save();
+  toast('Recalibrated — ×' + (Math.round(prismMult()*10)/10) + ' on everything');
+};
+
+$('cBtn').onclick = () => {
+  const gain = spectraOnCollapse();
+  if (gain < 1) return;
+  if (S.opt.confirmReset &&
+      !confirm('Collapse for ' + fmt(gain) + ' spectra?\n\nChips, upgrades, prisms AND the prism shop all reset. ' +
+               'Spectra, the spectra shop, milestones and flux are kept.')) return;
+
+  S.spectra += gain; S.spectraEarned += gain;
+  S.cash = 0; S.prisms = 0; S.prismsEarned = 0;
+  S.lv = FRESH().lv;
+  S.pv = FRESH().pv;
+
+  // Foundation hands back some of the prism shop immediately
+  const found = seff('found') + nEff('core');
+  if (found > 0) Object.keys(S.pv).forEach(k => S.pv[k] = found);
+
+  balls.length = 0;
+  buildBoard(); buildVault(); save(); paintHud();
+  toast('Collapsed · ' + fmt(S.spectra) + ' spectra held');
+};
+
+$('aBtn').onclick = () => {
+  const gain = quantaOnAscend();
+  if (gain < 1) return;
+  if (S.opt.confirmReset &&
+      !confirm('Ascend for ' + fmt(gain) + ' quanta?\n\nEverything below this layer resets: chips, upgrades, prisms, ' +
+               'the prism shop, spectra and the spectra shop. The tree, your milestones and flux are kept.')) return;
+
+  S.quanta += gain; S.quantaEarned += gain;
+
+  /* Echo keeps a share of the spectra shop through the reset */
+  const keep = nEff('echo');
+  const carried = {};
+  Object.keys(S.sv).forEach(k => carried[k] = Math.floor(S.sv[k] * keep));
+
+  S.cash = 0; S.prisms = 0; S.prismsEarned = 0;
+  S.spectra = 0; S.spectraEarned = 0;
+  S.lv = FRESH().lv;
+  S.pv = FRESH().pv;
+  S.sv = Object.assign(FRESH().sv, carried);
+
+  balls.length = 0;
+  buildBoard(); buildVault(); buildTree(); paintTree(); save(); paintHud();
+  toast('Ascended · ' + fmt(S.quanta) + ' quanta held');
+};
+
+$('tBtn').onclick = () => {
+  const gain = aetherOnTranscend();
+  if (gain < 1) return;
+  if (S.opt.confirmReset &&
+      !confirm('Transcend for ' + fmt(gain) + ' aether?\n\nEverything below resets — chips, upgrades, prisms, ' +
+               'spectra, quanta and the whole tree. Constellations, the bazaar, shards and milestones are kept.')) return;
+
+  S.aether += gain; S.aetherEarned += gain;
+  S.cash = 0;
+  S.prisms = 0; S.prismsEarned = 0;
+  S.spectra = 0; S.spectraEarned = 0;
+  S.quanta = 0; S.quantaEarned = 0;
+  S.lv = FRESH().lv; S.pv = FRESH().pv; S.sv = FRESH().sv;
+  S.tree = {};
+
+  balls.length = 0;
+  buildBoard(); buildVault(); buildTree(); paintTree(); paintCosmos(); save(); paintHud();
+  toast('Transcended · ' + fmt(S.aether) + ' aether held');
+};
+
+$('rBtn').onclick = () => {
+  const gain = alloyOnReforge();
+  if (gain < 1) return;
+  if (S.opt.confirmReset &&
+      !confirm('Reforge for ' + fmt(gain) + ' alloy?\n\nEverything below resets, aether and constellations included. ' +
+               'The forge — your balls, bench and equipped set — is kept, along with shards and milestones.')) return;
+
+  S.alloy += gain; S.alloyEarned += gain;
+  S.cash = 0;
+  S.prisms = 0; S.prismsEarned = 0;
+  S.spectra = 0; S.spectraEarned = 0;
+  S.quanta = 0; S.quantaEarned = 0;
+  S.aether = 0; S.aetherEarned = 0;
+  S.lv = FRESH().lv; S.pv = FRESH().pv; S.sv = FRESH().sv;
+  S.tree = {}; S.cons = {}; S.active = [];
+
+  balls.length = 0;
+  treeRows = -1;
+  buildBoard(); buildVault(); buildTree(); paintTree();
+  paintCosmos(); paintForge(); save(); paintHud();
+  toast('Reforged · ' + fmt(S.alloy) + ' alloy held');
+};
+
+/* ---------------- saving ---------------- */
+const KEY = 'jarvis.plinko';
+function save(){
+  try{ S.lastSeen = Date.now(); localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){}
+  cloudDirty = true;
+}
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    S = Object.assign(FRESH(), d);
+    S.lv  = Object.assign(FRESH().lv, d.lv || {});
+    S.opt = Object.assign({}, DEFAULT_OPT, d.opt || {});   // new options get defaults
+    S.pv  = Object.assign(FRESH().pv, d.pv || {});
+    S.sv  = Object.assign(FRESH().sv, d.sv || {});
+    S.tree = d.tree || {};
+    S.cons = d.cons || {};
+    S.active = Array.isArray(d.active) ? d.active : [];
+    S.bz  = d.bz || {};
+    S.quests = Array.isArray(d.quests) ? d.quests : [];
+    S.ball = d.ball || 'std';
+    S.bench = Array.isArray(d.bench) ? d.bench : [];
+    S.equipped = Array.isArray(d.equipped) ? d.equipped : [];
+    S.selOrb = null;
+    S.ms  = d.ms || {};
+  }catch(e){ /* corrupt save: start clean rather than break */ }
+}
+
+$('saveBtn').onclick = () => { save(); toast('Saved'); };
+$('wipeBtn').onclick = () => {
+  if (!confirm('Wipe everything, prisms included? There is no undo.')) return;
+  try{ localStorage.removeItem(KEY); }catch(e){}
+  S = FRESH(); balls.length = 0; buildBoard(); toast('Wiped');
+};
+setInterval(save, 15000);
+addEventListener('beforeunload', () => { save(); if (cloudReady) cloudSave(); });
+// tab hidden is the reliable moment on mobile, where beforeunload often never fires
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden){ save(); if (cloudReady && cloudDirty) cloudSave(); }
+});
+
+/* ================================================================
+   CLOUD SAVE
+
+   Ties into the same Firebase account the portal signs you into, so
+   progress follows you between machines. The browser copy stays the
+   working save; the cloud is a mirror that syncs every 45 seconds
+   and whenever you leave.
+
+   Conflicts resolve on lifetime chips. That figure survives every
+   reset — recalibrating, collapsing and ascending all leave it alone —
+   so it only ever climbs, and the bigger number is always the save
+   that has been played further. Comparing clocks instead would
+   corrupt progress the moment a device had the wrong time.
+   ================================================================ */
+let cloudReady = false, cloudUser = null, cloudTimer = null, cloudDirty = false;
+
+function cloudChip(text, cls){
+  const el = $('cloud');
+  el.className = 'hint' + (cls ? ' ' + cls : '');
+  el.textContent = text;
+}
+
+function initCloud(){
+  if (typeof firebaseConfig === 'undefined' || firebaseConfig.apiKey === 'PASTE_YOURS'){
+    cloudChip('local only');
+    return;
+  }
+  try{ firebase.initializeApp(firebaseConfig); }
+  catch(e){ /* another script on the page already did it */ }
+
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  auth.onAuthStateChanged(async user => {
+    cloudUser = user;
+    if (!user){
+      cloudReady = false;
+      cloudChip('sign in to sync');
+      $('cloud').title = 'Open the portal and sign in — progress will then follow your account.';
+      return;
+    }
+
+    cloudChip('syncing…', 'saving');
+    try{
+      const doc = await db.collection('users').doc(user.uid).collection('games').doc('plinko').get();
+      const remote = doc.exists ? doc.data().save : null;
+
+      if (remote && typeof remote === 'string'){
+        const d = JSON.parse(remote);
+        // whichever save has earned more is the one further along
+        if ((d.earned || 0) > (S.earned || 0)){
+          S = Object.assign(FRESH(), d);
+          S.lv   = Object.assign(FRESH().lv, d.lv || {});
+          S.pv   = Object.assign(FRESH().pv, d.pv || {});
+          S.sv   = Object.assign(FRESH().sv, d.sv || {});
+          S.opt  = Object.assign({}, DEFAULT_OPT, d.opt || {});
+          S.tree = d.tree || {};
+          S.cons = d.cons || {};
+          S.active = Array.isArray(d.active) ? d.active : [];
+          S.bz   = d.bz || {};
+          S.quests = Array.isArray(d.quests) ? d.quests : [];
+          S.ball = d.ball || 'std';
+          S.bench = Array.isArray(d.bench) ? d.bench : [];
+          S.equipped = Array.isArray(d.equipped) ? d.equipped : [];
+          S.selOrb = null;
+          S.ms   = d.ms || {};
+          balls.length = 0;
+          applyTheme(S.opt.theme);
+          $('dist').style.display = S.opt.showDist ? '' : 'none';
+          buildBoard(); buildSettings(); buildVault();
+          buildTree(); paintTree();
+          paintHud();
+          toast('Loaded the further-along save from your account');
+        }
+      }
+
+      cloudReady = true;
+      cloudChip('synced', 'synced');
+      $('cloud').title = 'Saving to your Jarvis Portal account';
+      cloudSave();
+      if (cloudTimer) clearInterval(cloudTimer);
+      cloudTimer = setInterval(() => { if (cloudDirty) cloudSave(); }, 45000);
+    }catch(err){
+      console.warn('Cloud save unavailable:', err);
+      cloudReady = false;
+      cloudChip('sync failed');
+      $('cloud').title = String(err.message || err);
+    }
+  });
+}
+
+async function cloudSave(){
+  if (!cloudReady || !cloudUser) return;
+  cloudDirty = false;
+  try{
+    await firebase.firestore()
+      .collection('users').doc(cloudUser.uid)
+      .collection('games').doc('plinko')
+      .set({ save: JSON.stringify(S), at: Date.now() });
+    cloudChip('synced', 'synced');
+  }catch(err){
+    cloudDirty = true;
+    cloudChip('sync failed');
+    console.warn('Cloud save failed:', err);
+  }
+}
+
+let toastTimer;
+function toast(msg){
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1900);
+}
+
+/* ---------------- offline ----------------
+   Credited at a poor rate on purpose. Away time should be worth
+   something, never more than playing. */
+function offline(){
+  if (!S.opt.offline) return;
+  const rate = eff('auto') * eff('multi');
+  if (!S.lastSeen || rate <= 0) return;
+  const away = Math.min((Date.now() - S.lastSeen)/1000, 8*3600);
+  if (away < 60) return;
+  const mid = slots.length ? slotMult(slots[Math.floor(slots.length/2)]) * 2.4 : 0;
+  const got = away * rate * mid * 0.35 * peff('dawn') * cEff('hourglass');
+  if (got > 0){
+    S.cash += got; S.earned += got;
+    toast('Away ' + Math.floor(away/60) + ' min · +' + fmt(got) + ' chips');
+  }
+}
+
+load();
+applyTheme(S.opt.theme);
+initCloud();
+$('dist').style.display = S.opt.showDist ? '' : 'none';
+layout();
+buildList();
+buildVault();
+buildTree();
+buildSettings();
+if (!S.quests || !S.quests.length) rollQuests();
+paintCosmos();
+paintForge();
+offline();
+paintHud();
+addEventListener('resize', layout);
+requestAnimationFrame(frame);
 </script>
 
-<!-- privacy cover: Esc to hide, three logo clicks to return -->
 <script src="privacy-screen.js"></script>
 </body>
 </html>
