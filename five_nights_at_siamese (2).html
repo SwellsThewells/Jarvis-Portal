@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Five Nights at Siamese</title>
+<style>
+:root{
+  --void:#05060a;
+  --room:#0d1017;
+  --wall:#161b24;
+  --wall2:#1e2531;
+  --sodium:#f0b429;
+  --sodium-dim:#6b5220;
+  --crt:#9fb2a4;
+  --crt-dim:#4a5a50;
+  --alarm:#c1272d;
+  --steel:#2b313c;
+  --steel-lit:#414a58;
+  --paper:#d8cfae;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#000;}
+body{
+  font-family:"Arial Narrow","Helvetica Neue Condensed",Haettenschweiler,Impact,sans-serif;
+  color:#cfd4dc;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+#stage{
+  position:fixed;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  background:#000;
+}
+#frame{
+  position:relative;
+  width:100%;height:100%;
+  max-width:calc(100vh * 16 / 9);
+  max-height:calc(100vw * 9 / 16);
+  overflow:hidden;
+  background:var(--void);
+}
+.layer{position:absolute;inset:0}
+.hidden{display:none !important}
+
+/* ---------- office ---------- */
+#officeScroll{position:absolute;top:0;left:0;height:100%;width:118%;
+  will-change:transform;}
+#officeSvg{width:100%;height:100%;display:block}
+
+/* ---------- HUD ---------- */
+#hud{position:absolute;inset:0;pointer-events:none;z-index:40}
+.hud-power{position:absolute;left:2.2%;top:3.5%;pointer-events:none}
+.hud-power .label{
+  font-size:clamp(11px,1.5vh,20px);letter-spacing:.22em;
+  color:#b9c0ca;text-shadow:0 0 6px #000;
+}
+.hud-power .val{font-size:clamp(15px,2.3vh,30px);color:#e8edf3;letter-spacing:.05em}
+.usage{display:flex;gap:4px;margin-top:5px;align-items:flex-end;height:16px}
+.usage i{width:12px;height:100%;background:#2a2f38;border:1px solid #000;display:block}
+.usage i.on{background:var(--alarm);box-shadow:0 0 8px rgba(193,39,45,.8)}
+.usage i.on.u2{background:#d4542c}
+.usage i.on.u3{background:#e0862c}
+.usage i.on.u4{background:#e8b62c}
+.hud-clock{position:absolute;right:2.5%;top:3%;text-align:right}
+.hud-clock .hour{font-size:clamp(20px,3.6vh,48px);letter-spacing:.06em;color:#e8edf3;text-shadow:0 0 10px #000}
+.hud-clock .night{font-size:clamp(10px,1.4vh,18px);letter-spacing:.3em;color:#7d8794}
+
+/* ---------- door panels ---------- */
+.panel{
+  position:absolute;bottom:16%;
+  width:clamp(88px,10.5%,150px);
+  display:flex;flex-direction:column;gap:8%;
+  padding:2.4% 2%;
+  background:linear-gradient(#333a46,#20262f);
+  border:2px solid #11151b;
+  border-radius:6px;
+  box-shadow:0 8px 26px rgba(0,0,0,.85), inset 0 1px 0 rgba(255,255,255,.09);
+  pointer-events:auto;z-index:45;
+}
+#panelL{left:2.5%}
+#panelR{right:2.5%}
+.btn{
+  position:relative;
+  aspect-ratio:1.45/1;
+  border:2px solid #0b0e13;
+  border-radius:4px;
+  background:radial-gradient(circle at 50% 35%,#4a525f,#262c35);
+  box-shadow:inset 0 -4px 0 rgba(0,0,0,.55), inset 0 2px 0 rgba(255,255,255,.12);
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:clamp(9px,1.25vh,15px);letter-spacing:.16em;color:#8d95a1;
+  transition:background .08s linear, box-shadow .08s linear, transform .06s;
+}
+.btn:hover{background:radial-gradient(circle at 50% 35%,#59616f,#2d343e)}
+.btn:active{transform:translateY(2px)}
+.btn.active{
+  background:radial-gradient(circle at 50% 35%,#f4d06a,#c98b12);
+  color:#2a1d00;
+  box-shadow:inset 0 -3px 0 rgba(0,0,0,.4), 0 0 18px rgba(240,180,41,.55);
+}
+.btn.door.active{
+  background:radial-gradient(circle at 50% 35%,#e6595e,#8e161b);
+  color:#fff;
+  box-shadow:inset 0 -3px 0 rgba(0,0,0,.4), 0 0 20px rgba(193,39,45,.6);
+}
+.btn:focus-visible{outline:3px solid #7fd3ff;outline-offset:2px}
+.btn .glyph{position:absolute;top:5px;left:6px;font-size:.72em;opacity:.55;letter-spacing:.1em}
+
+/* vent hatch button on desk */
+#ventBtn{
+  position:absolute;left:50%;transform:translateX(-50%);
+  bottom:7.5%;
+  width:clamp(96px,12%,168px);
+  padding:9px 0;
+  text-align:center;
+  font-size:clamp(9px,1.2vh,14px);letter-spacing:.2em;
+  color:#8d95a1;
+  background:linear-gradient(#333a46,#20262f);
+  border:2px solid #11151b;border-radius:5px;
+  box-shadow:0 6px 18px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.08);
+  cursor:pointer;pointer-events:auto;z-index:45;
+}
+#ventBtn.active{background:linear-gradient(#7bc4d8,#2b7d94);color:#04222b;box-shadow:0 0 18px rgba(90,190,220,.5)}
+
+/* monitor pull tab */
+#camTab{
+  position:absolute;left:50%;transform:translateX(-50%);
+  bottom:0;width:clamp(150px,24%,380px);height:clamp(28px,5.5%,58px);
+  background:linear-gradient(#2c333d,#161b22);
+  border:2px solid #0a0d12;border-bottom:none;
+  border-radius:8px 8px 0 0;
+  display:flex;align-items:center;justify-content:center;
+  letter-spacing:.28em;font-size:clamp(9px,1.3vh,15px);color:#9aa3af;
+  cursor:pointer;pointer-events:auto;z-index:46;
+  transition:transform .18s ease, background .15s;
+}
+#camTab:hover{transform:translateX(-50%) translateY(-6px);background:linear-gradient(#39424e,#1c222b)}
+
+/* ---------- camera layer ---------- */
+#camLayer{z-index:50;background:#04050a;transform-origin:50% 100%}
+#camLayer.rising{animation:monUp .32s cubic-bezier(.2,.9,.3,1)}
+@keyframes monUp{from{transform:translateY(88%) scaleY(.55);opacity:.2}to{transform:none;opacity:1}}
+#camWrap{position:absolute;inset:2.5% 2.5% 9% 2.5%;display:flex;gap:1.6%}
+#feedBox{position:relative;flex:1 1 66%;border:2px solid #303844;background:#000;overflow:hidden;border-radius:3px}
+#feedSvg{position:absolute;inset:0;width:100%;height:100%}
+#feedLabel{
+  position:absolute;left:14px;top:12px;z-index:6;
+  font-size:clamp(10px,1.6vh,20px);letter-spacing:.28em;color:#dfe6ea;
+  text-shadow:0 0 8px #000;
+}
+#recDot{
+  position:absolute;right:16px;top:14px;z-index:6;width:12px;height:12px;border-radius:50%;
+  background:var(--alarm);box-shadow:0 0 10px var(--alarm);animation:blink 1.4s steps(2,end) infinite;
+}
+@keyframes blink{50%{opacity:.1}}
+#audioOnly{
+  position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:14px;background:#05070b;color:#5c6873;
+  letter-spacing:.3em;font-size:clamp(11px,1.7vh,20px);
+}
+#audioOnly .bars{display:flex;gap:6px;align-items:flex-end;height:54px}
+#audioOnly .bars b{width:8px;background:#3b6b5a;display:block;animation:eq .7s ease-in-out infinite alternate}
+@keyframes eq{from{height:8%}to{height:100%}}
+.scan{position:absolute;inset:0;z-index:4;pointer-events:none;
+  background:repeating-linear-gradient(180deg,rgba(0,0,0,0) 0 2px,rgba(0,0,0,.35) 2px 4px);
+  mix-blend-mode:multiply;opacity:.75}
+.vig{position:absolute;inset:0;z-index:3;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 45%,rgba(0,0,0,.85) 100%)}
+#staticCv{position:absolute;inset:0;z-index:7;pointer-events:none;opacity:.16;mix-blend-mode:screen}
+#staticCv.burst{opacity:.85}
+
+/* map */
+#mapBox{flex:1 1 34%;border:2px solid #303844;background:#0a0d13;position:relative;border-radius:3px;padding:10px}
+#mapSvg{width:100%;height:100%}
+.mroom{cursor:pointer}
+.mroom rect{fill:#151a22;stroke:#3a4452;stroke-width:1.5;transition:fill .12s,stroke .12s}
+.mroom:hover rect{fill:#222a36;stroke:#6d7d90}
+.mroom.sel rect{fill:#2e3846;stroke:#cfd8e4;stroke-width:2.5}
+.mroom.noc rect{stroke-dasharray:3 3;stroke:#2e3641}
+.mroom text{fill:#94a1b1;font-size:9.5px;letter-spacing:.12em;pointer-events:none;
+  font-family:"Arial Narrow",Arial,sans-serif}
+.mroom.sel text{fill:#eef3f8}
+.mled{fill:#39424f}
+.mled.hot{fill:var(--alarm)}
+.mlink{stroke:#232b36;stroke-width:7;stroke-linecap:round}
+.mlabel{fill:#5d6875;font-size:10px;letter-spacing:.3em}
+#youNode rect{fill:#1d2b25;stroke:#4e7a63}
+#camFoot{position:absolute;left:2.5%;right:2.5%;bottom:2.5%;height:5.5%;
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:clamp(9px,1.25vh,14px);letter-spacing:.16em;color:#5f6a77}
+#camDown{
+  padding:9px 22px;background:linear-gradient(#2c333d,#161b22);
+  border:2px solid #0a0d12;border-radius:6px;color:#9aa3af;letter-spacing:.24em;cursor:pointer;
+}
+#camDown:hover{background:linear-gradient(#39424e,#1c222b)}
+
+/* ---------- overlays ---------- */
+#blackout{z-index:70;background:#000;opacity:0;transition:opacity .5s;pointer-events:none}
+#jump{z-index:90;background:#000;display:flex;align-items:center;justify-content:center}
+#jumpSvg{width:78%;height:78%}
+.shake{animation:shk .07s infinite}
+@keyframes shk{
+  0%{transform:translate(0,0) scale(1.0)}
+  25%{transform:translate(-14px,9px) scale(1.06)}
+  50%{transform:translate(11px,-12px) scale(1.02)}
+  75%{transform:translate(-8px,-7px) scale(1.07)}
+  100%{transform:translate(10px,8px) scale(1.03)}
+}
+#flash{z-index:95;background:#fff;opacity:0;pointer-events:none;transition:opacity .09s}
+
+/* ---------- menus ---------- */
+.screen{
+  z-index:100;background:radial-gradient(ellipse at 50% 40%,#141822 0%,#04060a 70%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;
+  text-align:center;padding:6%;
+}
+.screen h1{
+  font-size:clamp(30px,7.5vh,86px);letter-spacing:.06em;line-height:.94;
+  color:#e9eef4;text-shadow:0 0 30px rgba(240,180,41,.14);
+}
+.screen h1 small{display:block;font-size:.34em;letter-spacing:.42em;color:#7b8695;margin-top:14px}
+.screen p{max-width:56ch;font-size:clamp(12px,1.85vh,19px);line-height:1.65;color:#8a94a1;
+  font-family:Georgia,"Times New Roman",serif;letter-spacing:.01em}
+.nights{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.nightbtn{
+  padding:12px 20px;min-width:86px;
+  background:#151a22;border:2px solid #333d4a;border-radius:4px;
+  color:#aab4c1;letter-spacing:.2em;font-size:clamp(11px,1.5vh,16px);cursor:pointer;
+  transition:.13s;
+}
+.nightbtn:hover:not([disabled]){background:#232c38;border-color:#7c8b9c;color:#fff}
+.nightbtn[disabled]{opacity:.28;cursor:not-allowed}
+.nightbtn.done{border-color:#4b6b52;color:#8fc79e}
+.big{
+  padding:16px 44px;background:#1b222c;border:2px solid #4c5a6b;border-radius:4px;
+  color:#e4eaf1;letter-spacing:.3em;font-size:clamp(12px,1.8vh,19px);cursor:pointer;
+}
+.big:hover{background:#2a3543;border-color:#93a4b7}
+.tiny{font-size:clamp(10px,1.35vh,14px);color:#5d6874;letter-spacing:.14em;
+  font-family:"Arial Narrow",Arial,sans-serif}
+#sixam{z-index:100;background:#000;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:18px}
+#sixam .t{font-size:clamp(38px,9vh,110px);letter-spacing:.1em;color:#f2e6c9}
+#sixam .s{letter-spacing:.4em;color:#8b8265;font-size:clamp(11px,1.6vh,18px)}
+</style>
+</head>
+<body>
+<div id="stage"><div id="frame">
+
+  <!-- OFFICE -->
+  <div class="layer" id="officeLayer">
+    <div id="officeScroll"></div>
+  </div>
+
+  <!-- HUD + CONTROLS -->
+  <div id="hud">
+    <div class="hud-power">
+      <div class="label">Power left</div>
+      <div class="val"><span id="pwrNum">100</span>%</div>
+      <div class="usage" id="usageBars"><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
+    <div class="hud-clock">
+      <div class="hour" id="clockHour">12 AM</div>
+      <div class="night" id="clockNight">Night 1</div>
+    </div>
+
+    <div class="panel" id="panelL">
+      <div class="btn door" id="doorL" role="button" tabindex="0"><span class="glyph">L</span>Door</div>
+      <div class="btn light" id="lightL" role="button" tabindex="0"><span class="glyph">L</span>Light</div>
+    </div>
+    <div class="panel" id="panelR">
+      <div class="btn door" id="doorR" role="button" tabindex="0"><span class="glyph">R</span>Door</div>
+      <div class="btn light" id="lightR" role="button" tabindex="0"><span class="glyph">R</span>Light</div>
+    </div>
+
+    <div id="ventBtn" role="button" tabindex="0">Vent hatch</div>
+    <div id="camTab" role="button" tabindex="0">Cameras</div>
+  </div>
+
+  <!-- CAMERAS -->
+  <div class="layer hidden" id="camLayer">
+    <div id="camWrap">
+      <div id="feedBox">
+        <svg id="feedSvg" viewBox="0 0 800 450" preserveAspectRatio="xMidYMid slice"></svg>
+        <div id="audioOnly" class="hidden">
+          <div class="bars"><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b></div>
+          Audio only
+        </div>
+        <div class="vig"></div><div class="scan"></div>
+        <canvas id="staticCv"></canvas>
+        <div id="feedLabel">CAM 01 — Show stage</div>
+        <div id="recDot"></div>
+      </div>
+      <div id="mapBox"><svg id="mapSvg" viewBox="0 0 470 600"></svg></div>
+    </div>
+    <div id="camFoot">
+      <span>Click a room to switch feeds. Two of them have no camera — you'll only hear those.</span>
+      <div id="camDown" role="button" tabindex="0">Lower monitor</div>
+    </div>
+  </div>
+
+  <div class="layer" id="blackout"></div>
+  <div class="layer hidden" id="jump"><svg id="jumpSvg" viewBox="0 0 400 400"></svg></div>
+  <div class="layer" id="flash"></div>
+
+  <!-- 6 AM -->
+  <div class="layer hidden" id="sixam">
+    <div class="t">6 AM</div>
+    <div class="s" id="sixamSub">Shift complete</div>
+    <div class="big" id="sixamNext">Continue</div>
+  </div>
+
+  <!-- TITLE -->
+  <div class="layer screen" id="title">
+    <h1>Five Nights<br>at Siamese<small>Overnight security · Building 2</small></h1>
+    <p>You have a desk, two doors, a ceiling vent and just enough power to keep one of them
+       shut at a time. Four of them wander after midnight. Listen more than you look.</p>
+    <div class="nights" id="nightList"></div>
+    <div class="tiny">A / D toggle doors · Q / E lights · S vent · Space raises the monitor</div>
+  </div>
+
+  <!-- DEATH -->
+  <div class="layer screen hidden" id="dead">
+    <h1 id="deadWho">Siamese</h1>
+    <p id="deadWhy">The right door was open.</p>
+    <div class="big" id="retry">Try again</div>
+    <div class="big" id="toMenu" style="padding:10px 28px;font-size:.8em">Back to nights</div>
+  </div>
+
+</div></div>
+<script>
+/* ============================================================
+   FIVE NIGHTS AT SIAMESE
+   Single file. No assets. Everything below is drawn or synthesised.
+   ------------------------------------------------------------
+   WANT YOUR OWN FACES IN IT?
+   Put an image URL (or a data: URI) in `face` for any character
+   below and it will be used for that character's jumpscare
+   instead of the drawn one. Only use photos of people who have
+   said yes to being in it.
+   ============================================================ */
+
+/* =========================================================
+   0. tiny helpers
+   ========================================================= */
+const $ = id => document.getElementById(id);
+const rnd = (a, b) => a + Math.random() * (b - a);
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+const d20 = () => Math.floor(Math.random() * 20) + 1;
+
+/* =========================================================
+   1. AUDIO — everything synthesised, no files
+   ========================================================= */
+const AU = {
+  ctx: null, master: null, fanG: null, staticG: null, noiseBuf: null,
+  init() {
+    if (this.ctx) return;
+    const C = window.AudioContext || window.webkitAudioContext;
+    this.ctx = new C();
+    this.master = this.ctx.createGain();
+    this.master.gain.value = 0.85;
+    this.master.connect(this.ctx.destination);
+
+    // reusable noise
+    const len = this.ctx.sampleRate * 2;
+    this.noiseBuf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+    const d = this.noiseBuf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+  },
+  noise(dur, freq, q, gain, type) {
+    const c = this.ctx, s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+    s.buffer = this.noiseBuf; s.loop = true;
+    f.type = type || 'bandpass'; f.frequency.value = freq; f.Q.value = q || 1;
+    g.gain.setValueAtTime(gain, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + dur);
+    s.connect(f); f.connect(g); g.connect(this.master);
+    s.start(); s.stop(c.currentTime + dur + 0.05);
+  },
+  tone(freq, dur, gain, type, slideTo) {
+    const c = this.ctx, o = c.createOscillator(), g = c.createGain();
+    o.type = type || 'sine'; o.frequency.setValueAtTime(freq, c.currentTime);
+    if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, c.currentTime + dur);
+    g.gain.setValueAtTime(0.0001, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(gain, c.currentTime + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + dur);
+    o.connect(g); g.connect(this.master);
+    o.start(); o.stop(c.currentTime + dur + 0.05);
+  },
+  startRoom() {
+    if (this.fanG) return;
+    const c = this.ctx;
+    // desk fan / building hum
+    const s = c.createBufferSource(); s.buffer = this.noiseBuf; s.loop = true;
+    const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 340;
+    this.fanG = c.createGain(); this.fanG.gain.value = 0.055;
+    s.connect(f); f.connect(this.fanG); this.fanG.connect(this.master); s.start();
+    const o = c.createOscillator(); o.type = 'sawtooth'; o.frequency.value = 47;
+    const og = c.createGain(); og.gain.value = 0.018;
+    o.connect(og); og.connect(this.master); o.start();
+    this._hum = og;
+  },
+  camHiss(on) {
+    const c = this.ctx;
+    if (on) {
+      if (this.staticG) return;
+      const s = c.createBufferSource(); s.buffer = this.noiseBuf; s.loop = true;
+      const f = c.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 1800;
+      this.staticG = c.createGain(); this.staticG.gain.value = 0.05;
+      s.connect(f); f.connect(this.staticG); this.staticG.connect(this.master); s.start();
+      this._staticSrc = s;
+    } else if (this.staticG) {
+      this.staticG.gain.setTargetAtTime(0.0001, c.currentTime, 0.05);
+      const s = this._staticSrc, g = this.staticG;
+      setTimeout(() => { try { s.stop(); g.disconnect(); } catch (e) {} }, 300);
+      this.staticG = null;
+    }
+  },
+  fan(on) { if (this.fanG) this.fanG.gain.setTargetAtTime(on ? 0.055 : 0.004, this.ctx.currentTime, 0.1); },
+  door(closing) { this.noise(0.35, 180, 0.9, 0.5, 'lowpass'); this.tone(closing ? 150 : 90, 0.3, 0.22, 'square', closing ? 55 : 170); },
+  click() { this.noise(0.05, 2600, 4, 0.22); },
+  step(dist) { this.noise(0.18, 420 + Math.random() * 260, 2.4, clamp(0.36 - dist * 0.05, 0.05, 0.36)); },
+  clatter() { for (let i = 0; i < 5; i++) setTimeout(() => this.noise(0.1, 1400 + Math.random() * 2600, 6, 0.11), i * rnd(50, 190)); },
+  scrape() { this.noise(0.7, 700, 1.4, 0.09); },
+  breath() { this.noise(0.9, 300, .8, 0.07, 'lowpass'); },
+  sprint() { for (let i = 0; i < 12; i++) setTimeout(() => this.noise(0.09, 500, 3, 0.2), i * 95); },
+  bang() { for (let i = 0; i < 3; i++) setTimeout(() => { this.noise(0.22, 120, 1, 0.55, 'lowpass'); }, i * 170); },
+  scream() {
+    const c = this.ctx;
+    this.noise(1.2, 1500, 0.6, 0.85, 'bandpass');
+    for (let i = 0; i < 5; i++) {
+      const o = c.createOscillator(), g = c.createGain();
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(rnd(700, 2300), c.currentTime);
+      o.frequency.exponentialRampToValueAtTime(rnd(90, 260), c.currentTime + 0.9);
+      g.gain.setValueAtTime(0.16, c.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 1.0);
+      o.connect(g); g.connect(this.master); o.start(); o.stop(c.currentTime + 1.05);
+    }
+  },
+  musicBox() {
+    const notes = [659, 587, 494, 440, 494, 587, 659, 587, 494, 440];
+    notes.forEach((n, i) => setTimeout(() => { if (GAME.running) this.tone(n, 0.55, 0.09, 'triangle'); }, i * 460));
+  },
+  chime() { [523, 659, 784, 1047].forEach((n, i) => setTimeout(() => this.tone(n, 1.1, 0.14, 'sine'), i * 190)); }
+};
+
+/* =========================================================
+   2. THE BUILDING
+   Not a grid. Two wings that funnel inward at angles, plus a
+   duct that drops straight onto the office from above.
+   ========================================================= */
+const ROOMS = {
+  STAGE:  { cam: '01', name: 'Show stage',   x: 178, y: 18,  w: 118, h: 54 },
+  BACK:   { cam: '02', name: 'Backstage',    x: 22,  y: 24,  w: 104, h: 46, blind: true },
+  DINING: { cam: '03', name: 'Dining hall',  x: 168, y: 108, w: 138, h: 62 },
+  ARCADE: { cam: '04', name: 'Arcade',       x: 16,  y: 116, w: 104, h: 48 },
+  PARTY:  { cam: '05', name: 'Party room',   x: 350, y: 116, w: 104, h: 48 },
+  SUPPLY: { cam: '06', name: 'Supply closet',x: 12,  y: 200, w: 100, h: 46 },
+  KITCH:  { cam: '07', name: 'Kitchen',      x: 356, y: 200, w: 100, h: 46, blind: true },
+  WHALL:  { cam: '08', name: 'West hall',    x: 42,  y: 286, w: 112, h: 48 },
+  EHALL:  { cam: '09', name: 'East hall',    x: 316, y: 286, w: 112, h: 48 },
+  DUCT:   { cam: '10', name: 'Ceiling duct', x: 196, y: 302, w: 80,  h: 42 },
+  WCORN:  { cam: '11', name: 'West corner',  x: 84,  y: 384, w: 98,  h: 44 },
+  ECORN:  { cam: '12', name: 'East corner',  x: 290, y: 384, w: 98,  h: 44 },
+  OFFICE: { name: 'You', x: 178, y: 472, w: 116, h: 62, office: true }
+};
+const LINKS = [
+  ['STAGE', 'DINING'], ['BACK', 'ARCADE'], ['DINING', 'ARCADE'], ['DINING', 'PARTY'],
+  ['ARCADE', 'SUPPLY'], ['PARTY', 'KITCH'], ['SUPPLY', 'WHALL'], ['KITCH', 'EHALL'],
+  ['WHALL', 'WCORN'], ['EHALL', 'ECORN'], ['WCORN', 'OFFICE'], ['ECORN', 'OFFICE'],
+  ['KITCH', 'DUCT'], ['DUCT', 'OFFICE'], ['DINING', 'STAGE']
+];
+const cx = r => ROOMS[r].x + ROOMS[r].w / 2;
+const cy = r => ROOMS[r].y + ROOMS[r].h / 2;
+
+/* =========================================================
+   3. THE CAST
+   `face` = optional image URL used for the jumpscare instead of
+   the drawn head. Leave null to use the drawn version.
+   ========================================================= */
+const CAST = {
+  siamese: {
+    name: 'Siamese', tint: '#7b6f5e', eye: '#ffdf7a', face: null,
+    path: ['STAGE', 'DINING', 'PARTY', 'EHALL', 'ECORN'],
+    side: 'R', every: 4.8,
+    line: 'The right door was open.'
+  },
+  vellum: {
+    name: 'Vellum', tint: '#b9ae94', eye: '#ff6f6f', face: null,
+    path: ['STAGE', 'DINING', 'ARCADE', 'WHALL', 'WCORN'],
+    side: 'L', every: 5.4, shy: true,
+    line: 'She moves when the monitor is somewhere else.'
+  },
+  grissle: {
+    name: 'Grissle', tint: '#5d5a4e', eye: '#9dff8f', face: null,
+    path: ['BACK', 'SUPPLY', 'WHALL', 'WCORN'],
+    side: 'L', every: 6.0, sprinter: true,
+    line: 'He was already running by the time you looked.'
+  },
+  nobody: {
+    name: 'Nobody', tint: '#8f939a', eye: '#e8f6ff', face: null,
+    path: ['STAGE', 'KITCH', 'DUCT'],
+    side: 'V', every: 6.6,
+    line: 'The vent hatch was open.'
+  }
+};
+
+/* AI levels per night: [siamese, vellum, grissle, nobody] */
+const NIGHT_AI = {
+  1: [0, 3, 0, 0],
+  2: [3, 4, 1, 2],
+  3: [5, 5, 4, 4],
+  4: [7, 7, 6, 6],
+  5: [10, 9, 9, 8],
+  6: [14, 13, 13, 12]
+};
+const HOUR_LEN = 52;      // seconds of real time per in-game hour
+const DRAIN = 0.072;      // % per second per usage bar
+
+/* =========================================================
+   4. CHARACTER ART — drawn in a 100 x 160 box, feet at y=160
+   ========================================================= */
+function charArt(id, o) {
+  o = o || {};
+  const c = CAST[id], t = o.tint || c.tint, e = c.eye;
+  let g = `<g opacity="${o.opacity == null ? 1 : o.opacity}">`;
+
+  if (id === 'siamese') {
+    // two-headed cat suit
+    g += `<path d="M30 160 L26 96 Q50 84 74 96 L70 160 Z" fill="${t}"/>`;
+    g += `<path d="M26 100 L8 138 L18 144 L30 112 Z M74 100 L92 138 L82 144 L70 112 Z" fill="${t}"/>`;
+    // head A
+    g += `<g transform="translate(-14,0)"><ellipse cx="50" cy="66" rx="20" ry="18" fill="${t}"/>
+      <path d="M34 56 L30 36 L44 48 Z M66 56 L70 36 L56 48 Z" fill="${t}"/>
+      <circle cx="43" cy="64" r="3.4" fill="${e}"/><circle cx="57" cy="64" r="3.4" fill="${e}"/>
+      <path d="M42 76 Q50 82 58 76" stroke="#1a1712" stroke-width="2" fill="none"/></g>`;
+    // head B
+    g += `<g transform="translate(14,-4)"><ellipse cx="50" cy="66" rx="18" ry="17" fill="${t}"/>
+      <path d="M36 57 L33 39 L45 50 Z M64 57 L67 39 L55 50 Z" fill="${t}"/>
+      <circle cx="44" cy="64" r="3" fill="${e}"/><circle cx="56" cy="64" r="3" fill="${e}"/>
+      <path d="M43 75 Q50 80 57 75" stroke="#1a1712" stroke-width="2" fill="none"/></g>`;
+  } else if (id === 'vellum') {
+    // long paper doll
+    g += `<path d="M40 160 L38 90 L62 90 L60 160 Z" fill="${t}"/>`;
+    g += `<rect x="46" y="60" width="8" height="30" fill="${t}"/>`;
+    g += `<path d="M38 96 L14 150 M62 96 L86 150" stroke="${t}" stroke-width="7" fill="none"/>`;
+    g += `<ellipse cx="50" cy="44" rx="21" ry="23" fill="${t}"/>`;
+    g += `<path d="M50 21 L50 67 M29 44 L71 44" stroke="rgba(0,0,0,.28)" stroke-width="1.4"/>`;
+    g += `<ellipse cx="42" cy="42" rx="4" ry="5" fill="${e}"/><ellipse cx="58" cy="42" rx="4" ry="5" fill="${e}"/>`;
+    g += `<path d="M43 56 L47 60 L51 55 L55 60 L58 56" stroke="#241f18" stroke-width="2" fill="none"/>`;
+  } else if (id === 'grissle') {
+    // hunched dog
+    g += `<path d="M28 160 Q24 108 46 100 Q72 96 76 122 L72 160 Z" fill="${t}"/>`;
+    g += `<path d="M30 112 L10 146 L20 152 L36 122 Z" fill="${t}"/>`;
+    g += `<g transform="rotate(-10 50 60)"><ellipse cx="50" cy="62" rx="19" ry="15" fill="${t}"/>
+      <path d="M40 74 Q34 88 22 88 Q34 92 42 82 Z" fill="${t}"/>
+      <path d="M34 52 Q26 34 38 40 Z M66 52 Q74 36 62 42 Z" fill="${t}"/>
+      <circle cx="44" cy="60" r="3.2" fill="${e}"/><circle cx="57" cy="59" r="3.2" fill="${e}"/>
+      <path d="M40 72 L46 76 L52 71 L58 76" stroke="#f2ece0" stroke-width="2.4" fill="none"/></g>`;
+  } else {
+    // bare endoskeleton
+    g += `<path d="M44 160 L42 104 L58 104 L56 160 Z" fill="${t}"/>`;
+    g += `<path d="M36 108 L64 108 M34 118 L66 118 M36 128 L64 128" stroke="${t}" stroke-width="4"/>`;
+    g += `<rect x="47" y="72" width="6" height="26" fill="${t}"/>`;
+    g += `<path d="M42 106 L18 148 M58 106 L82 148" stroke="${t}" stroke-width="5"/>`;
+    g += `<ellipse cx="50" cy="54" rx="19" ry="21" fill="${t}"/>`;
+    g += `<circle cx="42" cy="50" r="6.5" fill="#0a0c10"/><circle cx="58" cy="50" r="6.5" fill="#0a0c10"/>`;
+    g += `<circle cx="42" cy="50" r="2.6" fill="${e}"/><circle cx="58" cy="50" r="2.6" fill="${e}"/>`;
+    g += `<path d="M38 66 H62 M42 62 V72 M50 62 V72 M58 62 V72" stroke="#0a0c10" stroke-width="1.8"/>`;
+  }
+  return g + '</g>';
+}
+
+/* =========================================================
+   5. THE OFFICE  (viewBox 0 0 1900 900)
+   ========================================================= */
+function buildOffice() {
+  let s = `<svg id="officeSvg" viewBox="0 0 1900 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="wallg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1c222c"/><stop offset="1" stop-color="#0d1118"/>
+    </linearGradient>
+    <linearGradient id="floorg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0e1219"/><stop offset="1" stop-color="#05070b"/>
+    </linearGradient>
+    <linearGradient id="deskg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a3126"/><stop offset="1" stop-color="#161209"/>
+    </linearGradient>
+    <radialGradient id="lamp" cx="50%" cy="0%" r="80%">
+      <stop offset="0" stop-color="rgba(240,180,41,.30)"/><stop offset="1" stop-color="rgba(240,180,41,0)"/>
+    </radialGradient>
+    <radialGradient id="hallglow" cx="50%" cy="40%" r="70%">
+      <stop offset="0" stop-color="rgba(255,214,140,.55)"/><stop offset="1" stop-color="rgba(255,214,140,0)"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1900" height="900" fill="#05070b"/>
+  <!-- back wall -->
+  <rect x="330" y="0" width="1240" height="640" fill="url(#wallg)"/>
+  <rect x="330" y="0" width="1240" height="640" fill="url(#lamp)"/>
+  <!-- wall panel seams -->
+  <g stroke="#0a0d13" stroke-width="3" opacity=".8">
+    <path d="M470 0 V640 M640 0 V640 M810 0 V640 M980 0 V640 M1150 0 V640 M1320 0 V640"/>
+    <path d="M330 300 H1570 M330 470 H1570"/>
+  </g>
+  <!-- side walls, angled -->
+  <path d="M0 0 L330 0 L330 640 L0 760 Z" fill="#0a0e14"/>
+  <path d="M1900 0 L1570 0 L1570 640 L1900 760 Z" fill="#0a0e14"/>
+  <!-- floor -->
+  <path d="M0 760 L330 640 H1570 L1900 760 V900 H0 Z" fill="url(#floorg)"/>
+  ${checkerFloor()}
+
+  <!-- posters -->
+  <g opacity=".5">
+    <rect x="520" y="120" width="150" height="200" fill="#221d15" stroke="#3a3226" stroke-width="3"/>
+    <g transform="translate(545,150) scale(.52)">${charArt('siamese', { opacity: .55 })}</g>
+    <text x="595" y="300" fill="#6d6250" font-size="17" text-anchor="middle" letter-spacing="4">SIAMESE</text>
+    <rect x="1230" y="150" width="140" height="170" fill="#221d15" stroke="#3a3226" stroke-width="3"/>
+    <text x="1300" y="200" fill="#7a6d58" font-size="19" text-anchor="middle" letter-spacing="3">RULES</text>
+    <g stroke="#4d4535" stroke-width="3">
+      <path d="M1250 225 H1350 M1250 248 H1350 M1250 271 H1330 M1250 294 H1345"/>
+    </g>
+  </g>
+
+  <!-- ceiling vent, dead centre -->
+  <g id="ventGroup">
+    <rect x="830" y="0" width="240" height="118" fill="#0b0f15" stroke="#242c37" stroke-width="4"/>
+    <g id="ventInner">
+      <rect x="842" y="6" width="216" height="106" fill="#03050a"/>
+      <g id="ventOccupant"></g>
+    </g>
+    <g id="ventGrill" stroke="#39434f" stroke-width="5" opacity="1">
+      <path d="M842 22 H1058 M842 44 H1058 M842 66 H1058 M842 88 H1058"/>
+    </g>
+    <rect id="ventHatch" x="828" y="0" width="244" height="122" fill="#2b323d" stroke="#171c24" stroke-width="4"
+          transform="translate(0,-130)"/>
+  </g>
+
+  <!-- LEFT DOORWAY -->
+  <g id="doorwayL">
+    <path d="M60 148 L300 190 L300 700 L60 790 Z" fill="#03050a"/>
+    <g id="hallL" opacity="0">
+      <path d="M60 148 L300 190 L300 700 L60 790 Z" fill="#191410"/>
+      <path d="M60 148 L300 190 L300 700 L60 790 Z" fill="url(#hallglow)"/>
+      <g id="occL" transform="translate(80,300) scale(2.4)"></g>
+    </g>
+    <path d="M60 148 L300 190 L300 700 L60 790 Z" fill="none" stroke="#2f3742" stroke-width="8"/>
+    <g id="shutterL" transform="translate(0,-660)">
+      <path d="M62 150 L298 192 L298 700 L62 788 Z" fill="#242b35"/>
+      <g stroke="#161b23" stroke-width="5">
+        <path d="M62 230 L298 262 M62 320 L298 344 M62 410 L298 426 M62 500 L298 508 M62 590 L298 590"/>
+      </g>
+      <path d="M62 690 L298 690 L298 712 L62 722 Z" fill="#3d4652"/>
+    </g>
+  </g>
+
+  <!-- RIGHT DOORWAY -->
+  <g id="doorwayR">
+    <path d="M1840 148 L1600 190 L1600 700 L1840 790 Z" fill="#03050a"/>
+    <g id="hallR" opacity="0">
+      <path d="M1840 148 L1600 190 L1600 700 L1840 790 Z" fill="#191410"/>
+      <path d="M1840 148 L1600 190 L1600 700 L1840 790 Z" fill="url(#hallglow)"/>
+      <g id="occR" transform="translate(1620,300) scale(2.4)"></g>
+    </g>
+    <path d="M1840 148 L1600 190 L1600 700 L1840 790 Z" fill="none" stroke="#2f3742" stroke-width="8"/>
+    <g id="shutterR" transform="translate(0,-660)">
+      <path d="M1838 150 L1602 192 L1602 700 L1838 788 Z" fill="#242b35"/>
+      <g stroke="#161b23" stroke-width="5">
+        <path d="M1838 230 L1602 262 M1838 320 L1602 344 M1838 410 L1602 426 M1838 500 L1602 508 M1838 590 L1602 590"/>
+      </g>
+      <path d="M1838 690 L1602 690 L1602 712 L1838 722 Z" fill="#3d4652"/>
+    </g>
+  </g>
+
+  <!-- desk -->
+  <path d="M120 720 H1780 L1900 900 H0 Z" fill="url(#deskg)"/>
+  <path d="M120 720 H1780 L1800 752 H100 Z" fill="#4a3f30"/>
+  <!-- fan -->
+  <g transform="translate(1420,700)">
+    <rect x="-9" y="34" width="18" height="52" fill="#2b303a"/>
+    <rect x="-38" y="84" width="76" height="12" rx="4" fill="#333944"/>
+    <circle cx="0" cy="0" r="54" fill="none" stroke="#3c434f" stroke-width="5"/>
+    <circle cx="0" cy="0" r="38" fill="none" stroke="#333a45" stroke-width="3"/>
+    <g id="fanBlades" opacity=".85">
+      <path d="M0 0 L34 -22 A40 40 0 0 0 6 -40 Z" fill="#525b68"/>
+      <path d="M0 0 L14 40 A40 40 0 0 0 40 14 Z" fill="#4a525f"/>
+      <path d="M0 0 L-40 8 A40 40 0 0 0 -22 36 Z" fill="#525b68"/>
+    </g>
+    <circle cx="0" cy="0" r="8" fill="#6a7482"/>
+  </g>
+  <!-- sticky notes -->
+  <g transform="translate(430,762) rotate(-4)">
+    <rect width="150" height="88" fill="#cdbf8e"/>
+    <text x="12" y="30" font-size="16" fill="#3b3323" letter-spacing="1">CHECK THE DUCT</text>
+    <text x="12" y="54" font-size="16" fill="#3b3323" letter-spacing="1">MORE THAN ONCE</text>
+    <text x="12" y="78" font-size="13" fill="#6b5f42">— day shift</text>
+  </g>
+  <g transform="translate(1150,768) rotate(3)">
+    <rect width="140" height="80" fill="#c7bb92"/>
+    <text x="12" y="28" font-size="15" fill="#3b3323" letter-spacing="1">DON'T HOLD</text>
+    <text x="12" y="50" font-size="15" fill="#3b3323" letter-spacing="1">BOTH DOORS</text>
+  </g>
+  <!-- darkness rolls in when power dies -->
+  <rect id="officeDark" width="1900" height="900" fill="#000" opacity="0"/>
+</svg>`;
+  return s;
+}
+function checkerFloor() {
+  let out = '<g opacity=".22">';
+  for (let r = 0; r < 5; r++) {
+    const t0 = r / 5, t1 = (r + 1) / 5;
+    const yA = 640 + t0 * 260, yB = 640 + t1 * 260;
+    const spread0 = 330 - t0 * 330, spread1 = 330 - t1 * 330;
+    for (let c = 0; c < 10; c++) {
+      if ((r + c) % 2) continue;
+      const xa0 = spread0 + (1570 - 330 + (330 - spread0) * 2) * (c / 10);
+      const xa1 = spread0 + (1570 - 330 + (330 - spread0) * 2) * ((c + 1) / 10);
+      const xb0 = spread1 + (1570 - 330 + (330 - spread1) * 2) * (c / 10);
+      const xb1 = spread1 + (1570 - 330 + (330 - spread1) * 2) * ((c + 1) / 10);
+      out += `<path d="M${xa0} ${yA} L${xa1} ${yA} L${xb1} ${yB} L${xb0} ${yB} Z" fill="#2a323d"/>`;
+    }
+  }
+  return out + '</g>';
+}
+
+/* =========================================================
+   6. CAMERA FEEDS — a hand-drawn perspective per room
+   ========================================================= */
+function feedScene(key) {
+  const R = ROOMS[key];
+  let s = `<defs>
+    <linearGradient id="fw" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#161b21"/><stop offset="1" stop-color="#0a0d11"/></linearGradient>
+    <linearGradient id="ff" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0d1114"/><stop offset="1" stop-color="#04060a"/></linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="#05070a"/>`;
+
+  const shell = (vpx, vpy) => `
+    <rect x="0" y="0" width="800" height="450" fill="url(#fw)"/>
+    <path d="M0 ${vpy + 40} H800 V450 H0 Z" fill="url(#ff)"/>
+    <g stroke="#1b2129" stroke-width="2" opacity=".8">
+      <path d="M0 450 L${vpx} ${vpy + 40} M800 450 L${vpx} ${vpy + 40}
+               M200 450 L${vpx} ${vpy + 40} M600 450 L${vpx} ${vpy + 40}"/>
+      <path d="M0 ${vpy + 40} H800 M0 ${vpy + 95} H800 M0 ${vpy + 175} H800"/>
+    </g>`;
+
+  switch (key) {
+    case 'STAGE':
+      s += shell(400, 190);
+      s += `<path d="M140 300 H660 L700 380 H100 Z" fill="#241820" stroke="#3a2a34" stroke-width="3"/>`;
+      s += `<path d="M120 130 Q400 96 680 130 L680 150 Q400 116 120 150 Z" fill="#2a1c24"/>`;
+      s += `<g stroke="#3b2b34" stroke-width="3"><path d="M150 130 V300 M650 130 V300"/></g>`;
+      break;
+    case 'DINING':
+      s += shell(400, 170);
+      for (let i = 0; i < 5; i++) {
+        const y = 250 + i * 40, w = 90 + i * 42, x = 400 - w / 2 + (i % 2 ? 130 : -130);
+        s += `<ellipse cx="${x}" cy="${y}" rx="${w / 2}" ry="${w / 7}" fill="none" stroke="#2c333c" stroke-width="3"/>`;
+      }
+      s += `<path d="M0 200 H800" stroke="#232a33" stroke-width="4"/>`;
+      break;
+    case 'ARCADE':
+      s += shell(380, 180);
+      for (let i = 0; i < 4; i++) {
+        const x = 90 + i * 165, h = 150 + i * 8;
+        s += `<g><rect x="${x}" y="${330 - h}" width="92" height="${h}" fill="#141a22" stroke="#2b3440" stroke-width="3"/>
+        <rect x="${x + 12}" y="${348 - h}" width="68" height="46" fill="#1d2c2a" stroke="#31474a" stroke-width="2"/></g>`;
+      }
+      break;
+    case 'PARTY':
+      s += shell(410, 175);
+      s += `<rect x="240" y="270" width="320" height="26" fill="#25202a" stroke="#3a3242" stroke-width="3"/>`;
+      s += `<g stroke="#3a3242" stroke-width="3"><path d="M270 296 V370 M530 296 V370"/></g>`;
+      for (let i = 0; i < 7; i++) s += `<circle cx="${110 + i * 96}" cy="${120 + (i % 3) * 22}" r="16" fill="none" stroke="#33272f" stroke-width="3"/>`;
+      break;
+    case 'BACK':
+      s += shell(390, 165);
+      s += `<rect x="60" y="200" width="180" height="180" fill="#0f1319" stroke="#262e38" stroke-width="3"/>`;
+      s += `<rect x="560" y="180" width="190" height="200" fill="#0f1319" stroke="#262e38" stroke-width="3"/>`;
+      s += `<g stroke="#252d36" stroke-width="4"><path d="M300 150 V330 M340 150 V330 M380 150 V330"/></g>`;
+      break;
+    case 'SUPPLY':
+      s += shell(400, 200);
+      for (let i = 0; i < 4; i++) s += `<path d="M100 ${230 + i * 45} H700" stroke="#2a323c" stroke-width="5"/>`;
+      s += `<g fill="#1a2029">${[0, 1, 2, 3, 4].map(i => `<rect x="${140 + i * 110}" y="${200 + (i % 2) * 45}" width="60" height="28"/>`).join('')}</g>`;
+      break;
+    case 'KITCH':
+      s += shell(400, 190);
+      s += `<rect x="120" y="270" width="560" height="30" fill="#20262e"/>`;
+      break;
+    case 'WHALL':
+    case 'EHALL': {
+      const flip = key === 'EHALL';
+      s += `<g ${flip ? 'transform="translate(800,0) scale(-1,1)"' : ''}>`;
+      s += `<rect width="800" height="450" fill="url(#fw)"/>`;
+      s += `<path d="M0 450 L300 210 H800 V450 Z" fill="#0a0e13"/>`;
+      s += `<path d="M300 210 L300 450" stroke="#242c36" stroke-width="4"/>`;
+      s += `<g stroke="#1e252d" stroke-width="3"><path d="M0 450 L300 210 M0 120 L300 210 M120 450 L320 250"/></g>`;
+      s += `<rect x="330" y="120" width="120" height="200" fill="#0d1218" stroke="#2a323c" stroke-width="3"/>`;
+      s += `<ellipse cx="560" cy="180" rx="90" ry="26" fill="rgba(255,214,140,.09)"/>`;
+      s += `</g>`;
+      break;
+    }
+    case 'WCORN':
+    case 'ECORN': {
+      const flip = key === 'ECORN';
+      s += `<g ${flip ? 'transform="translate(800,0) scale(-1,1)"' : ''}>`;
+      s += `<rect width="800" height="450" fill="url(#fw)"/>`;
+      s += `<path d="M0 450 V90 L420 170 V450 Z" fill="#0c1016"/>`;
+      s += `<path d="M420 170 L800 60 V450 H420 Z" fill="#070a0f"/>`;
+      s += `<path d="M420 170 V450" stroke="#2a323c" stroke-width="5"/>`;
+      s += `<rect x="470" y="150" width="150" height="230" fill="#0a0e13" stroke="#333c48" stroke-width="4"/>`;
+      s += `<text x="530" y="120" fill="#3b4653" font-size="20" letter-spacing="4">OFFICE</text>`;
+      s += `</g>`;
+      break;
+    }
+    case 'DUCT':
+      s += `<rect width="800" height="450" fill="#05070a"/>`;
+      s += `<path d="M0 0 L200 110 V340 L0 450 Z" fill="#10151b"/>`;
+      s += `<path d="M800 0 L600 110 V340 L800 450 Z" fill="#10151b"/>`;
+      s += `<path d="M0 0 H800 L600 110 H200 Z" fill="#161c24"/>`;
+      s += `<path d="M0 450 H800 L600 340 H200 Z" fill="#0b0f14"/>`;
+      s += `<rect x="200" y="110" width="400" height="230" fill="#03050a"/>`;
+      s += `<g stroke="#1c232c" stroke-width="3"><path d="M240 128 V330 M300 122 V336 M500 122 V336 M560 128 V330"/></g>`;
+      break;
+    default:
+      s += shell(400, 180);
+  }
+  return s;
+}
+
+/* =========================================================
+   7. GAME
+   ========================================================= */
+const GAME = {
+  night: 1, hour: 0, hourT: 0, power: 100, running: false,
+  camUp: false, cam: 'STAGE',
+  doorL: false, doorR: false, lightL: false, lightR: false, vent: false,
+  units: {}, blackout: false, blackoutT: 0, over: false
+};
+const cleared = JSON.parse(localStorage.getItem('fns_cleared') || '[]');
+
+function resetUnits() {
+  GAME.units = {};
+  for (const id in CAST) {
+    const ai = NIGHT_AI[GAME.night][Object.keys(CAST).indexOf(id)];
+    GAME.units[id] = { id, pos: 0, t: rnd(0, CAST[id].every), ai, atk: 0, charge: 0, sprinting: 0 };
+  }
+}
+function unitRoom(u) { return CAST[u.id].path[u.pos]; }
+function atCorner(u) { return u.pos === CAST[u.id].path.length - 1; }
+function whoAt(room) { return Object.values(GAME.units).filter(u => unitRoom(u) === room); }
+
+/* ---------- start / end ---------- */
+function startNight(n) {
+  AU.init(); AU.ctx.resume(); AU.startRoom();
+  GAME.night = n; GAME.hour = 0; GAME.hourT = 0; GAME.power = 100;
+  GAME.doorL = GAME.doorR = GAME.lightL = GAME.lightR = GAME.vent = false;
+  GAME.camUp = false; GAME.cam = 'STAGE'; GAME.blackout = false; GAME.blackoutT = 0;
+  GAME.over = false; GAME.running = true; GAME._boxed = false;
+  resetUnits();
+  $('title').classList.add('hidden'); $('dead').classList.add('hidden');
+  $('sixam').classList.add('hidden'); $('camLayer').classList.add('hidden');
+  $('jump').classList.add('hidden'); $('hud').classList.remove('hidden');
+  $('officeDark').setAttribute('opacity', '0');
+  $('clockNight').textContent = 'Night ' + n;
+  syncButtons(); paintOffice(); AU.fan(true);
+  last = performance.now();
+}
+function win() {
+  GAME.running = false; AU.camHiss(false); AU.chime();
+  if (!cleared.includes(GAME.night)) { cleared.push(GAME.night); localStorage.setItem('fns_cleared', JSON.stringify(cleared)); }
+  $('camLayer').classList.add('hidden'); $('hud').classList.add('hidden');
+  $('sixamSub').textContent = GAME.night >= 6 ? 'That was the last one.' : 'Night ' + GAME.night + ' survived';
+  $('sixam').classList.remove('hidden');
+}
+function kill(id) {
+  if (GAME.over) return;
+  GAME.over = true; GAME.running = false;
+  AU.camHiss(false); AU.fan(false); AU.scream();
+  const c = CAST[id];
+  $('camLayer').classList.add('hidden'); $('hud').classList.add('hidden');
+  const inner = c.face
+    ? `<image href="${c.face}" x="0" y="0" width="400" height="400" preserveAspectRatio="xMidYMid slice"/>`
+    : `<g transform="translate(50,10) scale(3) translate(-50,-30)">${charArt(id)}</g>`;
+  $('jumpSvg').innerHTML = inner;
+  const j = $('jump');
+  j.classList.remove('hidden'); j.classList.add('shake');
+  $('flash').style.opacity = '1';
+  setTimeout(() => $('flash').style.opacity = '0', 90);
+  setTimeout(() => {
+    j.classList.add('hidden'); j.classList.remove('shake');
+    $('deadWho').textContent = c.name;
+    $('deadWhy').textContent = c.line;
+    $('dead').classList.remove('hidden');
+  }, 1500);
+}
+
+/* ---------- power-out ---------- */
+function powerOut() {
+  GAME.power = 0; GAME.blackout = true; GAME.blackoutT = 0;
+  GAME.doorL = GAME.doorR = GAME.lightL = GAME.lightR = GAME.vent = false;
+  lowerCam(); syncButtons(); paintOffice(); AU.fan(false); AU.camHiss(false);
+  $('officeDark').setAttribute('opacity', '0.93');
+}
+
+/* ---------- main loop ---------- */
+let last = 0;
+function loop(now) {
+  requestAnimationFrame(loop);
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  if (!GAME.running) return;
+
+  // clock
+  GAME.hourT += dt;
+  if (GAME.hourT >= HOUR_LEN) {
+    GAME.hourT = 0; GAME.hour++;
+    if (GAME.hour >= 6) { win(); return; }
+    $('clockHour').textContent = (GAME.hour === 0 ? 12 : GAME.hour) + ' AM';
+  }
+
+  if (GAME.blackout) { blackoutTick(dt); return; }
+
+  // power
+  const usage = 1 + (GAME.doorL ? 1 : 0) + (GAME.doorR ? 1 : 0) + (GAME.lightL ? 1 : 0)
+    + (GAME.lightR ? 1 : 0) + (GAME.vent ? 1 : 0) + (GAME.camUp ? 1 : 0);
+  GAME.power -= usage * DRAIN * (1 + (GAME.night - 1) * 0.11) * dt;
+  if (GAME.power <= 0) { paintPower(usage); powerOut(); return; }
+  paintPower(usage);
+
+  // AI
+  for (const id in GAME.units) tickUnit(GAME.units[id], dt);
+
+  if (GAME.camUp) paintFeed(); else paintOffice();
+}
+
+function tickUnit(u, dt) {
+  const c = CAST[u.id];
+
+  /* -- Grissle: charges, then sprints -- */
+  if (c.sprinter) {
+    if (u.sprinting > 0) {
+      u.sprinting -= dt;
+      if (u.sprinting <= 0) {
+        if (GAME.doorL) { AU.bang(); GAME.power = clamp(GAME.power - 4, 0, 100); u.pos = 0; u.charge = 0; }
+        else kill(u.id);
+      }
+      return;
+    }
+    const watching = GAME.camUp && GAME.cam === unitRoom(u);
+    if (!watching && u.ai > 0) u.charge += dt * (u.ai / 9);
+    if (u.charge > 22) {
+      u.charge = 0;
+      if (u.pos < c.path.length - 1) { u.pos++; AU.step(1); }
+      else { u.sprinting = 1.8; AU.sprint(); }
+    }
+    return;
+  }
+
+  /* -- at the door: wait, then commit -- */
+  if (atCorner(u)) {
+    u.atk -= dt;
+    if (u.atk <= 0) {
+      const blocked = c.side === 'L' ? GAME.doorL : c.side === 'R' ? GAME.doorR : GAME.vent;
+      if (blocked) { u.pos = 0; u.t = rnd(2, 5); AU.door(true); }
+      else kill(u.id);
+    } else if (Math.random() < dt * 0.7) AU.breath();
+    return;
+  }
+
+  /* -- Vellum holds still while you watch her -- */
+  if (c.shy && GAME.camUp && GAME.cam === unitRoom(u)) return;
+
+  u.t -= dt;
+  if (u.t <= 0) {
+    u.t = c.every + rnd(-1, 1.6);
+    if (d20() <= u.ai) {
+      u.pos++;
+      const room = unitRoom(u);
+      if (ROOMS[room] && ROOMS[room].blind) { room === 'KITCH' ? AU.clatter() : AU.scrape(); }
+      else AU.step(c.path.length - u.pos);
+      if (atCorner(u)) u.atk = rnd(4.5, 9.5);
+    }
+  }
+}
+
+function blackoutTick(dt) {
+  GAME.blackoutT += dt;
+  paintPower(0);
+  if (GAME.blackoutT > 3.5 && !GAME._boxed) { GAME._boxed = true; AU.musicBox(); }
+  if (GAME._boxed) {
+    $('officeDark').setAttribute('opacity', String(0.93 - Math.abs(Math.sin(GAME.blackoutT * 2.2)) * 0.06));
+    if (GAME.blackoutT > 13.5) { GAME._boxed = false; kill('siamese'); }
+  }
+}
+
+/* =========================================================
+   8. RENDERING
+   ========================================================= */
+function paintPower(usage) {
+  $('pwrNum').textContent = Math.max(0, Math.ceil(GAME.power));
+  const bars = $('usageBars').children;
+  const n = clamp(usage, 0, 5);
+  for (let i = 0; i < 5; i++) {
+    bars[i].className = i < n ? 'on u' + clamp(n - 1, 1, 4) : '';
+  }
+}
+
+function paintOffice() {
+  // shutters
+  $('shutterL').setAttribute('transform', `translate(0,${GAME.doorL ? 0 : -660})`);
+  $('shutterR').setAttribute('transform', `translate(0,${GAME.doorR ? 0 : -660})`);
+  $('ventHatch').setAttribute('transform', `translate(0,${GAME.vent ? 0 : -130})`);
+
+  // hall lights — slow buzz rather than a strobe
+  flickT += 1;
+  const flick = 0.80 + Math.sin(flickT * 0.31) * 0.09 + (flickT % 37 === 0 ? -0.34 : 0);
+  $('hallL').setAttribute('opacity', GAME.lightL ? (GAME.doorL ? flick * .35 : flick) : 0);
+  $('hallR').setAttribute('opacity', GAME.lightR ? (GAME.doorR ? flick * .35 : flick) : 0);
+
+  const wl = whoAt('WCORN')[0], wr = whoAt('ECORN')[0];
+  setOcc('occL', (GAME.lightL && wl) ? charArt(wl.id) : '');
+  setOcc('occR', (GAME.lightR && wr) ? `<g transform="translate(100,0) scale(-1,1)">${charArt(wr.id)}</g>` : '');
+  const nv = whoAt('DUCT')[0];
+  setOcc('ventOccupant', nv ? `<g transform="translate(890,-40) scale(1.4)">${charArt(nv.id)}</g>` : '');
+
+  // fan
+  fanAngle = (fanAngle + 13) % 360;
+  $('fanBlades').setAttribute('transform', `rotate(${fanAngle})`);
+}
+let fanAngle = 0, flickT = 0;
+const _occCache = {};
+function setOcc(id, html) {
+  if (_occCache[id] === html) return;
+  _occCache[id] = html;
+  $(id).innerHTML = html;
+}
+
+function paintFeed() {
+  const R = ROOMS[GAME.cam];
+  const svg = $('feedSvg');
+  if (svg.dataset.room !== GAME.cam) {
+    svg.dataset.room = GAME.cam;
+    svg.innerHTML = feedScene(GAME.cam) + '<g id="feedOcc"></g>';
+    $('feedLabel').textContent = 'CAM ' + R.cam + ' — ' + R.name;
+    $('audioOnly').classList.toggle('hidden', !R.blind);
+  }
+  const occ = $('feedOcc');
+  if (!occ) return;
+  if (R.blind) { occ.innerHTML = ''; return; }
+  const here = whoAt(GAME.cam);
+  occ.innerHTML = here.map((u, i) => {
+    const x = 240 + i * 210 + (u.id.length * 7) % 60;
+    return `<g transform="translate(${x},110) scale(1.55)">${charArt(u.id, { opacity: .92 })}</g>`;
+  }).join('');
+  // map LEDs
+  for (const k in ROOMS) {
+    const led = document.getElementById('led_' + k);
+    if (led) led.classList.toggle('hot', k === GAME.cam);
+  }
+}
+
+function buildMap() {
+  let s = '<g>';
+  LINKS.forEach(([a, b]) => {
+    s += `<line class="mlink" x1="${cx(a)}" y1="${cy(a)}" x2="${cx(b)}" y2="${cy(b)}"/>`;
+  });
+  s += '</g>';
+  for (const k in ROOMS) {
+    const R = ROOMS[k];
+    if (R.office) {
+      s += `<g id="youNode"><rect x="${R.x}" y="${R.y}" width="${R.w}" height="${R.h}" rx="3"/>
+        <text x="${cx(k)}" y="${cy(k) + 4}" text-anchor="middle" fill="#7fb99a"
+        font-size="11" letter-spacing="3" font-family="Arial Narrow,Arial">YOU</text></g>`;
+      continue;
+    }
+    s += `<g class="mroom${R.blind ? ' noc' : ''}" data-room="${k}">
+      <rect x="${R.x}" y="${R.y}" width="${R.w}" height="${R.h}" rx="3"/>
+      <circle id="led_${k}" class="mled" cx="${R.x + 11}" cy="${R.y + 11}" r="4.5"/>
+      <text x="${cx(k)}" y="${cy(k) + 10}" text-anchor="middle">${R.name.toUpperCase()}</text>
+      <text x="${cx(k)}" y="${cy(k) - 4}" text-anchor="middle" font-size="8" fill="#59636f">CAM ${R.cam}</text>
+    </g>`;
+  }
+  $('mapSvg').innerHTML = s;
+  $('mapSvg').querySelectorAll('.mroom').forEach(el => {
+    el.addEventListener('click', () => selectCam(el.dataset.room));
+  });
+}
+function selectCam(k) {
+  GAME.cam = k;
+  $('mapSvg').querySelectorAll('.mroom').forEach(e => e.classList.toggle('sel', e.dataset.room === k));
+  burst();
+  AU.click();
+}
+
+/* static canvas */
+const cv = $('staticCv'), cvx = cv.getContext('2d');
+function sizeStatic() { cv.width = cv.clientWidth || 800; cv.height = cv.clientHeight || 450; }
+function drawStatic() {
+  if (!cv.width) sizeStatic();
+  const img = cvx.createImageData(cv.width, cv.height), d = img.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const v = Math.random() * 255;
+    d[i] = d[i + 1] = d[i + 2] = v; d[i + 3] = 255;
+  }
+  cvx.putImageData(img, 0, 0);
+}
+setInterval(() => { if (GAME.camUp) drawStatic(); }, 70);
+function burst() { cv.classList.add('burst'); setTimeout(() => cv.classList.remove('burst'), 190); }
+
+/* =========================================================
+   9. CONTROLS
+   ========================================================= */
+function syncButtons() {
+  $('doorL').classList.toggle('active', GAME.doorL);
+  $('doorR').classList.toggle('active', GAME.doorR);
+  $('lightL').classList.toggle('active', GAME.lightL);
+  $('lightR').classList.toggle('active', GAME.lightR);
+  $('ventBtn').classList.toggle('active', GAME.vent);
+}
+function toggle(k) {
+  if (!GAME.running || GAME.blackout) return;
+  GAME[k] = !GAME[k];
+  if (k === 'doorL' || k === 'doorR') AU.door(GAME[k]); else AU.click();
+  syncButtons();
+}
+function raiseCam() {
+  if (!GAME.running || GAME.blackout || GAME.camUp) return;
+  GAME.camUp = true;
+  const L = $('camLayer');
+  L.classList.remove('hidden'); L.classList.add('rising');
+  setTimeout(() => L.classList.remove('rising'), 340);
+  sizeStatic(); burst(); selectCam(GAME.cam); AU.camHiss(true); AU.fan(false);
+}
+function lowerCam() {
+  if (!GAME.camUp) return;
+  GAME.camUp = false;
+  $('camLayer').classList.add('hidden');
+  $('feedSvg').dataset.room = '';
+  AU.camHiss(false); if (GAME.running && !GAME.blackout) AU.fan(true);
+}
+
+['doorL', 'doorR', 'lightL', 'lightR'].forEach(k => {
+  const el = $(k);
+  el.addEventListener('click', () => toggle(k));
+  el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(k); } });
+});
+$('ventBtn').addEventListener('click', () => toggle('vent'));
+$('camTab').addEventListener('click', raiseCam);
+$('camDown').addEventListener('click', lowerCam);
+
+addEventListener('keydown', e => {
+  if (!GAME.running) return;
+  const k = e.key.toLowerCase();
+  if (k === 'a') toggle('doorL');
+  else if (k === 'd') toggle('doorR');
+  else if (k === 'q') toggle('lightL');
+  else if (k === 'e') toggle('lightR');
+  else if (k === 's') toggle('vent');
+  else if (k === ' ') { e.preventDefault(); GAME.camUp ? lowerCam() : raiseCam(); }
+  else if (k === 'escape') lowerCam();
+});
+
+/* head turn */
+const scroll = $('officeScroll');
+addEventListener('mousemove', e => {
+  if (GAME.camUp) return;
+  const f = $('frame').getBoundingClientRect();
+  const t = clamp((e.clientX - f.left) / f.width, 0, 1);
+  scroll.style.transform = `translateX(${-t * (f.width * 0.18)}px)`;
+});
+
+/* =========================================================
+   10. MENU
+   ========================================================= */
+function buildMenu() {
+  const list = $('nightList'); list.innerHTML = '';
+  for (let n = 1; n <= 6; n++) {
+    const b = document.createElement('div');
+    b.className = 'nightbtn' + (cleared.includes(n) ? ' done' : '');
+    b.textContent = n === 6 ? 'Night 6' : 'Night ' + n;
+    const locked = n > 1 && !cleared.includes(n - 1);
+    if (locked) b.setAttribute('disabled', '');
+    else b.addEventListener('click', () => startNight(n));
+    list.appendChild(b);
+  }
+}
+$('retry').addEventListener('click', () => startNight(GAME.night));
+$('toMenu').addEventListener('click', () => {
+  $('dead').classList.add('hidden'); buildMenu(); $('title').classList.remove('hidden');
+});
+$('sixamNext').addEventListener('click', () => {
+  $('sixam').classList.add('hidden');
+  if (GAME.night < 6) startNight(GAME.night + 1);
+  else { buildMenu(); $('title').classList.remove('hidden'); }
+});
+
+/* boot */
+$('officeScroll').innerHTML = buildOffice();
+buildMap(); buildMenu();
+$('hud').classList.add('hidden');
+addEventListener('resize', sizeStatic);
+requestAnimationFrame(loop);
+
+</script>
+</body>
+</html>
