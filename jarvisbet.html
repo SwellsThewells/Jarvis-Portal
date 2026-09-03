@@ -678,6 +678,9 @@ svg{display:block;}
 .rb-flip-inner .pcard.front{transform:rotateY(180deg);}
 .rb-slot-empty{width:clamp(58px,6.4vw,86px);height:clamp(82px,9vw,120px);border:1px dashed var(--line);border-radius:var(--r-sm);flex:none;opacity:.4;}
 .rb-q{font-size:14px;color:var(--text-2);font-weight:600;text-align:center;}
+<style>
+.mine-grid{grid-template-columns:repeat(var(--mine-cols,5),minmax(0,1fr));grid-template-rows:repeat(var(--mine-cols,5),minmax(0,1fr));}
+</style>
 </style>
 <style>
   .audit-modal{position:fixed;inset:0;z-index:10000;background:rgba(4,12,18,.82);display:grid;place-items:center;padding:18px}.audit-card{width:min(760px,96vw);max-height:88vh;overflow:auto;background:#0f1e29;border:1px solid #254458;border-radius:8px;padding:20px;box-shadow:0 18px 60px rgba(0,0,0,.6);position:relative}.audit-close{position:absolute;right:10px;top:8px;background:transparent;border:0;color:#93aebd;font-size:24px}.audit-card h2{font-size:22px;margin-bottom:12px}.audit-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:14px 0}.audit-grid>div{background:#152936;border:1px solid #1d3546;padding:11px;border-radius:5px}.audit-grid small{display:block;color:#5f7f92;text-transform:uppercase;font-size:10px;letter-spacing:.8px}.audit-grid b{display:block;margin-top:5px;font-family:'JetBrains Mono',monospace}.audit-line,.history-row{display:grid;grid-template-columns:1fr auto;gap:10px;padding:8px;border-bottom:1px solid #1d3546}.history-row{grid-template-columns:1.4fr 1fr 1fr auto}.audit-output{margin-top:14px}.game-search{margin:14px 0}.game-search input{width:100%;background:#152936;border:1px solid #254458;color:#dce8ef;padding:11px 13px;border-radius:5px}.game-search span{display:block;color:#5f7f92;font-size:11px;margin-top:5px}.sidebar-search{padding:8px 5px}.sidebar-search input,.save-transfer{width:100%;background:#152936;border:1px solid #254458;color:#dce8ef;padding:9px;border-radius:5px}.save-transfer{min-height:90px;margin-top:12px}.settings-list{display:grid;gap:1px;margin:12px 0}.settings-list label{display:flex;justify-content:space-between;padding:11px;background:#152936;border-bottom:1px solid #1d3546}.auto-status{display:none}.auto-status.live{display:flex;color:#37d67a;border-color:#26a95e}.reduce-motion *{animation-duration:.01ms!important;transition-duration:.01ms!important}.compact-ui #content{padding:10px}.compact-ui .tile-art{height:82px}.fav-star{position:absolute;top:8px;left:8px;z-index:4;border:0;background:#0b1620cc;color:#5f7f92;width:27px;height:27px;border-radius:5px}.fav-star.on{color:#f0b429}.tile-cat{display:block;color:#37d67a;font-size:9px;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px}.compact-row{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:18px}.history-filters{display:flex;gap:6px;margin-bottom:10px}.history-filters button{background:#1b3342;border:1px solid #254458;color:#dce8ef;padding:6px 10px;border-radius:5px}.se-stage{text-align:center;padding:20px}.se-dice{display:flex;gap:16px;justify-content:center;margin:16px 0}.die{width:64px;height:64px;background:#152936;border:2px solid #254458;border-radius:12px;display:grid;place-items:center;font-size:42px;color:#dce8ef}.se-sum{font-size:20px;font-family:'JetBrains Mono',monospace;color:#93aebd;margin-top:8px}.se-bets{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:6px}.se-bets button{background:#152936;border:1px solid #254458;border-radius:5px;padding:10px;text-align:left;color:#dce8ef;cursor:pointer}.se-bets button.on{border-color:#37d67a;background:#143226}.se-bets button b{display:block;font-size:13px}.se-bets button small{display:block;color:#5f7f92;font-size:11px;margin-top:3px}.ms-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:16px;width:min(90%,640px);aspect-ratio:1;margin:14px auto 0}.ms-hole{position:relative;background:linear-gradient(180deg,#0a161e,#152936);border:1px solid #1d3546;border-radius:50%;aspect-ratio:1;display:grid;place-items:center;cursor:pointer;overflow:hidden;transition:border-color .15s}.ms-hole.up{border-color:#37d67a}.ms-pop{position:absolute;bottom:-100%;left:0;right:0;display:grid;place-items:center;transition:bottom .12s ease-out}.ms-hole.up .ms-pop{bottom:0}.ms-pop svg{width:66%;height:66%;}/* UI OVERHAUL */body{background:radial-gradient(ellipse at top,#0d1b2a,#0a1420 50%,#080d14)!important}#sidebar{background:rgba(8,16,24,.92)!important;backdrop-filter:blur(14px)!important;border-right:1px solid rgba(55,214,122,.1)!important;box-shadow:2px 0 30px rgba(0,0,0,.3)!important}.nav-item{border-radius:8px!important;margin:2px 4px!important;transition:all .2s!important;border:1px solid transparent!important}.nav-item:hover{background:rgba(55,214,122,.06)!important;border-color:rgba(55,214,122,.15)!important;transform:translateX(2px)!important}.nav-item[data-nav].on{background:linear-gradient(135deg,rgba(55,214,122,.12),rgba(74,159,216,.06))!important;border-color:rgba(55,214,122,.25)!important;box-shadow:0 0 12px rgba(55,214,122,.1)!important}.tb-right,.topbar{background:rgba(8,16,24,.85)!important;backdrop-filter:blur(12px)!important;border-bottom:1px solid rgba(55,214,122,.08)!important}.tb-btn{border-radius:8px!important;border:1px solid rgba(55,214,122,.12)!important;transition:all .2s!important;background:rgba(15,30,42,.6)!important}.tb-btn:hover{border-color:rgba(55,214,122,.25)!important;box-shadow:0 0 10px rgba(55,214,122,.08)!important}.wallet{border-radius:10px!important;background:linear-gradient(135deg,rgba(55,214,122,.05),rgba(74,159,216,.03))!important;border:1px solid rgba(55,214,122,.12)!important;box-shadow:0 0 16px rgba(55,214,122,.05)!important}.tile{border-radius:12px!important;overflow:hidden;transition:transform .25s,box-shadow .25s,border-color .25s!important;border:1px solid rgba(55,214,122,.08)!important;background:linear-gradient(180deg,rgba(15,30,42,.9),rgba(10,20,30,.95))!important;box-shadow:0 4px 14px rgba(0,0,0,.2)!important}.tile:hover{transform:translateY(-4px) scale(1.02)!important;border-color:rgba(55,214,122,.25)!important;box-shadow:0 10px 30px rgba(0,0,0,.4),0 0 20px rgba(55,214,122,.08)!important}.tile-art{border-radius:8px!important}.panel{background:rgba(10,20,30,.85)!important;backdrop-filter:blur(12px)!important;border:1px solid rgba(55,214,122,.08)!important;border-radius:12px!important;box-shadow:0 4px 20px rgba(0,0,0,.15)!important}.stage{background:radial-gradient(ellipse at center,rgba(13,25,36,.5),rgba(8,13,20,.7))!important;border-radius:12px!important;border:1px solid rgba(55,214,122,.05)!important}.act{border-radius:8px!important;font-weight:600!important;letter-spacing:.3px!important;transition:all .2s!important;border:1px solid rgba(55,214,122,.15)!important;background:linear-gradient(135deg,rgba(55,214,122,.1),rgba(55,214,122,.04))!important;color:#c8d6e5!important;box-shadow:0 2px 8px rgba(0,0,0,.15)!important}.act:hover{background:linear-gradient(135deg,rgba(55,214,122,.18),rgba(55,214,122,.08))!important;border-color:rgba(55,214,122,.35)!important;box-shadow:0 0 16px rgba(55,214,122,.12),0 4px 12px rgba(0,0,0,.2)!important;transform:translateY(-1px)!important}.act:active{transform:translateY(0)!important}.act-2{background:linear-gradient(135deg,rgba(74,159,216,.1),rgba(74,159,216,.04))!important;border-color:rgba(74,159,216,.15)!important}.act-2:hover{background:linear-gradient(135deg,rgba(74,159,216,.18),rgba(74,159,216,.08))!important;border-color:rgba(74,159,216,.35)!important;box-shadow:0 0 16px rgba(74,159,216,.12),0 4px 12px rgba(0,0,0,.2)!important}.act-amber{background:linear-gradient(135deg,rgba(240,180,41,.1),rgba(240,180,41,.04))!important;border-color:rgba(240,180,41,.15)!important;color:#f0b429!important}.act-amber:hover{background:linear-gradient(135deg,rgba(240,180,41,.18),rgba(240,180,41,.08))!important;border-color:rgba(240,180,41,.35)!important;box-shadow:0 0 16px rgba(240,180,41,.12)!important}.masthead{background:linear-gradient(135deg,rgba(13,25,36,.7),rgba(10,20,30,.5))!important;border:1px solid rgba(55,214,122,.08)!important;border-radius:12px!important;backdrop-filter:blur(8px)!important;box-shadow:0 4px 20px rgba(0,0,0,.1)!important}.stat{background:linear-gradient(180deg,rgba(15,30,42,.7),rgba(10,20,30,.5))!important;border:1px solid rgba(55,214,122,.06)!important;border-radius:10px!important;transition:all .2s!important}.stat:hover{border-color:rgba(55,214,122,.18)!important;box-shadow:0 4px 16px rgba(0,0,0,.15)!important;transform:translateY(-1px)!important}.readout{background:rgba(10,20,30,.5)!important;border:1px solid rgba(55,214,122,.06)!important;border-radius:10px!important}.row-head h2{font-weight:700!important;letter-spacing:.5px!important;text-shadow:0 0 12px rgba(55,214,122,.08)!important}.ghost-btn{border-radius:8px!important;border:1px solid rgba(55,214,122,.12)!important;transition:all .2s!important;background:transparent!important}.ghost-btn:hover{border-color:rgba(55,214,122,.25)!important;background:rgba(55,214,122,.04)!important}.cx-big{font-family:'JetBrains Mono',monospace!important;text-shadow:0 0 24px currentColor!important}.banner{border-radius:8px!important;backdrop-filter:blur(4px)!important}.banner.win{background:linear-gradient(135deg,rgba(55,214,122,.1),rgba(55,214,122,.04))!important;border:1px solid rgba(55,214,122,.18)!important;box-shadow:0 0 12px rgba(55,214,122,.06)!important}.banner.lose{background:linear-gradient(135deg,rgba(229,72,77,.1),rgba(229,72,77,.04))!important;border:1px solid rgba(229,72,77,.18)!important}.tbl{border-radius:10px!important;overflow:hidden;border:1px solid rgba(55,214,122,.06)!important}.tbl th{background:rgba(55,214,122,.04)!important;border-bottom:1px solid rgba(55,214,122,.08)!important;text-transform:uppercase!important;font-size:11px!important;letter-spacing:.5px!important}.tbl tr:hover td{background:rgba(55,214,122,.02)!important}.field input,select{border-radius:6px!important;border:1px solid rgba(55,214,122,.1)!important;background:rgba(8,16,24,.6)!important;color:#c8d6e5!important;transition:border-color .2s!important}.field input:focus,select:focus{border-color:rgba(55,214,122,.25)!important;outline:none!important;box-shadow:0 0 8px rgba(55,214,122,.06)!important}.seg button,.rps-pick button,.hr-pick,.cs-card{border-radius:8px!important;transition:all .2s!important}.seg button.on,.cs-card.on{box-shadow:0 0 12px rgba(55,214,122,.1)!important;border-color:rgba(55,214,122,.25)!important}.cs-item{border-radius:8px!important;transition:transform .2s!important}.cs-item:hover{transform:scale(1.05)!important}.pl-widget{border-radius:10px!important;backdrop-filter:blur(10px)!important;border:1px solid rgba(55,214,122,.1)!important;box-shadow:0 8px 30px rgba(0,0,0,.3)!important}#dev{border-radius:10px!important;backdrop-filter:blur(10px)!important;border:1px solid rgba(55,214,122,.08)!important}.dice-track,.coin,.die,.kcell,.ml-mound,.qd-hole,.ms-hole{box-shadow:0 2px 8px rgba(0,0,0,.2) inset!important}.vs-visual{display:flex;gap:16px;justify-content:center;align-items:center;margin:16px 0;padding:20px;background:linear-gradient(135deg,rgba(10,20,30,.6),rgba(8,16,24,.4));border-radius:12px;border:1px solid rgba(55,214,122,.08)}.vs-side{display:flex;flex-direction:column;align-items:center;gap:8px}.vs-side small{color:#5f7f92;text-transform:uppercase;font-size:10px;letter-spacing:.8px}.vs-side b{font-family:'JetBrains Mono',monospace;color:#c8d6e5}.vs-dice{display:flex;gap:10px}.vs-card{width:64px;height:90px;background:linear-gradient(180deg,#f0f0f0,#e0e0e0);color:#000;border-radius:8px;display:grid;place-items:center;font-size:22px;font-weight:bold;box-shadow:0 6px 16px rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.2)}.vs-card.red{color:#e5484d}.vs-reel{display:flex;gap:6px;background:#0f1e29;padding:12px;border-radius:8px;border:1px solid #254458;box-shadow:0 4px 12px rgba(0,0,0,.3) inset}.vs-sym{font-size:28px;width:44px;height:44px;display:grid;place-items:center;background:#152936;border-radius:6px;border:1px solid #1d3546}.vs-limbo{font-family:'JetBrains Mono',monospace;font-size:32px;color:#37d67a;text-shadow:0 0 24px currentColor}.vs-vs2{font-size:14px;font-weight:bold;color:#5f7f92;letter-spacing:2px}@media(max-width:700px){.history-row{grid-template-columns:1fr auto}.history-row span:first-of-type{display:none}.audit-card{padding:16px}.bar-tools .sub{display:none}}
@@ -1138,6 +1141,14 @@ const sfx={
 /* ==========================================================
    REGISTRY
 ========================================================== */
+
+ART.tile.colordraw = svg('0 0 100 70',
+  `<circle cx="27" cy="35" r="16" fill="#e5484d"/><circle cx="50" cy="35" r="16" fill="#4a9fd8"/><circle cx="73" cy="35" r="16" fill="#f0b429"/>`);
+ART.tile.mysterychest = svg('0 0 100 70',
+  `<rect x="21" y="24" width="58" height="31" rx="5" fill="#f0b429"/><path d="M21 35h58M50 24v31" stroke="#0d1c26" stroke-width="3"/>`);
+ART.tile.numberdraw = svg('0 0 100 70',
+  `<circle cx="50" cy="35" r="25" fill="#234055"/><text x="50" y="44" text-anchor="middle" font-family="monospace" font-size="25" fill="#fff">12</text>`);
+
 const GAMES=[
   {id:'slots',       name:'Slots',           cat:'classic',   desc:'Three reels, one payline'},
   {id:'blackjack',   name:'Blackjack',       cat:'classic',   desc:'Beat the dealer to 21'},
@@ -1156,12 +1167,12 @@ const GAMES=[
   {id:'higherlower', name:'Higher or Lower', cat:'originals', desc:'Read the deck, stack the multiplier'},
   {id:'keno',        name:'Keno',            cat:'originals', desc:'Pick spots, chase the draw'},
   {id:'rps',         name:'Rock Paper Scissors',cat:'originals',desc:'Best the house hand'},
-  {id:'luckynumber', name:'Lucky Number',    cat:'originals', desc:'One number, big payout'},
+  {id:'colordraw',    name:'Color Draw',          cat:'originals', desc:'Pick a color, draw one at random'},
+  {id:'mysterychest', name:'Mystery Chest',       cat:'originals', desc:'Open a chest for a random prize'},
+  {id:'numberdraw',   name:'Number Draw 12',      cat:'originals', desc:'Pick 1–12, one number is drawn'},
+
   {id:'darts',       name:'Darts',           cat:'originals', desc:'Throw three, chase the bullseye'},
-  {id:'wheel',       name:'Wheel',           cat:'originals', desc:'Pick your risk, spin the segments'},
   {id:'pump',        name:'Pump',            cat:'originals', desc:'Inflate the balloon, cash out before it pops'},
-  {id:'snakes',      name:'Snakes',          cat:'originals', desc:'Climb the garden path, dodge the snake'},
-  {id:'moles',       name:'Whack-a-Mole',    cat:'originals', desc:'Dig up moles, watch for the farmer'}
 ];
 const gameById=id=>GAMES.find(g=>g.id===id);
 
@@ -2301,51 +2312,67 @@ MODULES.crash={
 /* ==========================================================
    MINES
 ========================================================== */
-function minesMult(picks,mines){
-  let m=1; for(let i=0;i<picks;i++) m*=(25-i)/(25-mines-i);
+const MINES_BOARDS={
+  4:{size:16,label:'4×4'},
+  5:{size:25,label:'5×5'},
+  6:{size:36,label:'6×6'}
+};
+function minesMult(picks,mines,size=25){
+  let m=1; for(let i=0;i<picks;i++) m*=(size-i)/(size-mines-i);
   return m*EDGE;
 }
 MODULES.mines={
-  blurb:'25 tiles, cash out any time',
+  blurb:'Choose your board, then cash out any time',
   edge:'1% edge',
   jewelAt:15,
   forceAutoReplay:true,
   optsHTML(o){
-    return `<div class="field">
-        <label>Mines on the board <span>1 – 24</span></label>
-        <div class="inp-row"><input type="number" id="m-count" min="1" max="24" step="1" value="${o.mines||3}"><span class="unit">mines</span></div>
+    const board=Number(o.board||5), cfg=MINES_BOARDS[board]||MINES_BOARDS[5];
+    const maxMines=cfg.size-1;
+    const mineVal=Math.min(maxMines,Math.max(1,Number(o.mines)||3));
+    return `${segField('Board size','m-board',Object.entries(MINES_BOARDS).map(([v,x])=>({v,t:x.label})),String(board))}
+      <div class="field">
+        <label>Mines on the board <span>1 – ${maxMines}</span></label>
+        <div class="inp-row"><input type="number" id="m-count" min="1" max="${maxMines}" step="1" value="${mineVal}"><span class="unit">mines</span></div>
       </div>
-      ${segField('Quick set','mquick',[{v:1,t:'1'},{v:3,t:'3'},{v:5,t:'5'},{v:10,t:'10'},{v:24,t:'24'}],'')}
+      ${segField('Quick set','mquick',[{v:1,t:'1'},{v:3,t:'3'},{v:5,t:'5'},{v:10,t:'10'},{v:maxMines,t:String(maxMines)}],'')}
       ${segField('Which tiles','mmode',[{v:'random',t:'Random each round'},{v:'mine',t:'The ones I chose'}],o.pickMode||'random')}
       <div class="note" id="m-picknote"></div>`;
   },
   readOpts(w){
+    const board=Number(segVal(w,'m-board','5'))||5;
+    const cfg=MINES_BOARDS[board]||MINES_BOARDS[5];
     const inp=w.querySelector('#m-count');
-    let mines=Math.min(24,Math.max(1,parseInt(inp.value)||3));
+    let mines=Math.min(cfg.size-1,Math.max(1,parseInt(inp.value)||3));
     const quick=w.querySelector('[data-seg="mquick"] button.on');
-    if(quick){ mines=parseInt(quick.dataset.val); inp.value=mines; quick.classList.remove('on'); }
-    let picks=Math.min(4,25-mines);
+    if(quick){ mines=Math.min(cfg.size-1,parseInt(quick.dataset.val)); inp.value=mines; quick.classList.remove('on'); }
     const pickMode=segVal(w,'mmode','random');
-    return {mines,picks,pickMode,chosen:(MODULES.mines._chosen||[]).slice()};
+    const chosen=(MODULES.mines._chosen||[]).filter(i=>i<cfg.size);
+    /* There is intentionally no autobet tile-count setting. In manual
+       mode the player can select as many tiles as the board allows. */
+    const picks=Math.max(1,cfg.size-mines);
+    return {board,size:cfg.size,mines,picks,pickMode,chosen};
   },
   onChange(ctx){
-    const o=ctx.opts(), m=minesMult(o.picks,o.mines);
+    const o=ctx.opts(), m=minesMult(Math.min(o.picks,o.size-o.mines),o.mines,o.size);
     const note=ctx.q('#m-picknote');
     if(note) note.innerHTML=o.pickMode==='mine'
-      ? `Click tiles on the board to set the pattern the bot digs. Chosen: <b>${(MODULES.mines._chosen||[]).length}</b> of ${o.picks}.`
-      : `The bot digs ${o.picks} random tile${o.picks===1?'':'s'} every round.`;
-    ctx.preview(ctx.bet()*m-ctx.bet(),`Autobet stops after ${o.picks} safe tiles`,m.toFixed(2)+'×');
+      ? `Click any tiles on the board to set the bot's pattern. Chosen: <b>${(MODULES.mines._chosen||[]).filter(i=>i<o.size).length}</b> of ${o.size-o.mines} possible safe tiles.`
+      : `The bot can dig up to ${o.size-o.mines} safe tiles each round. No 4-tile autobet limit.`;
+    ctx.preview(ctx.bet()*m-ctx.bet(),`Up to ${o.size-o.mines} safe tiles`,m.toFixed(2)+'×');
     if(MODULES.mines._repaint) MODULES.mines._repaint();
+    if(MODULES.mines._syncBoard) MODULES.mines._syncBoard(o.size);
   },
   autoGuard(ctx){
     const o=ctx.opts();
-    if(o.pickMode==='mine'&&(MODULES.mines._chosen||[]).length<o.picks)
-      return `Choose ${o.picks} tiles on the board first, or switch back to random.`;
+    if(o.pickMode==='mine' && (MODULES.mines._chosen||[]).filter(i=>i<o.size).length===0)
+      return `Choose at least 1 tile on the board first, or switch back to random.`;
     return null;
   },
   mount(ctx){
-    let mines=new Set(),open=new Set(),live=false,bet=0,count=3,replayToken=0;
+    let mines=new Set(),open=new Set(),live=false,bet=0,count=3,size=25,replayToken=0;
     MODULES.mines._chosen=[];
+    const boardCfg=()=>MINES_BOARDS[Number(ctx.opts().board)||5]||MINES_BOARDS[5];
     ctx.stage.innerHTML=`<div class="cx-topbar" style="width:min(100%,62vh,460px)">
         <div class="cx-big" id="m-mult">1.00×</div><div class="cx-hint" id="m-cash">Cash out —</div></div>
       <div class="mine-grid" id="mgrid"></div>`;
@@ -2353,10 +2380,17 @@ MODULES.mines={
       <button class="act act-amber hidden" id="m-cashout">Cash out</button>`;
     let grid=ctx.q('#mgrid'),multEl=ctx.q('#m-mult'),cashEl=ctx.q('#m-cash');
     const start=ctx.q('#m-start'),cash=ctx.q('#m-cashout');
-    function build(target=grid,interactive=true){
+    function build(target=grid,interactive=true,boardSize=size){
       if(!target) return;
       target.innerHTML='';
-      for(let i=0;i<25;i++){
+      const side=Math.max(1,Math.round(Math.sqrt(boardSize)));
+      /* Set BOTH axes explicitly on the actual grid element. This avoids
+         implicit CSS rows/columns when switching between 4x4, 5x5 and 6x6. */
+      target.style.setProperty('--mine-cols',String(side));
+      target.style.gridTemplateColumns=`repeat(${side},minmax(0,1fr))`;
+      target.style.gridTemplateRows=`repeat(${side},minmax(0,1fr))`;
+      target.style.aspectRatio='1 / 1';
+      for(let i=0;i<boardSize;i++){
         const t=document.createElement('div');
         t.className='mtile'; t.dataset.i=i;
         t.innerHTML='<span class="face"></span>';
@@ -2370,7 +2404,7 @@ MODULES.mines={
           <div class="cx-big" id="m-mult">1.00×</div><div class="cx-hint" id="m-cash">Cash out —</div></div>
         <div class="mine-grid" id="mgrid"></div>`;
       grid=ctx.q('#mgrid'); multEl=ctx.q('#m-mult'); cashEl=ctx.q('#m-cash');
-      build(); repaintChosen();
+      size=boardCfg().size; build(grid,true,size); repaintChosen();
     }
     function renderAutoBoards(){
       const sessions=Auto.forGame(ctx.id);
@@ -2379,7 +2413,7 @@ MODULES.mines={
           <div class="mine-mini-head"><b>${fmt(s.bet)}</b><span data-mini-mult>1.00×</span></div>
           <div class="mine-grid"></div>
         </div>`).join('')}</div>`;
-      ctx.qa('.mine-mini .mine-grid').forEach(g=>build(g,false));
+      ctx.qa('.mine-mini .mine-grid').forEach(g=>build(g,false,size));
     }
     function repaintChosen(){
       if(live) return;
@@ -2390,13 +2424,23 @@ MODULES.mines={
       });
     }
     MODULES.mines._repaint=repaintChosen;
+    MODULES.mines._syncBoard=(nextSize)=>{
+      const n=Number(nextSize)||25;
+      size=n;
+      if(live) return;
+      if(grid && document.body.contains(grid)){
+        build(grid,true,size);
+        repaintChosen();
+      }
+      ctx.qa('.mine-mini .mine-grid').forEach(g=>build(g,false,size));
+    };
     MODULES.mines._restore=()=>{ replayToken++; restoreSingle(); };
     function end(){ live=false; start.classList.remove('hidden'); cash.classList.add('hidden'); ctx.lockBet(false); }
-    function revealRest(showSafe,target=grid,mineSet=mines){
+    function revealRest(showSafe,target=grid,mineSet=mines,boardSize=size){
       if(!target) return;
       target.querySelectorAll('.mtile').forEach(el=>{
         const i=parseInt(el.dataset.i);
-        if(el.classList.contains('done')) return;
+        if(i>=boardSize || el.classList.contains('done')) return;
         if(mineSet.has(i)){ el.classList.add('done','boom','dim','flip'); face(el,ART.bomb); }
         else if(showSafe){ el.classList.add('done','ghost','flip'); face(el,ART.jewelTile); }
       });
@@ -2404,134 +2448,92 @@ MODULES.mines={
     function keepLuckyTileSafe(i){
       if(!window.__luckyRound || !mines.has(i)) return;
       const candidates=[];
-      for(let n=0;n<25;n++){
-        if(n!==i && !mines.has(n) && !open.has(n)) candidates.push(n);
-      }
-      if(candidates.length){
-        mines.delete(i);
-        mines.add(candidates[Math.floor(Math.random()*candidates.length)]);
-      }
+      for(let n=0;n<size;n++) if(n!==i&&!mines.has(n)&&!open.has(n)) candidates.push(n);
+      if(candidates.length){ mines.delete(i); mines.add(candidates[Math.floor(Math.random()*candidates.length)]); }
     }
     function tap(i,el){
       if(ctx.autoRunning()) return;
       if(!live){
-        /* off-round clicks build the pattern the autobot will dig */
-        const o=ctx.opts();
-        if(o.pickMode!=='mine') return;
+        const o=ctx.opts(); if(o.pickMode!=='mine') return;
         const c=MODULES.mines._chosen, at=c.indexOf(i);
         if(at>=0) c.splice(at,1);
-        else{ if(c.length>=o.picks) return toast(`That is already ${o.picks} tiles.`); c.push(i); sfx.chip(); }
-        repaintChosen(); ctx.refresh();
-        return;
+        else { if(c.length>=o.size-o.mines) return toast(`That is the maximum ${o.size-o.mines} safe-tile selections.`); c.push(i); sfx.chip(); }
+        repaintChosen(); ctx.refresh(); return;
       }
       if(open.has(i)) return;
       if(window.__luckyRound) keepLuckyTileSafe(i);
-      open.add(i);
-      el.classList.add('done','flip');
+      open.add(i); el.classList.add('done','flip');
       if(mines.has(i)&&!window.__luckyRound){
         el.classList.add('boom','shake'); face(el,ART.bomb);
-        setTimeout(()=>{
-          revealRest(false);
-          resolveRound(0,false);
-          ctx.banner(`Mine on tile ${i+1} — ${fmt(bet)} lost`,'lose');
-          ctx.strip('0×','l'); sfx.lose(); end();
-        },200);
+        setTimeout(()=>{ revealRest(false,grid,mines,size); resolveRound(0,false); ctx.banner(`Mine on tile ${i+1} — ${fmt(bet)} lost`,'lose'); ctx.strip('0×','l'); sfx.lose(); end(); },200);
       } else {
         el.classList.add('gem'); face(el,ART.jewelTile); sfx.chip();
-        const m=minesMult(open.size,count);
-        multEl.textContent=m.toFixed(2)+'×';
-        cashEl.textContent='Cash out '+fmt(bet*m);
-        if(open.size===25-count){
-          resolveRound(bet*m,true);
-          ctx.banner(`Board cleared — ${fmt(bet*m)}`,'win'); ctx.strip(m.toFixed(2)+'×','w'); sfx.win(); end();
-        }
+        const m=minesMult(open.size,count,size); multEl.textContent=m.toFixed(2)+'×'; cashEl.textContent='Cash out '+fmt(bet*m);
+        if(open.size===size-count){ resolveRound(bet*m,true); ctx.banner(`Board cleared — ${fmt(bet*m)}`,'win'); ctx.strip(m.toFixed(2)+'×','w'); sfx.win(); end(); }
       }
     }
     start.addEventListener('click',()=>{
       if(ctx.autoRunning()) return;
       if(!ctx.q('#mgrid')) restoreSingle();
-      bet=ctx.bet(); count=ctx.opts().mines;
+      const o=ctx.opts(); size=o.size; bet=ctx.bet(); count=o.mines;
       if(!placeBet(bet)) return toast('Not enough balance for that bet.','lose');
       mines=new Set(); open=new Set();
-      while(mines.size<count) mines.add(Math.floor(Math.random()*25));
-      live=true; build(); ctx.banner(null); ctx.lockBet(true);
-      multEl.textContent='1.00×'; cashEl.textContent='Cash out —';
-      start.classList.add('hidden'); cash.classList.remove('hidden');
+      while(mines.size<count) mines.add(Math.floor(Math.random()*size));
+      live=true; build(grid,true,size); ctx.banner(null); ctx.lockBet(true);
+      multEl.textContent='1.00×'; cashEl.textContent='Cash out —'; start.classList.add('hidden'); cash.classList.remove('hidden');
     });
     cash.addEventListener('click',()=>{
       if(!live||!open.size) return toast('Dig at least one tile first.');
-      const m=minesMult(open.size,count), next=minesMult(open.size+1,count);
-      live=false; resolveRound(bet*m,true);
-      revealRest(true);
-      ctx.banner(`Cashed out at ${m.toFixed(2)}× — ${fmt(bet*m)} · one more tile was ${next.toFixed(2)}×`,'win');
-      ctx.strip(m.toFixed(2)+'×','w'); sfx.win(); end();
+      const m=minesMult(open.size,count,size), next=open.size<size-count?minesMult(open.size+1,count,size):m;
+      live=false; resolveRound(bet*m,true); revealRest(true,grid,mines,size);
+      ctx.banner(`Cashed out at ${m.toFixed(2)}× — ${fmt(bet*m)}${open.size<size-count?` · one more tile was ${next.toFixed(2)}×`:''}`,'win'); ctx.strip(m.toFixed(2)+'×','w'); sfx.win(); end();
     });
-    /* autobet: deal the same board out one tile at a time */
     ctx.play=d=>{
       if(!d.detail) return;
-      const token=replayToken;
-      const {mines:mn,picks}=d.detail;
-      const sessions=Auto.forGame(ctx.id);
+      const token=replayToken, {mines:mn,picks}=d.detail, sessions=Auto.forGame(ctx.id);
       let board=grid, miniMult=null;
       if(sessions.length>1){
         if(!ctx.q('#m-multi')||ctx.qa('.mine-mini').length!==sessions.length) renderAutoBoards();
-        const mini=ctx.q(`[data-msid="${d.sid}"]`)||ctx.q('.mine-mini');
-        board=mini?mini.querySelector('.mine-grid'):grid;
-        miniMult=mini?mini.querySelector('[data-mini-mult]'):null;
-      } else if(!ctx.q('#mgrid')){
-        restoreSingle();
-        board=grid;
-      }
-      build(board,false);
+        const mini=ctx.q(`[data-msid="${d.sid}"]`)||ctx.q('.mine-mini'); board=mini?mini.querySelector('.mine-grid'):grid; miniMult=mini?mini.querySelector('[data-mini-mult]'):null;
+      } else if(!ctx.q('#mgrid')){ restoreSingle(); board=grid; }
+      build(board,false,size);
       let k=0;
       const step=()=>{
-        if(token!==replayToken) return;
-        if(k>=picks.length||!document.body.contains(board)) return;
-        const i=picks[k++], el=board.querySelector(`[data-i="${i}"]`);
-        if(!el) return;
-        const bad=mn.includes(i);
-        el.classList.add('done','flip',bad?'boom':'gem');
-        if(bad) el.classList.add('shake');
-        face(el,bad?ART.bomb:ART.jewelTile);
-        bad?sfx.lose():sfx.chip();
-        if(!bad){
-          const txt=minesMult(k,mn.length).toFixed(2)+'×';
-          if(miniMult) miniMult.textContent=txt;
-          else if(multEl) multEl.textContent=txt;
-        }
-        if(bad){
-          mines=new Set(mn);
-          setTimeout(()=>{ if(token===replayToken) revealRest(false,board,new Set(mn)); },200);
-          return;
-        }
+        if(token!==replayToken||k>=picks.length||!document.body.contains(board)) return;
+        const i=picks[k++],el=board.querySelector(`[data-i="${i}"]`); if(!el) return;
+        const bad=mn.includes(i); el.classList.add('done','flip',bad?'boom':'gem'); if(bad) el.classList.add('shake'); face(el,bad?ART.bomb:ART.jewelTile); bad?sfx.lose():sfx.chip();
+        if(!bad){ const txt=minesMult(k,mn.length,size).toFixed(2)+'×'; if(miniMult) miniMult.textContent=txt; else if(multEl) multEl.textContent=txt; }
+        if(bad){ mines=new Set(mn); setTimeout(()=>{ if(token===replayToken) revealRest(false,board,new Set(mn),size); },200); return; }
         setTimeout(step,190);
       };
-      if(multEl) multEl.textContent='1.00×';
-      if(cashEl) cashEl.textContent=d.win?'Bot cashed out':'Bot busted';
-      step();
+      if(multEl) multEl.textContent='1.00×'; if(cashEl) cashEl.textContent=d.win?'Bot cashed out':'Bot busted'; step();
     };
-    build(); repaintChosen();
-    onLeave(()=>{ MODULES.mines._repaint=null; MODULES.mines._restore=null; });
+    size=boardCfg().size;
+    build(grid,true,size); repaintChosen();
+    onLeave(()=>{ MODULES.mines._repaint=null; MODULES.mines._syncBoard=null; MODULES.mines._restore=null; });
   },
   onAutoRound(ctx,d){ if(ctx.play) ctx.play(d); },
-  onAutoEnd(ctx){
-    if(Auto.forGame(ctx.id).length) return;
-    if(MODULES.mines._restore) MODULES.mines._restore();
-  },
+  onAutoEnd(ctx){ if(Auto.forGame(ctx.id).length) return; if(MODULES.mines._restore) MODULES.mines._restore(); },
   sim(bet,o){
-    const count=o.mines||3, picks=Math.min(o.picks||4,25-count);
-    const pool=Array.from({length:25},(_,i)=>i), mines=[];
+    const size=o.size||MINES_BOARDS[o.board||5]?.size||25, count=Math.min(o.mines||3,size-1);
+    const maxPicks=size-count;
+    const pool=Array.from({length:size},(_,i)=>i), mines=[];
     while(mines.length<count) mines.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);
     let chosen;
-    if(o.pickMode==='mine'&&o.chosen&&o.chosen.length>=picks){
-      chosen=o.chosen.slice(0,picks);
+    if(window.__luckyRound){
+      /* Lucky Charm: every selected/autobet tile is safe. */
+      chosen=Array.from({length:size},(_,i)=>i).filter(i=>!mines.includes(i)).slice(0,maxPicks);
+    } else if(o.pickMode==='mine'&&o.chosen&&o.chosen.length){
+      chosen=o.chosen.filter(i=>i<size&&!mines.includes(i));
     } else {
-      const rest=Array.from({length:25},(_,i)=>i); chosen=[];
-      while(chosen.length<picks) chosen.push(rest.splice(Math.floor(Math.random()*rest.length),1)[0]);
+      const rest=Array.from({length:size},(_,i)=>i); chosen=[]; while(chosen.length<maxPicks) chosen.push(rest.splice(Math.floor(Math.random()*rest.length),1)[0]);
     }
+    /* Autobet has no 4-tile ceiling: random mode runs through the board's
+       available safe tiles; manual mode follows every selected tile. */
+    if(o.pickMode==='mine'&&(!o.chosen||!o.chosen.length)) chosen=[];
     const hitAt=chosen.findIndex(i=>mines.includes(i));
     const shown=hitAt>=0?chosen.slice(0,hitAt+1):chosen;
-    const m=hitAt>=0?0:minesMult(picks,count);
+    const m=hitAt>=0?0:minesMult(chosen.length,count,size);
     return {payout:bet*m,mult:m,tag:m?m.toFixed(2)+'×':'BOOM',detail:{mines,picks:shown}};
   }
 };
@@ -3645,81 +3647,233 @@ MODULES.rps={
 /* ==========================================================
    LUCKY NUMBER
 ========================================================== */
-MODULES.luckynumber={
-  blurb:'One number out of the range',
+
+/* ==========================================================
+   NEW LUCK-ONLY GAMES
+   No timing, aiming, reaction, or strategy changes the result.
+   Manual and autobet use the same fixed random distribution.
+========================================================== */
+
+/* COLOR DRAW — three equal outcomes, 99% RTP */
+const COLOR_DRAW=[
+  {id:'red',name:'Red',glyph:'R'},
+  {id:'blue',name:'Blue',glyph:'B'},
+  {id:'gold',name:'Gold',glyph:'G'}
+];
+const COLOR_DRAW_MULT=2.97;
+
+MODULES.colordraw={
+  blurb:'Pick a color — the draw is completely random',
   edge:'1% edge',
-  jewelAt:20,
+  jewelAt:25,
   optsHTML(o){
-    return segField('Range','lnrange',[{v:10,t:'1–10'},{v:20,t:'1–20'},{v:50,t:'1–50'},{v:100,t:'1–100'}],o.range||10,'bigger range, bigger payout')
-      +`<div class="field"><label>Your number</label>
-        <div class="inp-row"><input type="number" id="ln-pick" min="1" value="${o.pick||7}"><button class="mini" id="ln-lucky">Random</button></div></div>`;
+    const cur=o.color||'red';
+    return `<div class="field"><label>Your color</label>
+      <div class="seg" data-seg="cdcolor">
+        ${COLOR_DRAW.map(c=>`<button data-val="${c.id}" class="${cur===c.id?'on':''}">${c.name}</button>`).join('')}
+      </div></div>
+      <div class="note">Each color has exactly a 33.33% chance. No timing or skill affects the result.</div>`;
   },
-  readOpts(w){
-    const range=parseInt(segVal(w,'lnrange',10));
-    const inp=w.querySelector('#ln-pick');
-    let pick=Math.max(1,parseInt(inp.value)||1);
-    if(pick>range){ pick=range; inp.value=range; }
-    inp.max=range;
-    return {range,pick};
-  },
-  onChange(ctx){
-    const o=ctx.opts(), m=o.range*EDGE;
-    ctx.preview(ctx.bet()*m-ctx.bet(),`Win chance ${(100/o.range).toFixed(1)}%`,m.toFixed(2)+'×');
-  },
+  readOpts(w){ return {color:segVal(w,'cdcolor','red')}; },
+  onChange(ctx){ ctx.preview(ctx.bet()*(COLOR_DRAW_MULT-1),'Win chance','33.33% · 2.97×'); },
   mount(ctx){
     let busy=false;
-    ctx.stage.innerHTML='<div class="bignum" id="ln-num" style="color:var(--amber)">?</div><div class="cx-hint" id="ln-sub">Pick a number and roll.</div>';
-    ctx.manual.innerHTML='<button class="act" id="ln-go">Roll</button>';
-    const num=ctx.q('#ln-num'),sub=ctx.q('#ln-sub');
-    ctx.q('#ln-lucky').addEventListener('click',()=>{
-      const o=ctx.opts();
-      ctx.q('#ln-pick').value=1+Math.floor(Math.random()*o.range);
-      sfx.chip(); ctx.refresh();
-    });
-    ctx.q('#ln-go').addEventListener('click',()=>{
-      if(busy||ctx.autoRunning()) return;
-      const bet=ctx.bet(),o=ctx.opts();
-      if(!placeBet(bet)) return toast('Not enough balance for that bet.','lose');
-      busy=true; ctx.q('#ln-go').disabled=true; ctx.banner(null);
-      sub.textContent=`You picked ${o.pick} · pays ${(o.range*EDGE).toFixed(2)}×`;
-      sfx.spin();
+    ctx.stage.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;gap:16px;width:100%;">
+      <div class="bignum" id="cd-result" style="color:var(--amber)">?</div>
+      <div class="cx-hint" id="cd-sub">Pick a color and draw.</div>
+      <div style="display:flex;gap:12px;justify-content:center;">
+        ${COLOR_DRAW.map(c=>`<div style="width:64px;height:64px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;background:var(--panel);font-family:'JetBrains Mono',monospace;font-weight:700;">${c.glyph}</div>`).join('')}
+      </div>
+    </div>`;
+    ctx.manual.innerHTML='<button class="act" id="cd-go">Draw color</button>';
+    const result=ctx.q('#cd-result'),sub=ctx.q('#cd-sub');
+    const randomColor=()=>COLOR_DRAW[Math.floor(Math.random()*COLOR_DRAW.length)];
+    function animate(final,cb){
       let t=0;
       const iv=setInterval(()=>{
-        num.textContent=1+Math.floor(Math.random()*o.range);
-        num.style.color='var(--amber)';
-        if(++t>13){
+        result.textContent=randomColor().name.toUpperCase();
+        result.style.color='var(--amber)';
+        if(++t>=12){
           clearInterval(iv);
-          const roll=window.__luckyRound?o.pick:1+Math.floor(Math.random()*o.range),win=roll===o.pick,m=o.range*EDGE;
-          num.textContent=roll; num.style.color=win?'var(--accent)':'var(--red)';
-          resolveRound(win?bet*m:0,win);
-          ctx.banner(win?`${roll} — you won ${fmt(bet*m)}`:`${roll} — you picked ${o.pick}`,win?'win':'lose');
-          ctx.strip(String(roll),win?'w':'l');
-          win?sfx.win():sfx.lose();
-          busy=false; ctx.q('#ln-go').disabled=false;
+          result.textContent=final.name.toUpperCase();
+          result.style.color=final.id===ctx.opts().color?'var(--accent)':'var(--red)';
+          cb();
         }
-      },65);
+      },70);
+    }
+    ctx.q('#cd-go').addEventListener('click',()=>{
+      if(busy||ctx.autoRunning())return;
+      const bet=ctx.bet(),o=ctx.opts();
+      if(!placeBet(bet))return toast('Not enough balance for that bet.','lose');
+      busy=true;ctx.q('#cd-go').disabled=true;ctx.banner(null);sfx.spin();
+      const final=window.__luckyRound
+        ? COLOR_DRAW.find(c=>c.id===o.color)||COLOR_DRAW[0]
+        : randomColor();
+      animate(final,()=>{
+        const win=final.id===o.color,payout=win?bet*COLOR_DRAW_MULT:0;
+        sub.textContent=`${final.name} drawn · ${win?'you hit it':'your color was '+o.color}`;
+        resolveRound(payout,win);
+        ctx.banner(win?`${final.name} — you won ${fmt(payout)}`:`${final.name} — ${fmt(bet)} lost`,win?'win':'lose');
+        ctx.strip(final.name,win?'w':'l');win?sfx.win():sfx.lose();
+        busy=false;ctx.q('#cd-go').disabled=false;
+      });
     });
     ctx.play=d=>{
-      if(d.detail===undefined) return;
-      const range=(d.session&&d.session.cfg.opts&&d.session.cfg.opts.range)||10;
-      let t=0; sfx.spin();
-      const iv=setInterval(()=>{
-        if(!document.body.contains(num)) return clearInterval(iv);
-        num.textContent=1+Math.floor(Math.random()*range); num.style.color='var(--amber)';
-        if(++t>13){ clearInterval(iv); num.textContent=d.detail; num.style.color=d.win?'var(--accent)':'var(--red)'; }
-      },65);
+      if(!d.detail)return;
+      result.textContent=d.detail.name.toUpperCase();
+      result.style.color=d.win?'var(--accent)':'var(--red)';
     };
   },
-  onAutoRound(ctx,d){
-    const n=ctx.q('#ln-num'); if(!n) return;
-    n.textContent=d.detail; n.style.color=d.win?'var(--accent)':'var(--red)';
-  },
   sim(bet,o){
-    const range=o.range||10,pick=o.pick||1;
-    const roll=1+Math.floor(Math.random()*range),win=roll===pick,m=range*EDGE;
-    return {payout:win?bet*m:0,mult:win?m:0,tag:String(roll),detail:roll};
+    const final=COLOR_DRAW[Math.floor(Math.random()*COLOR_DRAW.length)];
+    const win=final.id===(o.color||'red');
+    return {payout:win?bet*COLOR_DRAW_MULT:0,mult:win?COLOR_DRAW_MULT:0,tag:final.name,detail:final};
   }
 };
+
+/* MYSTERY CHEST — weighted prize table, 99% RTP */
+const MYSTERY_CHEST=[
+  {name:'Empty',mult:0,weight:48},
+  {name:'Small Prize',mult:0.5,weight:20},
+  {name:'Prize',mult:1,weight:15},
+  {name:'Big Prize',mult:2,weight:12},
+  {name:'Jackpot',mult:10,weight:5}
+];
+const CHEST_WEIGHT=MYSTERY_CHEST.reduce((a,x)=>a+x.weight,0);
+const CHEST_RTP=MYSTERY_CHEST.reduce((a,x)=>a+x.mult*x.weight,0)/CHEST_WEIGHT;
+function drawChest(){
+  let r=Math.random()*CHEST_WEIGHT;
+  for(const x of MYSTERY_CHEST){if(r<x.weight)return x;r-=x.weight;}
+  return MYSTERY_CHEST[0];
+}
+MODULES.mysterychest={
+  blurb:'Open one chest — the prize is random',
+  edge:`${Math.round((1-CHEST_RTP)*100)}% edge`,
+  jewelAt:25,
+  optsHTML(){
+    return `<div class="readout">
+      ${MYSTERY_CHEST.map(x=>`<div class="line"><span>${(x.weight/CHEST_WEIGHT*100).toFixed(1)}% · ${x.name}</span><b>${x.mult.toFixed(x.mult%1?1:0)}×</b></div>`).join('')}
+    </div>
+    <div class="note">Fixed odds every round. There is no player-controlled skill factor.</div>`;
+  },
+  readOpts(){return {};},
+  onChange(ctx){ctx.preview(ctx.bet()*(CHEST_RTP-1),'Average return',CHEST_RTP.toFixed(2)+'×');},
+  mount(ctx){
+    let busy=false;
+    ctx.stage.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;gap:14px;">
+      <div id="mc-box" style="width:170px;height:125px;border:2px solid var(--amber);border-radius:12px;background:var(--panel-2);display:grid;place-items:center;font-size:42px;">?</div>
+      <div class="bignum" id="mc-prize" style="font-size:42px;color:var(--amber)">READY</div>
+    </div>`;
+    ctx.manual.innerHTML='<button class="act" id="mc-go">Open chest</button>';
+    const box=ctx.q('#mc-box'),prize=ctx.q('#mc-prize');
+    function animate(final,cb){
+      let t=0;
+      const iv=setInterval(()=>{
+        const x=MYSTERY_CHEST[Math.floor(Math.random()*MYSTERY_CHEST.length)];
+        prize.textContent=x.name.toUpperCase();
+        if(++t>=14){
+          clearInterval(iv);prize.textContent=final.name.toUpperCase();
+          prize.style.color=final.mult>0?'var(--accent)':'var(--red)';cb();
+        }
+      },65);
+    }
+    ctx.q('#mc-go').addEventListener('click',()=>{
+      if(busy||ctx.autoRunning())return;
+      const bet=ctx.bet();
+      if(!placeBet(bet))return toast('Not enough balance for that bet.','lose');
+      busy=true;ctx.q('#mc-go').disabled=true;ctx.banner(null);sfx.spin();
+        const final=window.__luckyRound
+        ? MYSTERY_CHEST.reduce((best,x)=>x.mult>best.mult?x:best,MYSTERY_CHEST[0])
+        : drawChest();
+      box.textContent='OPEN';
+      animate(final,()=>{
+        const payout=bet*final.mult,push=Math.abs(payout-bet)<0.0001,win=payout>bet;
+        resolveRound(payout,push?null:win);
+        ctx.banner(final.mult>0?`${final.name} — ${final.mult}×`:`${final.name} — ${fmt(bet)} lost`,win?'win':(push?'push':'lose'));
+        ctx.strip(`${final.name} ${final.mult}×`,win?'w':(push?'':'l'));
+        win?sfx.win():(push?null:sfx.lose());
+        busy=false;ctx.q('#mc-go').disabled=false;
+      });
+    });
+    ctx.play=d=>{
+      if(!d.detail)return;
+      prize.textContent=d.detail.name.toUpperCase();
+      prize.style.color=d.win?'var(--accent)':'var(--red)';
+    };
+  },
+  sim(bet){
+    const x=drawChest(),payout=bet*x.mult,push=Math.abs(payout-bet)<0.0001;
+    return {payout,mult:x.mult,tag:x.name,detail:x,push};
+  }
+};
+
+/* NUMBER DRAW 12 — twelve equal outcomes, 99% RTP */
+const NUMBER_DRAW_SIZE=12;
+const NUMBER_DRAW_MULT=11.88;
+MODULES.numberdraw={
+  blurb:'Choose 1–12 — one number is drawn at random',
+  edge:'1% edge',
+  jewelAt:25,
+  optsHTML(o){
+    const cur=parseInt(o.pick)||1;
+    return `<div class="field"><label>Your number</label>
+      <div class="seg" data-seg="ndpick">
+        ${Array.from({length:12},(_,i)=>i+1).map(n=>`<button data-val="${n}" class="${cur===n?'on':''}">${n}</button>`).join('')}
+      </div></div>
+      <div class="note">Every number has exactly an 8.33% chance and the same 11.88× payout.</div>`;
+  },
+  readOpts(w){return {pick:parseInt(segVal(w,'ndpick',1))||1};},
+  onChange(ctx){ctx.preview(ctx.bet()*(NUMBER_DRAW_MULT-1),'Win chance','8.33% · 11.88×');},
+  mount(ctx){
+    let busy=false;
+    ctx.stage.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;">
+      <div class="bignum" id="nd-result" style="color:var(--amber)">?</div>
+      <div class="cx-hint" id="nd-sub">Pick a number and draw.</div>
+      <div class="keno-grid" style="max-width:540px;grid-template-columns:repeat(4,1fr);">
+        ${Array.from({length:12},(_,i)=>`<div class="kcell">${i+1}</div>`).join('')}
+      </div>
+    </div>`;
+    ctx.manual.innerHTML='<button class="act" id="nd-go">Draw number</button>';
+    const result=ctx.q('#nd-result'),sub=ctx.q('#nd-sub');
+    function animate(final,cb){
+      let t=0;
+      const iv=setInterval(()=>{
+        result.textContent=1+Math.floor(Math.random()*12);
+        if(++t>=13){
+          clearInterval(iv);result.textContent=final;
+          result.style.color=final===ctx.opts().pick?'var(--accent)':'var(--red)';cb();
+        }
+      },65);
+    }
+    ctx.q('#nd-go').addEventListener('click',()=>{
+      if(busy||ctx.autoRunning())return;
+      const bet=ctx.bet(),o=ctx.opts();
+      if(!placeBet(bet))return toast('Not enough balance for that bet.','lose');
+      busy=true;ctx.q('#nd-go').disabled=true;ctx.banner(null);sfx.spin();
+      const final=window.__luckyRound
+        ? (o.pick||1)
+        : 1+Math.floor(Math.random()*12);
+      animate(final,()=>{
+        const win=final===o.pick,payout=win?bet*NUMBER_DRAW_MULT:0;
+        sub.textContent=`${final} drawn · ${win?'hit your number':'you picked '+o.pick}`;
+        resolveRound(payout,win);
+        ctx.banner(win?`${final} — you won ${fmt(payout)}`:`${final} — ${fmt(bet)} lost`,win?'win':'lose');
+        ctx.strip(String(final),win?'w':'l');win?sfx.win():sfx.lose();
+        busy=false;ctx.q('#nd-go').disabled=false;
+      });
+    });
+    ctx.play=d=>{
+      if(d.detail===undefined)return;
+      result.textContent=d.detail;
+      result.style.color=d.win?'var(--accent)':'var(--red)';
+    };
+  },
+  sim(bet,o){
+    const final=1+Math.floor(Math.random()*12),win=final===(o.pick||1);
+    return {payout:win?bet*NUMBER_DRAW_MULT:0,mult:win?NUMBER_DRAW_MULT:0,tag:String(final),detail:final};
+  }
+};
+
 /* ==========================================================
    HORSE RACE
    Seven runners. Odds are fixed; the sim rolls a winner on
@@ -3896,17 +4050,17 @@ MODULES.horse={
    the strip eases to a stop under the needle.
 ========================================================== */
 const CASES=[
-  /* Rebalanced: duds cut from ~45-55% down to 20-22%, the 1x-5x "feels like a win" band
-     carries a lot more weight, and every jackpot keeps its exact original odds (100 / 80 / 50 / 30
-     out of 100,000 — unchanged) so the chase is still just as rare, just not the only way to win. */
+  /* Balanced case odds: roughly 47% duds, 20-25% at 1.5x, and a healthy
+     amount of 0.5x/low returns. Mythic weights are preserved exactly. */
   {id:'starter',name:'Starter Crate',c:'#4a9fd8',
-   items:[{m:0,w:20000},{m:0.2,w:8000},{m:0.5,w:8000},{m:1,w:20000},{m:2,w:28000},{m:5,w:10000},{m:15,w:3500},{m:60,w:1900},{m:250,w:500},{m:2000,w:100}]},
+   items:[{m:0,w:47000},{m:0.2,w:4000},{m:0.5,w:15000},{m:1.5,w:22000},{m:2,w:6000},{m:5,w:4000},{m:15,w:1500},{m:60,w:300},{m:250,w:100},{m:2000,w:100}]},
   {id:'field',name:'Field Case',c:'#37d67a',
-   items:[{m:0,w:20000},{m:0.3,w:8000},{m:0.8,w:9000},{m:1.5,w:14000},{m:3,w:33940},{m:9,w:11000},{m:30,w:3500},{m:120,w:400},{m:700,w:80},{m:5000,w:80}]},
+   items:[{m:0,w:47000},{m:0.3,w:6000},{m:0.8,w:9000},{m:1.5,w:22000},{m:3,w:7000},{m:9,w:5000},{m:30,w:2500},{m:120,w:1000},{m:700,w:420},{m:5000,w:80}]},
   {id:'vault',name:'Vault Case',c:'#f0b429',
-   items:[{m:0,w:20000},{m:0.4,w:7000},{m:1,w:15000},{m:2.5,w:35000},{m:6,w:13000},{m:20,w:7000},{m:80,w:2200},{m:400,w:700},{m:2500,w:50},{m:10000,w:50}]},
+   items:[{m:0,w:47000},{m:0.4,w:10900},{m:1,w:3000},{m:1.5,w:22000},{m:2.5,w:8000},{m:6,w:5000},{m:20,w:2500},{m:80,w:1400},{m:400,w:100},{m:2500,w:50},{m:10000,w:50}]},
   {id:'blackbox',name:'Black Box',c:'#8b7fd4',
-   items:[{m:0,w:22000},{m:0.5,w:6000},{m:1.5,w:22000},{m:4,w:28000},{m:12,w:13000},{m:45,w:7000},{m:200,w:1500},{m:1200,w:350},{m:6000,w:120},{m:25000,w:30}]}
+   items:[{m:0,w:47000},{m:0.5,w:16000},{m:1.5,w:22000},{m:4,w:7000},{m:12,w:4000},{m:45,w:2000},{m:200,w:1500},{m:1200,w:350},{m:6000,w:120},{m:25000,w:30}]
+  }
 ];
 const caseById=id=>CASES.find(c=>c.id===id)||CASES[0];
 function caseRTP(c){
@@ -4115,113 +4269,6 @@ function wheelSlices(risk){
     return {m:it.m,w:it.w,from,span,mid:from+span/2,idx};
   });
 }
-MODULES.wheel={
-  blurb:'Pick a risk, spin the wheel',
-  edge:'~1-3% edge',
-  jewelAt:10,
-  optsHTML(o){
-    return segField('Risk','wg-risk',[{v:'low',t:'Low'},{v:'medium',t:'Medium'},{v:'high',t:'High'}],o.risk||'medium')
-      +`<div class="field"><label>Segments</label><div class="cs-odds" id="wg-odds"></div></div>`;
-  },
-  readOpts(w){ return {risk:segVal(w,'wg-risk','medium')}; },
-  onChange(ctx){
-    const risk=ctx.opts().risk, slices=wheelSlices(risk), tot=slices.reduce((a,s)=>a+s.w,0);
-    const el=ctx.q('#wg-odds');
-    if(el) el.innerHTML=slices.slice().sort((a,b)=>b.m-a.m).map(s=>{
-      const t=wheelTier(s.m), p=s.w/tot*100;
-      return `<div class="cs-odd"><span><i style="background:${t.c}"></i>${s.m}×</span><b>${p<0.1?p.toFixed(2):p.toFixed(1)}%</b></div>`;
-    }).join('');
-    const top=Math.max(...slices.map(s=>s.m));
-    ctx.preview(ctx.bet()*top-ctx.bet(),'Top segment',top+'×');
-    if(MODULES.wheel._redraw) MODULES.wheel._redraw();
-  },
-  mount(ctx){
-    let spinning=false;
-    function draw(){
-      const risk=ctx.opts().risk, slices=wheelSlices(risk);
-      const stops=slices.map(s=>{ const t=wheelTier(s.m); return `${t.c} ${s.from.toFixed(2)}deg ${(s.from+s.span).toFixed(2)}deg`; });
-      const labels=slices.map(s=>`<div class="wg-lbl" style="transform:rotate(${s.mid-90}deg) translate(${s.span<20?38:50}px,-6px)">${s.m}×</div>`).join('');
-      ctx.stage.innerHTML=`<div class="wg-wrap"><div class="wg-pointer"></div>
-          <div class="wg-wheel" id="wg-wheel" style="background:conic-gradient(${stops.join(',')})">${labels}</div>
-          <div class="wg-hub" id="wg-hub">SPIN</div></div>`;
-    }
-    MODULES.wheel._redraw=()=>{ if(!spinning) draw(); };
-    draw();
-    ctx.manual.innerHTML='<button class="act" id="wg-spin">Spin the wheel</button>';
-    function play(risk,idx,bet,manual){
-      const slices=wheelSlices(risk), sl=slices[idx];
-      if(!ctx.q('#wg-wheel')) draw();
-      const w2=ctx.q('#wg-wheel'), h2=ctx.q('#wg-hub');
-      const inside=sl.from+sl.span*(0.2+Math.random()*0.6);
-      const rot=(5+Math.floor(Math.random()*3))*360+(360-inside);
-      sfx.spin(); w2.style.transform=`rotate(${rot}deg)`;
-      h2.textContent='…';
-      setTimeout(()=>{
-        const t=wheelTier(sl.m);
-        h2.textContent=sl.m+'×'; h2.style.color=t.c;
-        if(manual){
-          const payout=bet*sl.m;
-          resolveRound(payout,payout>bet?true:(payout>0?null:false));
-          ctx.banner(`Landed ${sl.m}× — ${fmt(payout)}`,payout>bet?'win':(payout>0?'push':'lose'));
-          ctx.strip(sl.m+'×',payout>bet?'w':(payout>0?'':'l'));
-          payout>bet?sfx.win():sfx.lose();
-          spinning=false; ctx.q('#wg-spin').disabled=false; ctx.lockBet(false);
-        } else {
-          d_win?sfx.win():sfx.lose();
-        }
-      },4200);
-    }
-    let d_win=false;
-    ctx.q('#wg-spin').addEventListener('click',()=>{
-      if(spinning||ctx.autoRunning()) return;
-      const bet=ctx.bet(), risk=ctx.opts().risk;
-      if(!placeBet(bet)) return toast('Not enough balance for that bet.','lose');
-      spinning=true; ctx.q('#wg-spin').disabled=true; ctx.lockBet(true); ctx.banner(null);
-      const idx=window.__luckyRound?WHEEL_RISK[risk].items.length-1:wheelPick(risk); play(risk,idx,bet,true);
-    });
-    ctx.play=d=>{
-      if(spinning||d.detail===undefined) return;
-      spinning=true; d_win=d.win;
-      play(d.detail.risk,d.detail.idx,0,false);
-      setTimeout(()=>{ spinning=false; },4250);
-    };
-    onLeave(()=>{ MODULES.wheel._redraw=null; });
-  },
-  onAutoRound(ctx,d){
-    if(!d.detail) return;
-    const slices=wheelSlices(d.detail.risk), sl=slices[d.detail.idx], t=wheelTier(sl.m);
-    const h=ctx.q('#wg-hub'); if(h){ h.textContent=sl.m+'×'; h.style.color=t.c; }
-  },
-  sim(bet,o){
-    const risk=o.risk||'medium', idx=wheelPick(risk), slices=wheelSlices(risk), m=slices[idx].m;
-    return {payout:bet*m,mult:m,tag:m+'×',detail:{risk,idx}};
-  }
-};
-
-/* ==========================================================
-   DARTS
-========================================================== */
-const DARTS_RISK={
-  low:{items:[{m:0,w:30},{m:0.5,w:35},{m:1.2,w:20},{m:2,w:10},{m:5,w:4},{m:20,w:1}]},
-  medium:{items:[{m:0,w:60},{m:0.5,w:23},{m:1.5,w:9},{m:3,w:5},{m:8,w:2},{m:40,w:1}]},
-  high:{items:[{m:0,w:75},{m:0.3,w:23},{m:15,w:1},{m:75,w:1}]}
-};
-function dartsPick(risk){
-  const items=DARTS_RISK[risk].items, tot=items.reduce((a,i)=>a+i.w,0);
-  let r=Math.random()*tot;
-  for(let i=0;i<items.length;i++){ if(r<items[i].w) return i; r-=items[i].w; }
-  return 0;
-}
-function dartsTier(m){
-  if(m>=40) return {c:'#c084fc',tag:'Bullseye'};
-  if(m>=5) return {c:'#f0b429',tag:'Bull'};
-  if(m>=1.2) return {c:'#4a9fd8',tag:'Inner'};
-  if(m>0) return {c:'#37d67a',tag:'Outer'};
-  return {c:'#5f7f92',tag:'Miss'};
-}
-/* rank of the landed ring (0=miss, highest=bullseye) maps to a radius band on the board,
-   regardless of how many rings this risk level has */
-function dartBand(risk,idx){const items=DARTS_RISK[risk].items,total=items.reduce((s,i)=>s+i.w,0),before=items.slice(0,idx).reduce((s,i)=>s+i.w,0),through=before+items[idx].w;return [Math.sqrt(Math.max(0,1-through/total))*.98,Math.sqrt(Math.max(0,1-before/total))*.98];}
 MODULES.darts={
   blurb:'Three darts, one risk level',
   edge:'~1-4% edge',
@@ -4441,306 +4488,6 @@ const SNAKE_RISK={
   high:{steps:10,p:0.55}
 };
 const snakeMult=(risk,step)=>step<=0?1:EDGE/Math.pow(SNAKE_RISK[risk].p,step);
-MODULES.snakes={
-  blurb:'Climb the path — one snake per step',
-  edge:'1% edge',
-  jewelAt:10,
-  optsHTML(o){
-    const risk=o.risk||'medium';
-    return segField('Risk','sn-risk',[{v:'low',t:'Gentle'},{v:'medium',t:'Garden'},{v:'high',t:'Venomous'}],risk)
-      +`<div class="field auto-only"><label>Autobet climbs to</label>
-        <div class="inp-row"><span class="unit pre">Step</span><input type="number" id="sn-target" min="1" max="${SNAKE_RISK[risk].steps}" value="${o.target||3}"></div></div>`;
-  },
-  readOpts(w){
-    const risk=segVal(w,'sn-risk','medium');
-    const target=Math.min(SNAKE_RISK[risk].steps,Math.max(1,parseInt(w.querySelector('#sn-target').value)||3));
-    return {risk,target};
-  },
-  onChange(ctx){
-    const o=ctx.opts(), m=snakeMult(o.risk,o.target);
-    ctx.preview(ctx.bet()*m-ctx.bet(),`Autobet leaves at step ${o.target}`,m.toFixed(2)+'×');
-    if(MODULES.snakes._rebuild) MODULES.snakes._rebuild();
-  },
-  mount(ctx){
-    let step=0,live=false,bet=0,risk='medium';
-    ctx.stage.innerHTML=`<div class="cx-topbar" style="width:min(100%,420px)"><div class="cx-big" id="sn-mult">1.00×</div><div class="cx-hint" id="sn-cash">Cash out —</div></div>
-      <div class="sn-wrap" id="sn-board"></div>`;
-    ctx.manual.innerHTML=`<button class="act" id="sn-start">Start climb</button>
-      <button class="act act-amber hidden" id="sn-cash-btn">Cash out</button>`;
-    const board=ctx.q('#sn-board'),multEl=ctx.q('#sn-mult'),cashLbl=ctx.q('#sn-cash');
-    const startBtn=ctx.q('#sn-start'),cashBtn=ctx.q('#sn-cash-btn');
-    function place(){
-      board.querySelectorAll('.token').forEach(t=>t.textContent='');
-      if(step>0){
-        const row=board.querySelector(`.sn-step[data-s="${step-1}"]`);
-        if(row) row.querySelector('.token').textContent='🐸';
-      }
-    }
-    function build(){
-      const o=ctx.opts(), cfg=SNAKE_RISK[o.risk];
-      board.innerHTML='';
-      for(let i=0;i<cfg.steps;i++){
-        const row=document.createElement('div'); row.className='sn-step'; row.dataset.s=i;
-        row.innerHTML=`<div class="sn-tile" data-tile><span class="token"></span></div><div class="sn-mul">${snakeMult(o.risk,i+1).toFixed(2)}×</div>`;
-        board.appendChild(row);
-      }
-      mark();
-    }
-    MODULES.snakes._rebuild=()=>{ if(!live) build(); };
-    function mark(){
-      board.querySelectorAll('.sn-step').forEach(r=>{
-        const i=parseInt(r.dataset.s);
-        r.classList.toggle('on',live&&i===step);
-        r.classList.toggle('past',i<step);
-      });
-      place();
-    }
-    function end(){ live=false; startBtn.classList.remove('hidden'); cashBtn.classList.add('hidden'); ctx.lockBet(false); mark(); }
-    board.addEventListener('click',e=>{
-      const tile=e.target.closest('[data-tile]'); if(!tile||!live||ctx.autoRunning()) return;
-      const row=tile.closest('.sn-step'); if(parseInt(row.dataset.s)!==step) return;
-      const p=SNAKE_RISK[risk].p;
-      sfx.step();
-      if(Math.random()>p){
-        tile.classList.add('bad');
-        tile.insertAdjacentHTML('beforeend','<div class="sn-snake">🐍</div>');
-        resolveRound(0,false);
-        ctx.banner(`Snake on step ${step+1} — ${fmt(bet)} lost`,'lose');
-        ctx.strip('0×','l'); sfx.lose(); end();
-      } else {
-        tile.classList.add('safe'); step++;
-        const m=snakeMult(risk,step);
-        multEl.textContent=m.toFixed(2)+'×'; cashLbl.textContent='Cash out '+fmt(bet*m);
-        if(step>=SNAKE_RISK[risk].steps){
-          resolveRound(bet*m,true);
-          ctx.banner(`Reached the top — ${fmt(bet*m)}`,'win'); ctx.strip(m.toFixed(2)+'×','w'); sfx.win(); end();
-        } else mark();
-      }
-    });
-    startBtn.addEventListener('click',()=>{
-      if(ctx.autoRunning()) return;
-      const o=ctx.opts(); risk=o.risk; bet=ctx.bet();
-      if(!placeBet(bet)) return toast('Not enough balance for that bet.','lose');
-      step=0; live=true; build(); ctx.banner(null); ctx.lockBet(true);
-      multEl.textContent='1.00×'; cashLbl.textContent='Cash out —';
-      startBtn.classList.add('hidden'); cashBtn.classList.remove('hidden');
-    });
-    cashBtn.addEventListener('click',()=>{
-      if(!live||step===0) return toast('Take at least one step first.');
-      const m=snakeMult(risk,step);
-      resolveRound(bet*m,true);
-      ctx.banner(`Cashed out at step ${step} for ${fmt(bet*m)}`,'win');
-      ctx.strip(m.toFixed(2)+'×','w'); sfx.win(); end();
-    });
-    ctx.play=d=>{
-      if(d.detail===undefined) return;
-      risk=d.detail.risk||ctx.opts().risk; build();
-      const reached=d.detail.step;
-      let s=0;
-      const anim=()=>{
-        if(!document.body.contains(board)) return;
-        const row=board.querySelector(`.sn-step[data-s="${s}"]`);
-        if(!row) return;
-        board.querySelectorAll('.sn-step').forEach(r=>r.classList.toggle('on',r===row));
-        if(s<reached){
-          row.querySelector('[data-tile]').classList.add('safe'); sfx.step();
-          multEl.textContent=snakeMult(risk,s+1).toFixed(2)+'×';
-          step=s+1; place();
-          s++; setTimeout(anim,220);
-        } else {
-          if(!d.win){ const t=row.querySelector('[data-tile]'); t.classList.add('bad'); t.insertAdjacentHTML('beforeend','<div class="sn-snake">🐍</div>'); sfx.lose(); }
-          else sfx.win();
-          board.querySelectorAll('.sn-step').forEach(r=>r.classList.remove('on'));
-        }
-      };
-      multEl.textContent='1.00×'; anim();
-    };
-    build();
-    onLeave(()=>{ MODULES.snakes._rebuild=null; });
-  },
-  onAutoRound(ctx,d){
-    const el=ctx.q('#sn-mult'); if(el) el.textContent=(d.mult||0).toFixed(2)+'×';
-  },
-  sim(bet,o){
-    const risk=o.risk||'medium', target=Math.min(SNAKE_RISK[risk].steps,o.target||3), p=SNAKE_RISK[risk].p;
-    for(let s=0;s<target;s++) if(Math.random()>p) return {payout:0,mult:0,tag:'✕',detail:{risk,step:s}};
-    const m=snakeMult(risk,target);
-    return {payout:bet*m,mult:m,tag:m.toFixed(2)+'×',detail:{risk,step:target}};
-  }
-};
-
-/* ==========================================================
-   WHACK-A-MOLE
-========================================================== */
-function molesMult(picks,farmers){
-  let m=1; for(let i=0;i<picks;i++) m*=(16-i)/(16-farmers-i);
-  return m*EDGE;
-}
-const MOLE_SVG='<svg viewBox="0 0 40 40"><ellipse cx="20" cy="34" rx="15" ry="5" fill="#00000033"/><circle cx="20" cy="20" r="15" fill="#8b6f47"/><circle cx="14" cy="16" r="2.6" fill="#16232c"/><circle cx="26" cy="16" r="2.6" fill="#16232c"/><ellipse cx="20" cy="23" rx="5" ry="3" fill="#5c4326"/></svg>';
-const FARMER_SVG='<svg viewBox="0 0 40 40"><circle cx="20" cy="14" r="9" fill="#e8b98f"/><path d="M9 14a11 11 0 0 1 22 0Z" fill="#4a3520"/><rect x="8" y="24" width="24" height="14" rx="4" fill="#4a9fd8"/><path d="M4 36l10-14M36 36 26 22" stroke="#5f7f92" stroke-width="3" stroke-linecap="round"/></svg>';
-MODULES.moles={
-  blurb:'16 mounds, dig for moles, dodge the farmer',
-  edge:'1% edge',
-  jewelAt:10,
-  optsHTML(o){
-    return `<div class="field"><label>Farmers on the plot <span>1 – 8</span></label>
-        <div class="inp-row"><input type="number" id="ml-count" min="1" max="8" step="1" value="${o.farmers||2}"><span class="unit">farmers</span></div></div>
-      ${segField('Quick set','mlquick',[{v:1,t:'1'},{v:2,t:'2'},{v:4,t:'4'},{v:6,t:'6'},{v:8,t:'8'}],'')}
-      <div class="field auto-only"><label>Autobet digs</label>
-        <div class="inp-row"><input type="number" id="ml-picks" min="1" max="8" value="${o.picks||3}"><span class="unit">mounds</span></div></div>`;
-  },
-  readOpts(w){
-    const inp=w.querySelector('#ml-count');
-    let farmers=Math.min(8,Math.max(1,parseInt(inp.value)||2));
-    const quick=w.querySelector('[data-seg="mlquick"] button.on');
-    if(quick){ farmers=parseInt(quick.dataset.val); inp.value=farmers; quick.classList.remove('on'); }
-    const picks=Math.min(16-farmers,Math.max(1,parseInt(w.querySelector('#ml-picks').value)||3));
-    return {farmers,picks};
-  },
-  onChange(ctx){
-    const o=ctx.opts(), m=molesMult(o.picks,o.farmers);
-    ctx.preview(ctx.bet()*m-ctx.bet(),`Autobet stops after ${o.picks} mole${o.picks===1?'':'s'}`,m.toFixed(2)+'×');
-  },
-  mount(ctx){
-    let farmers=new Set(),open=new Set(),live=false,bet=0,count=2;
-    ctx.stage.innerHTML=`<div class="cx-topbar" style="width:min(100%,78vh,70vw,900px)"><div class="cx-big" id="ml-mult">1.00×</div><div class="cx-hint" id="ml-cash">Cash out —</div></div>
-      <div class="ml-grid" id="mlgrid"></div>`;
-    ctx.manual.innerHTML=`<button class="act" id="ml-start">Start round</button>
-      <button class="act act-amber hidden" id="ml-cashout">Cash out</button>`;
-    const grid=ctx.q('#mlgrid'),multEl=ctx.q('#ml-mult'),cashEl=ctx.q('#ml-cash');
-    const start=ctx.q('#ml-start'),cash=ctx.q('#ml-cashout');
-    function build(){
-      grid.innerHTML='';
-      for(let i=0;i<16;i++){
-        const t=document.createElement('div'); t.className='ml-mound'; t.dataset.i=i;
-        t.innerHTML='<span class="pop"></span>';
-        t.addEventListener('click',()=>tap(i,t));
-        grid.appendChild(t);
-      }
-    }
-    function pop(el,html){ el.querySelector('.pop').innerHTML=html; }
-    function end(){ live=false; start.classList.remove('hidden'); cash.classList.add('hidden'); ctx.lockBet(false); }
-    function revealRest(showSafe){
-      grid.querySelectorAll('.ml-mound').forEach(el=>{
-        const i=parseInt(el.dataset.i);
-        if(el.classList.contains('done')) return;
-        if(farmers.has(i)){ el.classList.add('done','bad'); pop(el,FARMER_SVG); }
-        else if(showSafe){ el.classList.add('done','good'); pop(el,MOLE_SVG); }
-      });
-    }
-    function tap(i,el){
-      if(!live||ctx.autoRunning()||open.has(i)) return;
-      open.add(i); el.classList.add('done');
-      if(farmers.has(i)){
-        el.classList.add('bad','shake'); pop(el,FARMER_SVG); sfx.lose();
-        setTimeout(()=>{
-          revealRest(false); resolveRound(0,false);
-          ctx.banner(`Farmer under mound ${i+1} — ${fmt(bet)} lost`,'lose');
-          ctx.strip('0×','l'); end();
-        },200);
-      } else {
-        el.classList.add('good'); pop(el,MOLE_SVG); sfx.chip();
-        const m=molesMult(open.size,count);
-        multEl.textContent=m.toFixed(2)+'×'; cashEl.textContent='Cash out '+fmt(bet*m);
-        if(open.size===16-count){
-          resolveRound(bet*m,true);
-          ctx.banner(`Plot cleared — ${fmt(bet*m)}`,'win'); ctx.strip(m.toFixed(2)+'×','w'); sfx.win(); end();
-        }
-      }
-    }
-    start.addEventListener('click',()=>{
-      if(ctx.autoRunning()) return;
-      bet=ctx.bet(); count=ctx.opts().farmers;
-      if(!placeBet(bet)) return toast('Not enough balance for that bet.','lose');
-      farmers=new Set(); open=new Set();
-      while(farmers.size<count) farmers.add(Math.floor(Math.random()*16));
-      live=true; build(); ctx.banner(null); ctx.lockBet(true);
-      multEl.textContent='1.00×'; cashEl.textContent='Cash out —';
-      start.classList.add('hidden'); cash.classList.remove('hidden');
-    });
-    cash.addEventListener('click',()=>{
-      if(!live||!open.size) return toast('Dig up at least one mole first.');
-      const m=molesMult(open.size,count);
-      live=false; resolveRound(bet*m,true);
-      revealRest(true);
-      ctx.banner(`Cashed out at ${m.toFixed(2)}× — ${fmt(bet*m)}`,'win');
-      ctx.strip(m.toFixed(2)+'×','w'); sfx.win(); end();
-    });
-    ctx.play=d=>{
-      if(!d.detail) return;
-      const {farmers:fs,picks}=d.detail;
-      build();
-      let k=0;
-      const step=()=>{
-        if(k>=picks.length||!document.body.contains(grid)) return;
-        const i=picks[k++], el=grid.querySelector(`[data-i="${i}"]`);
-        if(!el) return;
-        const bad=fs.includes(i);
-        el.classList.add('done',bad?'bad':'good');
-        if(bad) el.classList.add('shake');
-        pop(el,bad?FARMER_SVG:MOLE_SVG);
-        bad?sfx.lose():sfx.chip();
-        if(!bad){
-          multEl.textContent=molesMult(k,fs.length).toFixed(2)+'×';
-          setTimeout(step,260);
-        } else {
-          farmers=new Set(fs);
-          setTimeout(()=>revealRest(false),200);
-        }
-      };
-      multEl.textContent='1.00×'; step();
-    };
-    build();
-  },
-  onAutoRound(ctx,d){
-    const el=ctx.q('#ml-mult'); if(el) el.textContent=(d.mult||0).toFixed(2)+'×';
-  },
-  sim(bet,o){
-    const count=o.farmers||2, picks=Math.min(o.picks||3,16-count);
-    const pool=Array.from({length:16},(_,i)=>i), farmers=[];
-    while(farmers.length<count) farmers.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);
-    const rest=Array.from({length:16},(_,i)=>i), chosen=[];
-    while(chosen.length<picks) chosen.push(rest.splice(Math.floor(Math.random()*rest.length),1)[0]);
-    const hitAt=chosen.findIndex(i=>farmers.includes(i));
-    const shown=hitAt>=0?chosen.slice(0,hitAt+1):chosen;
-    const m=hitAt>=0?0:molesMult(picks,count);
-    return {payout:bet*m,mult:m,tag:m?m.toFixed(2)+'×':'BUST',detail:{farmers,picks:shown}};
-  }
-};
-
-/* ==========================================================
-   RIDE THE BUS
-   Four calls, each one riding on the last. Miss one and the
-   round is over — clear all four and you ride the bus for the
-   big multiplier, or take the money and walk.
-========================================================== */
-const RB_STAGES=[
-  {k:'color',  label:'Red or black', q:'Red or black?',            opts:[['red','Red'],['black','Black']],           odds:2},
-  {k:'hilo',   label:'Higher/lower', q:'Higher or lower than that?',opts:[['higher','Higher'],['lower','Lower']],     odds:0},
-  {k:'inout',  label:'Inside/outside',q:'Inside or outside the two?',opts:[['inside','Inside'],['outside','Outside']],odds:0},
-  {k:'suit',   label:'Suit',         q:'Which suit?',              opts:[['♠','♠'],['♥','♥'],['♦','♦'],['♣','♣']],   odds:4}
-];
-const RB_BUS=6;                        /* cards on the bus ride */
-function rbNewDeck(){const d=[];for(let v=1;v<=13;v++)for(const s of ['♠','♥','♦','♣'])d.push({r:HL_RANKS[v-1],s,v,red:s==='♥'||s==='♦'});return d;}
-function rbDraw(deck){return deck.splice(Math.floor(Math.random()*deck.length),1)[0];}
-/* fair odds for each call given the cards already on the table */
-function rbCounts(stage,hand,deck,call){let win=0,loss=0,push=0;deck.forEach(c=>{const r=stage===4?((call==='red')===c.red):rbCheck(stage,call,hand,c);r===null?push++:r?win++:loss++;});return {win,loss,push};}
-function rbOdds(stage,hand,deck,call){const c=rbCounts(stage,hand,deck,call);return c.win?(c.win+c.loss)/c.win:Infinity;}
-function rbBestCall(stage,hand,deck){const calls=stage===0?['red','black']:stage===1?['higher','lower']:stage===2?['inside','outside']:stage===3?['♠','♥','♦','♣']:['red','black'];return calls.reduce((best,c)=>rbCounts(stage,hand,deck,c).win>rbCounts(stage,hand,deck,best).win?c:best,calls[0]);}
-function rbCheck(stage,call,hand,card){
-  if(stage===0) return call==='red'?card.red:!card.red;
-  if(stage===1){ if(card.v===hand[0].v) return null; return call==='higher'?card.v>hand[0].v:card.v<hand[0].v; }
-  if(stage===2){
-    const lo=Math.min(hand[0].v,hand[1].v), hi=Math.max(hand[0].v,hand[1].v);
-    if(card.v===lo||card.v===hi) return null;
-    const inside=card.v>lo&&card.v<hi;
-    return call==='inside'?inside:!inside;
-  }
-  return card.s===call;
-}
-function rbCardHTML(c){
-  return `<div class="pcard${c.red?' red':''}"><div>${c.r}<br>${c.s}</div><div class="bl">${c.r}<br>${c.s}</div></div>`;
-}
 MODULES.ridebus={
   blurb:'Four calls, then ride it out',
   edge:'1% edge',
@@ -5983,74 +5730,74 @@ navigate('home');
 /* last, so the interface is already up before the network is touched */
 Cloud.init();
 </script>
-<script>(function Lk(){const r=x=>String(x??"").replace(/[&<>"']/g,k=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[k]),t=(x,k=2)=>`${(x*100).toFixed(k)}%`,s=x=>x.reduce((k,w)=>k+w.m*w.w,0)/x.reduce((k,w)=>k+w.w,0),o=(x,k)=>{const w=s(x);x.forEach(z=>{z.m>0&&(z.m=z.m*k/w)})};Object.entries(WHEEL_RISK).forEach(([x,k])=>o(k.items,HOUSE_CONFIG.edges.wheel[x].rtp)),Object.entries(DARTS_RISK).forEach(([x,k])=>o(k.items,HOUSE_CONFIG.edges.darts[x].rtp));const l={starter:[{m:0,w:3e4},{m:.5,w:15e3},{m:1,w:15e3},{m:2,w:25e3},{m:5,w:1e3},{m:15,w:200},{m:50,w:20},{m:100,w:8},{m:500,w:2},{m:2e3,w:1}],field:[{m:0,w:3e4},{m:.5,w:12e3},{m:1,w:15e3},{m:2,w:25e3},{m:5,w:1500},{m:15,w:300},{m:50,w:30},{m:100,w:10},{m:500,w:3},{m:3e3,w:1}],vault:[{m:0,w:32e3},{m:.5,w:1e4},{m:1,w:15e3},{m:2,w:25e3},{m:5,w:2e3},{m:15,w:500},{m:50,w:50},{m:100,w:15},{m:500,w:4},{m:5e3,w:1}],blackbox:[{m:0,w:35e3},{m:.5,w:8e3},{m:1,w:12e3},{m:2,w:25e3},{m:5,w:1500},{m:15,w:300},{m:50,w:30},{m:100,w:10},{m:500,w:2},{m:5e3,w:1}]};CASES.forEach(x=>{const k=l[x.id];k&&(x.items=k.slice())});const u={};SLOT_KEYS.forEach(x=>u[x]=(u[x]||0)+1/SLOT_KEYS.length);const d=Object.entries(u).reduce((x,[k,w])=>x+w**3*SLOT_PAY[k]+3*w*w*(1-w)*SLOT_PAIR_PAY,0),p=HOUSE_CONFIG.standardRtp/d;Object.keys(SLOT_PAY).forEach(x=>SLOT_PAY[x]*=p),SLOT_PAIR_PAY*=p,MODULES.slots.edge="1% edge",MODULES.rps.edge="1% edge",MODULES.rps.onChange=x=>x.preview(x.bet()*(HOUSE_CONFIG.payouts.rps-1),"Win / tie / loss",`${HOUSE_CONFIG.payouts.rps.toFixed(2)}× / push / 0`),MODULES.rps.sim=(x,k)=>{const w=k.throw||"rock",z=["rock","paper","scissors"],N=z[Math.floor(Math.random()*3)],E={rock:"scissors",paper:"rock",scissors:"paper"};return w===N?{payout:x,mult:1,tag:"TIE",detail:{mine:w,theirs:N}}:E[w]===N?{payout:x*HOUSE_CONFIG.payouts.rps,mult:HOUSE_CONFIG.payouts.rps,tag:"WIN",detail:{mine:w,theirs:N}}:{payout:0,mult:0,tag:"LOSS",detail:{mine:w,theirs:N}}},MODULES.coinflip.edge="1% edge",MODULES.wheel.edge="Low 1% · Medium 2% · High 3%",MODULES.darts.edge="Low 1% · Medium 2% · High 4%",MODULES.cases.edge="1% edge",MODULES.keno.edge="1% edge · hypergeometric paytable";const h={snake_eyes:{l:"Snake Eyes",d:"Roll 1-1",o:35,p:1/36},boxcars:{l:"Boxcars",d:"Roll 6-6",o:35,p:1/36},doubles:{l:"Any Doubles",d:"Matching pair",o:5.9,p:6/36},lucky7:{l:"Lucky 7",d:"Sum = 7",o:5.9,p:6/36},over:{l:"Over 7",d:"Sum 8+",o:2.3,p:15/36},under:{l:"Under 7",d:"Sum 6-",o:2.3,p:15/36}};function m(x,k,w){const z=k+w;return x==="snake_eyes"?k===1&&w===1:x==="boxcars"?k===6&&w===6:x==="doubles"?k===w:x==="lucky7"?z===7:x==="over"?z>7:z<7}MODULES.snakes={blurb:"Two dice, six ways to bet",edge:"~1-3% edge",jewelAt:15,optsHTML(x){const k=x.bet||"lucky7";return`<div class="field"><label>Your bet</label><div class="se-bets" data-seg="snbet">${Object.entries(h).map(([w,z])=>`<button data-val="${w}" class="${k===w?"on":""}"><b>${z.l}</b><small>${z.d} · ${z.o}×</small></button>`).join("")}</div></div>`},readOpts(x){return{bet:segVal(x,"snbet","lucky7")}},onChange(x){const k=h[x.opts().bet];x.preview(x.bet()*k.o-x.bet(),"Win chance",(k.p*100).toFixed(1)+"% · "+k.o+"×")},mount(x){let k=!1;const w=["","⚀","⚁","⚂","⚃","⚄","⚅"];x.stage.innerHTML='<div class="se-stage"><div class="se-dice"><div class="die" id="se-d1">⚄</div><div class="die" id="se-d2">⚄</div></div><div class="se-sum" id="se-sum">—</div><div class="cx-hint" id="se-hint">Pick a bet and roll.</div></div>',x.manual.innerHTML='<button class="act" id="se-roll">Roll dice</button>';const z=x.q("#se-d1"),N=x.q("#se-d2"),E=x.q("#se-sum"),$=x.q("#se-hint");x.q("#se-roll").addEventListener("click",()=>{if(k||x.autoRunning())return;const X=x.bet(),re=x.opts().bet,ne=h[re];if(!placeBet(X))return toast("Not enough balance for that bet.","lose");k=!0,x.q("#se-roll").disabled=!0,x.banner(null),sfx.spin();let Y=0;const pe=setInterval(()=>{if(z.textContent=w[1+Math.floor(Math.random()*6)],N.textContent=w[1+Math.floor(Math.random()*6)],++Y>10){clearInterval(pe);const ve=1+Math.floor(Math.random()*6),ue=1+Math.floor(Math.random()*6);z.textContent=w[ve],N.textContent=w[ue],E.textContent=ve+" + "+ue+" = "+(ve+ue);const Oe=m(re,ve,ue),rt=Oe?X*ne.o:0;resolveRound(rt,Oe),x.banner(Oe?ne.l+" — "+fmt(rt):"Rolled "+(ve+ue)+" — "+fmt(X)+" lost",Oe?"win":"lose"),x.strip(ve+"+"+ue,Oe?"w":"l"),Oe?sfx.win():sfx.lose(),$.textContent=Oe?"Won "+ne.o+"× on "+ne.l+"!":"Missed "+ne.l+".",k=!1,x.q("#se-roll").disabled=!1}},80)}),x.play=X=>{X.detail&&(z.textContent=w[X.detail.d1],N.textContent=w[X.detail.d2],E.textContent=X.detail.d1+" + "+X.detail.d2)}},onAutoRound(x,k){if(!k.detail)return;const w=["","⚀","⚁","⚂","⚃","⚄","⚅"],z=x.q("#se-d1"),N=x.q("#se-d2"),E=x.q("#se-sum");z&&(z.textContent=w[k.detail.d1]),N&&(N.textContent=w[k.detail.d2]),E&&(E.textContent=k.detail.d1+" + "+k.detail.d2)},sim(x,k){const w=k.bet||"lucky7",z=h[w],N=1+Math.floor(Math.random()*6),E=1+Math.floor(Math.random()*6),$=m(w,N,E);return{payout:$?x*z.o:0,mult:$?z.o:0,tag:N+"+"+E+"="+(N+E),detail:{d1:N,d2:E}}}};const y={low:{show:1400,rate:.75},medium:{show:900,rate:.55},high:{show:550,rate:.35}},v=(x,k)=>EDGE*Math.max(0,x)/4;MODULES.moles={blurb:"Flash whack — 8 moles, react fast",edge:"Skill-based · varies",jewelAt:0,optsHTML(x){const k=x.risk||"medium";return segField("Difficulty","ml-risk",[{v:"low",t:"Easy"},{v:"medium",t:"Medium"},{v:"high",t:"Hard"}],k)+`<div class="field auto-only"><label>Autobet cashes out</label><div class="inp-row"><input type="number" id="ml-target" min="1" max="8" value="${x.target||5}"><span class="unit">hits</span></div></div>`},readOpts(x){const k=segVal(x,"ml-risk","medium"),w=Math.min(8,Math.max(1,parseInt(x.querySelector("#ml-target").value)||5));return{risk:k,target:w}},onChange(x){const k=x.opts(),w=v(k.target,k.risk);x.preview(x.bet()*w-x.bet(),"Autobet stops at "+k.target+" hits",w.toFixed(2)+"×")},mount(x){let k=!1,w=0,z=0,N=0,E=0,$="medium",X=null,re=-1;x.stage.innerHTML='<div class="cx-topbar" style="width:min(100%,58vh,420px)"><div class="cx-big" id="ml-mult">0.00×</div><div class="cx-hint" id="ml-hint">Whack 8 moles — react fast.</div></div><div class="ms-grid" id="mlgrid"></div>',x.manual.innerHTML='<button class="act" id="ml-start">Start round</button><button class="act act-amber hidden" id="ml-cashout">Cash out</button>';const ne=x.q("#mlgrid"),Y=x.q("#ml-mult"),pe=x.q("#ml-hint"),ve=x.q("#ml-start"),ue=x.q("#ml-cashout");function Oe(){ne.innerHTML="";for(let te=0;te<9;te++){const Ue=document.createElement("div");Ue.className="ms-hole",Ue.dataset.i=te,Ue.innerHTML='<span class="ms-pop"></span>',Ue.addEventListener("click",()=>kt(te,Ue)),ne.appendChild(Ue)}}function rt(){const te=v(w);Y.textContent=te.toFixed(2)+"×",pe.textContent=w+" hits · "+z+" misses · "+(8-N)+" left"}function Je(){k=!1,clearTimeout(X),ne.querySelectorAll(".ms-hole").forEach(te=>te.classList.remove("up")),ve.classList.remove("hidden"),ue.classList.add("hidden"),x.lockBet(!1)}function St(){if(!k)return;if(N>=8){pt();return}ne.querySelectorAll(".ms-hole").forEach(Ue=>Ue.classList.remove("up")),re=Math.floor(Math.random()*9);const te=ne.querySelector('[data-i="'+re+'"]');te.classList.add("up"),te.querySelector(".ms-pop").innerHTML=MOLE_SVG,X=setTimeout(()=>{k&&(te.classList.remove("up"),z++,N++,rt(),sfx.lose(),N<8?setTimeout(St,300):pt())},y[$].show)}function kt(te,Ue){if(k){if(clearTimeout(X),te===re?(Ue.classList.remove("up"),w++,sfx.chip()):(z++,sfx.lose()),N++,rt(),N>=8){pt();return}setTimeout(St,300)}}function pt(){const te=v(w);resolveRound(E*te,te>0),x.banner(w+" of 8 whacked — "+(te>0?fmt(E*te):"no payout"),te>0?"win":"lose"),x.strip(te.toFixed(2)+"×",te>0?"w":"l"),te>0?sfx.win():sfx.lose(),pe.textContent="Final: "+w+" hits, "+z+" misses.",Je()}ve.addEventListener("click",()=>{if(!x.autoRunning()){if(E=x.bet(),$=x.opts().risk,!placeBet(E))return toast("Not enough balance for that bet.","lose");w=0,z=0,N=0,k=!0,Oe(),x.banner(null),x.lockBet(!0),Y.textContent="0.00×",pe.textContent="Get ready...",ve.classList.add("hidden"),ue.classList.remove("hidden"),setTimeout(St,800)}}),ue.addEventListener("click",()=>{if(!k||w===0)return toast("Whack at least one mole first.");const te=v(w);resolveRound(E*te,!0),x.banner("Cashed out at "+te.toFixed(2)+"× — "+fmt(E*te),"win"),x.strip(te.toFixed(2)+"×","w"),sfx.win(),pe.textContent="Walked away with "+w+" whacks.",Je()}),x.play=te=>{te.detail&&(w=te.detail.hits,z=te.detail.misses,Oe(),Y.textContent=(te.mult||0).toFixed(2)+"×",te.win?sfx.win():sfx.lose())},Oe(),onLeave(()=>clearTimeout(X))},onAutoRound(x,k){const w=x.q("#ml-mult");w&&(w.textContent=(k.mult||0).toFixed(2)+"×")},sim(x,k){const w=k.risk||"medium",z=y[w].rate,N=k.target||5;let E=0,$=0;for(let re=0;re<8;re++)if(Math.random()<z){if(E++,E>=N)break}else $++;const X=v(E);return{payout:x*X,mult:X,tag:E+"/"+(E+$),detail:{hits:E,misses:$,risk:w}}}};const R={slots:{},blackjack:{},roulette:{layout:[{type:"color",value:"red",weight:1}]},crash:{target:2},horse:{pick:1},cases:{caseId:"starter"},ridebus:{stop:3},mines:{mines:3,picks:4,pickMode:"random"},plinko:{rows:12,risk:"medium"},tower:{mode:"medium",target:3},chicken:{diff:"medium",target:5},limbo:{target:2},dice:{mode:"under",lo:50,hi:75},coinflip:{side:"heads"},higherlower:{target:2},keno:{picks:[1,2,3,4,5]},rps:{throw:"rock"},luckynumber:{range:10,pick:7},darts:{risk:"medium"},wheel:{risk:"medium"},pump:{risk:"medium",target:5},snakes:{bet:"lucky7"},moles:{risk:"medium",target:5}};function M(x,k=R[x]||{}){if(x==="slots"){const w={};return SLOT_KEYS.forEach(N=>w[N]=(w[N]||0)+1/SLOT_KEYS.length),{win:null,loss:null,push:null,rtp:Object.entries(w).reduce((N,[E,$])=>N+$**3*SLOT_PAY[E]+3*$*$*(1-$)*SLOT_PAIR_PAY,0)}}if(x==="coinflip")return{win:.5,loss:.5,push:0,rtp:.5*HOUSE_CONFIG.payouts.coin};if(x==="rps")return{win:1/3,loss:1/3,push:1/3,rtp:(HOUSE_CONFIG.payouts.rps+1)/3};if(x==="roulette")return{win:18/37,loss:19/37,push:0,rtp:36/37};if(x==="limbo"||x==="crash"){const w=k.target||2,z=HOUSE_CONFIG.standardRtp/w;return{win:z,loss:1-z,push:0,rtp:z*w}}if(x==="dice"){const w=diceChance(k)/100,z=HOUSE_CONFIG.standardRtp/w;return{win:w,loss:1-w,push:0,rtp:w*z}}if(x==="luckynumber"){const w=1/(k.range||10);return{win:w,loss:1-w,push:0,rtp:w*(k.range||10)*HOUSE_CONFIG.standardRtp}}if(x==="mines"){const w=combi(25-(k.mines||3),k.picks||4)/combi(25,k.picks||4);return{win:w,loss:1-w,push:0,rtp:w*minesMult(k.picks||4,k.mines||3)}}if(x==="tower"){const w=TOWER_MODES[k.mode||"medium"].tiles,z=Math.pow((w-1)/w,k.target||3);return{win:z,loss:1-z,push:0,rtp:z*towerMult(k.mode||"medium",k.target||3)}}if(x==="chicken"){const w=Math.pow(CX_DIFF[k.diff||"medium"].p,k.target||5);return{win:w,loss:1-w,push:0,rtp:w*cxMult(k.diff||"medium",k.target||5)}}if(x==="pump"){const w=Math.pow(PUMP_RISK[k.risk||"medium"].q,k.target||5);return{win:w,loss:1-w,push:0,rtp:w*pumpMult(k.risk||"medium",k.target||5)}}if(x==="snakes"){const w=h[k.bet||"lucky7"];return{win:w.p,loss:1-w.p,push:0,rtp:w.p*w.o}}if(x==="moles"){const w=k.risk||"medium",z=y[w].rate;let N=0;for(let E=0;E<=8;E++){const $=combi(8,E)*Math.pow(z,E)*Math.pow(1-z,8-E);N+=$*v(E)}return{win:null,loss:null,push:null,rtp:N}}if(x==="plinko"){const w=plinkoTable(k.rows||12,k.risk||"medium"),z=k.rows||12;return{win:null,loss:null,push:null,rtp:w.reduce((E,$,X)=>E+combi(z,X)/2**z*$,0)}}if(x==="horse"){const w=HORSE_P[(k.pick||1)-1],z=HORSES[(k.pick||1)-1].odds;return{win:w,loss:1-w,push:0,rtp:w*z}}if(x==="wheel")return{win:null,loss:null,push:null,rtp:s(WHEEL_RISK[k.risk||"medium"].items)};if(x==="darts")return{win:null,loss:null,push:null,rtp:s(DARTS_RISK[k.risk||"medium"].items)};if(x==="cases")return{win:null,loss:null,push:null,rtp:caseRTP(caseById(k.caseId||"starter"))};if(x==="keno"){const w=(k.picks||[]).length||5;let z=0;for(let N=0;N<=w;N++)z+=combi(w,N)*combi(40-w,10-N)/combi(40,10)*((KENO_PAY[w]||{})[N]||0);return{win:null,loss:null,push:null,rtp:z}}return null}const H=resolveRound;resolveRound=function(x,k){const w=betCtx.stake||0,z=betCtx.game||currentGameId();H(x,k),w>0&&(state.history=state.history||[],state.history.unshift({game:z,bet:w,payout:x,mult:x/w,profit:x-w,win:k,at:Date.now()}),state.history=state.history.slice(0,250),state.recent=state.recent||[],state.recent=[z,...state.recent.filter(N=>N!==z)].slice(0,8),save())};const C=document.createElement("div");C.id="audit-modal",C.className="audit-modal hidden",C.innerHTML='<div class="audit-card"><button class="audit-close">×</button><div id="audit-body"></div></div>',document.body.appendChild(C),C.querySelector(".audit-close").onclick=()=>C.classList.add("hidden"),C.onclick=x=>{x.target===C&&C.classList.add("hidden")};const b=x=>{C.querySelector("#audit-body").innerHTML=x,C.classList.remove("hidden")};function _(x){const k=gameById(x),w=M(x),z=MODULES[x];return`<h2>${r(k.name)} rules</h2><p>${r(z.blurb||k.desc)}.</p><div class="audit-grid"><div><small>Expected RTP</small><b>${w?t(w.rtp):"Strategy dependent"}</b></div><div><small>House edge</small><b>${w?t(1-w.rtp):r(z.edge||"Varies")}</b></div>${w&&w.win!==null?`<div><small>Win chance</small><b>${t(w.win)}</b></div><div><small>Loss chance</small><b>${t(w.loss)}</b></div>`:""}</div><p class="note">Payouts shown in the game are calculated from the same configuration used to settle each round. Pushes return the stake.</p>`}function F(x){const k=M(x);return x==="horse"?`<h2>Horse Race odds</h2><table class="tbl"><thead><tr><th>Horse</th><th>Chance</th><th>Payout</th></tr></thead><tbody>${HORSES.map((w,z)=>`<tr><td>${w.n}. ${w.name}</td><td>${t(HORSE_P[z])}</td><td>${w.odds.toFixed(2)}×</td></tr>`).join("")}</tbody></table>`:x==="wheel"?`<h2>Wheel segments</h2>${WHEEL_RISK.medium.items.map(w=>`<div class="audit-line"><span>${w.m.toFixed(2)}×</span><b>${t(w.w/WHEEL_RISK.medium.items.reduce((z,N)=>z+N.w,0))}</b></div>`).join("")}`:`<h2>${gameById(x).name} odds</h2>${k?`<div class="audit-grid"><div><small>RTP</small><b>${t(k.rtp)}</b></div><div><small>House edge</small><b>${t(1-k.rtp)}</b></div>${k.win!==null?`<div><small>Win</small><b>${t(k.win)}</b></div><div><small>Loss</small><b>${t(k.loss)}</b></div>`:""}</div>`:"<p>Odds vary with your live choices and are shown beside the wager.</p>"}`}document.addEventListener("click",x=>{const k=x.target.closest("[data-rules]");k&&b(_(k.dataset.rules));const w=x.target.closest("[data-odds]");w&&b(F(w.dataset.odds))});const I=mountGame;mountGame=function(x,k){I(x,k);const w=x.querySelector(".bar-tools");w&&w.insertAdjacentHTML("afterbegin",`<button class="ghost-btn" data-rules="${k}">Rules</button><button class="ghost-btn" data-odds="${k}">Odds</button>`)};const D="jarvisbet_favorites";let W=new Set(JSON.parse(localStorage.getItem(D)||"[]"));const Q=tileHTML;tileHTML=function(x){return Q(x).replace('<div class="tile"',`<div class="tile" data-game-id="${x.id}"`).replace('<div class="tile-art">',`<button class="fav-star ${W.has(x.id)?"on":""}" data-fav="${x.id}" title="Favorite">★</button><div class="tile-art">`).replace(`<h3>${x.name}</h3>`,`<small class="tile-cat">${x.cat==="classic"?"Table game":"Original"}</small><h3>${x.name}</h3>`)},document.addEventListener("click",x=>{const k=x.target.closest("[data-fav]");if(!k)return;x.stopPropagation();const w=k.dataset.fav;W.has(w)?W.delete(w):W.add(w),localStorage.setItem(D,JSON.stringify([...W])),k.classList.toggle("on",W.has(w))});const ee=renderLobby;renderLobby=function(x){ee(x);const k=x.querySelector(".masthead");k.insertAdjacentHTML("afterend",'<div class="game-search"><input id="game-search" placeholder="Search games…"><span id="search-count"></span></div>');const w=x.querySelector("#game-search"),z=x.querySelector("#search-count");w.oninput=()=>{const $=w.value.trim().toLowerCase();let X=0;x.querySelectorAll(".tile").forEach(re=>{const ne=!$||re.textContent.toLowerCase().includes($);re.style.display=ne?"":"none",ne&&X++}),z.textContent=X?`${X} game${X===1?"":"s"}`:"No games found"};const N=[...W].map(gameById).filter(Boolean),E=(state.recent||[]).map(gameById).filter(Boolean);N.length&&k.insertAdjacentHTML("beforebegin",`<div class="row-head"><h2>Favorites</h2><span>${N.length} games</span></div><div class="grid compact-row">${N.map(tileHTML).join("")}</div>`),E.length&&k.insertAdjacentHTML("beforebegin",`<div class="row-head"><h2>Recently Played</h2><span>Rounds started, not opens</span></div><div class="grid compact-row">${E.map(tileHTML).join("")}</div>`)};const q=buildSidebar;buildSidebar=function(){q();const x=document.querySelector("#nav-main");x.innerHTML=`<div class="nav-head">Home</div><div class="nav-item" data-nav="home"><span class="ic">${ART.icon.home}</span>Lobby</div><div class="nav-item" data-custom="favorites"><span class="ic">${ART.icon.originals}</span>Favorites</div><div class="nav-item" data-custom="recent"><span class="ic">${ART.icon.popular}</span>Recently Played</div><div class="nav-head">Multiplayer</div><div class="nav-item" data-nav="versus"><span class="ic">⚔️</span>Versus</div><div class="nav-item" data-nav="leaderboard"><span class="ic">🏆</span>Leaderboard</div><div class="nav-head">Tools</div><div class="nav-item" data-nav="manager"><span class="ic">${ART.icon.manager}</span>Autobet</div><div class="nav-item" data-custom="history"><span class="ic">${ART.icon.jarvsino}</span>History</div><div class="nav-item" data-nav="stats"><span class="ic">${ART.icon.stats}</span>Statistics</div><div class="nav-head">Rewards</div><div class="nav-item" data-nav="dailywheel"><span class="ic">${ART.icon.wheel}</span>Daily Wheel</div><div class="nav-item" data-nav="upgrades"><span class="ic">${ART.icon.upgrades}</span>Upgrades</div><div class="nav-head">Account</div><div class="nav-item" data-custom="settings"><span class="ic">${ART.icon.stats}</span>Settings</div><div class="sidebar-search"><input placeholder="Find a game…"></div>`;const k=x.querySelector(".sidebar-search input");k.oninput=()=>{const w=k.value.toLowerCase();document.querySelectorAll(".game-nav").forEach(z=>z.style.display=z.textContent.toLowerCase().includes(w)?"":"none")}},document.addEventListener("click",x=>{var w;const k=(w=x.target.closest("[data-custom]"))==null?void 0:w.dataset.custom;if(k==="history"&&ye(),k==="settings"&&fe(),k==="favorites"||k==="recent"){const N=(k==="favorites"?[...W]:state.recent||[]).map(gameById).filter(Boolean),E=document.querySelector("#content");currentView=k,E.classList.remove("fixed"),E.innerHTML="",renderList(E,k==="favorites"?"Favorites":"Recently Played",N)}}),document.querySelector(".wallet").style.cursor="pointer",document.querySelector(".wallet").onclick=()=>{const x=state.stats,k=(x.returned||0)-(x.wagered||0);b(`<h2>Wallet summary</h2><div class="audit-grid"><div><small>Current balance</small><b>${fmt(totalBalance())}</b></div><div><small>Net profit</small><b class="${k>=0?"pos":"neg"}">${fmtSigned(k)}</b></div><div><small>Total wagered</small><b>${fmt(x.wagered||0)}</b></div><div><small>Total returned</small><b>${fmt(x.returned||0)}</b></div></div><div class="act-row"><button class="act" data-nav="stats">View Statistics</button><button class="act act-2" id="wallet-history">View History</button></div>`),setTimeout(()=>{const w=document.querySelector("#wallet-history");w&&(w.onclick=ye)})};function fe(){const x=JSON.stringify(state);b(`<h2>Settings</h2><div class="settings-list"><label><span>Reduced motion</span><input type="checkbox" id="set-motion" ${localStorage.getItem("jarvisbet_reduce_motion")==="1"?"checked":""}></label><label><span>Confirm bets</span><input type="checkbox" id="set-confirm" ${localStorage.getItem("jarvisbet_confirm")==="1"?"checked":""}></label><label><span>Compact mode</span><input type="checkbox" id="set-compact" ${document.body.classList.contains("compact-ui")?"checked":""}></label></div><div class="act-row"><button class="act act-2" id="set-export">Export save</button><button class="act act-2" id="set-import">Import save</button></div><button class="act act-red" id="set-reset">Reset all data</button><textarea id="save-transfer" class="save-transfer" placeholder="Exported save appears here, or paste a save to import"></textarea>`),document.querySelector("#set-motion").onchange=k=>{localStorage.setItem("jarvisbet_reduce_motion",k.target.checked?"1":"0"),document.body.classList.toggle("reduce-motion",k.target.checked)},document.querySelector("#set-compact").onchange=k=>document.body.classList.toggle("compact-ui",k.target.checked),document.querySelector("#set-confirm").onchange=k=>localStorage.setItem("jarvisbet_confirm",k.target.checked?"1":"0"),document.querySelector("#set-export").onclick=()=>document.querySelector("#save-transfer").value=btoa(unescape(encodeURIComponent(x))),document.querySelector("#set-import").onclick=()=>{try{const k=JSON.parse(decodeURIComponent(escape(atob(document.querySelector("#save-transfer").value.trim()))));localStorage.setItem(LS_KEY,JSON.stringify(k)),location.reload()}catch{toast("That save could not be imported.","lose")}},document.querySelector("#set-reset").onclick=()=>{confirm("Reset all JarvisBet data? This cannot be undone.")&&(localStorage.removeItem(LS_KEY),location.reload())}}function ye(){const x=state.history||[];b(`<h2>History</h2><div class="history-filters"><button data-hf="all">All</button><button data-hf="win">Wins</button><button data-hf="loss">Losses</button></div><div id="history-rows">${x.length?x.map(k=>`<div class="history-row" data-result="${k.win===!0?"win":k.win===!1?"loss":"push"}"><b>${r((gameById(k.game)||{}).name||k.game)}</b><span>${fmt(k.bet)} · ${k.mult.toFixed(2)}×</span><span class="${k.profit>=0?"pos":"neg"}">${fmtSigned(k.profit)}</span><small>${new Date(k.at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}</small></div>`).join(""):'<div class="empty">No rounds played yet.</div>'}</div>`),C.querySelectorAll("[data-hf]").forEach(k=>k.onclick=()=>C.querySelectorAll(".history-row").forEach(w=>w.style.display=k.dataset.hf==="all"||w.dataset.result===k.dataset.hf?"":"none"))}document.querySelector("#dev h4").insertAdjacentHTML("afterend",'<button data-dev="probtest">Run Probability Test</button><button data-dev="auditreport">Probability Audit Report</button>'),document.querySelector(".tb-right").insertAdjacentHTML("afterbegin",'<button class="tb-btn auto-status" data-nav="manager">AUTO <b>0</b></button><button class="tb-btn" data-custom="settings" title="Settings">⚙</button>');const Ee=()=>{const x=document.querySelector(".auto-status"),k=Auto.list();x.classList.toggle("live",k.length>0),x.querySelector("b").textContent=k.reduce((w,z)=>w+z.done,0),x.title=k.length?`${k.map(w=>gameById(w.game).name).join(", ")} · ${fmtSigned(k.reduce((w,z)=>w+z.profit,0))}`:"No autobet running"};document.addEventListener("auto:round",Ee),document.addEventListener("auto:end",Ee),document.addEventListener("auto:state",Ee),Ee();async function Re(){const x=document.querySelector("#pt-game").value,k=+document.querySelector("#pt-rounds").value,w=MODULES[x],z=R[x]||{},N=document.querySelector("#pt-out");let E=0,$=0,X=0,re=0,ne=0;N.textContent="Running…";for(let pe=0;pe<k;pe+=1e4){const ve=Math.min(k,pe+1e4);for(let ue=pe;ue<ve;ue++){const Oe=w.sim(1,z)||{payout:0};E+=Oe.payout,ne=Math.max(ne,Oe.payout),Math.abs(Oe.payout-1)<1e-10?re++:Oe.payout>1?$++:X++}N.textContent=`${ve.toLocaleString()} / ${k.toLocaleString()}`,await new Promise(requestAnimationFrame)}const Y=E/k;N.innerHTML=`<div class="audit-grid"><div><small>Rounds</small><b>${k.toLocaleString()}</b></div><div><small>Total wagered</small><b>${fmt(k)}</b></div><div><small>Total paid</small><b>${fmt(E)}</b></div><div><small>RTP / edge</small><b>${t(Y)} / ${t(1-Y)}</b></div><div><small>Wins / losses / pushes</small><b>${$} / ${X} / ${re}</b></div><div><small>Largest / average payout</small><b>${ne.toFixed(4)}× / ${Y.toFixed(4)}×</b></div></div>`}function _e(){b(`<h2>Probability tester</h2><div class="two"><div class="field"><label>Game</label><div class="inp-row"><select id="pt-game">${GAMES.filter(x=>MODULES[x.id].sim).map(x=>`<option value="${x.id}">${x.name}</option>`).join("")}</select></div></div><div class="field"><label>Rounds</label><div class="inp-row"><select id="pt-rounds"><option>10000</option><option>100000</option><option>1000000</option></select></div></div></div><button class="act" id="pt-run">Run test</button><div id="pt-out" class="audit-output"></div>`),document.querySelector("#pt-run").onclick=Re}function oe(){const x=GAMES.map(k=>{const w=M(k.id);return`<tr><td>${k.name}</td><td>${w?t(w.rtp):"Simulation"}</td><td>${w?t(1-w.rtp):MODULES[k.id].edge||"Varies"}</td><td>${w&&w.rtp>.9&&w.rtp<=1?"✓":"Review in tester"}</td></tr>`}).join("");b(`<h2>Live probability audit</h2><p class="note">Values are calculated from the same tables and formulas currently settling rounds.</p><table class="tbl"><thead><tr><th>Game</th><th>RTP</th><th>Edge</th><th>Status</th></tr></thead><tbody>${x}</tbody></table>`)}dev.onclick,dev.addEventListener("click",x=>{var w;const k=(w=x.target.closest("[data-dev]"))==null?void 0:w.dataset.dev;k==="probtest"&&_e(),k==="auditreport"&&oe()});const ke=paintVersus;paintVersus=function(){var E,$;ke();const x=document.getElementById("vs-root");if(!x||!MP.lastResult||!MP.lastResult.mine)return;const k=MP.lobby;if(!k)return;const w=MP.lastResult,z=["","⚀","⚁","⚂","⚃","⚄","⚅"];let N="";if(k.game==="dice"){const X=ve=>{const ue=ve.match(/(\d+)\s*\+\s*(\d+)/);return ue?[+ue[1],+ue[2]]:[1,1]},[re,ne]=X(w.mine.label),[Y,pe]=X(w.other.label);N=`<div class="vs-visual"><div class="vs-side"><small>You</small><div class="vs-dice"><span class="die">${z[re]}</span><span class="die">${z[ne]}</span></div><b>${r(((E=w.mine.label.split("=")[1])==null?void 0:E.trim())||"")}</b></div><div class="vs-vs2">VS</div><div class="vs-side"><small>${r(w.otherName)}</small><div class="vs-dice"><span class="die">${z[Y]}</span><span class="die">${z[pe]}</span></div><b>${r((($=w.other.label.split("=")[1])==null?void 0:$.trim())||"")}</b></div></div>`}else if(k.game==="card"){const X=pe=>{const ve=pe.match(/([0-9JQKA]+)([♠♥♦♣])/);return ve?{r:ve[1],s:ve[2]}:{r:"?",s:"♠"}},re=X(w.mine.label),ne=X(w.other.label),Y=pe=>pe==="♥"||pe==="♦";N=`<div class="vs-visual"><div class="vs-side"><small>You</small><div class="vs-card ${Y(re.s)?"red":""}">${re.r}<br>${re.s}</div></div><div class="vs-vs2">VS</div><div class="vs-side"><small>${r(w.otherName)}</small><div class="vs-card ${Y(ne.s)?"red":""}">${ne.r}<br>${ne.s}</div></div></div>`}else if(k.game==="slots"){const X=Y=>Y.split(/\s+\d/)[0].trim().split(/\s+/),re=X(w.mine.label),ne=X(w.other.label);N=`<div class="vs-visual"><div class="vs-side"><small>You</small><div class="vs-reel">${re.map(Y=>`<span class="vs-sym">${Y}</span>`).join("")}</div></div><div class="vs-vs2">VS</div><div class="vs-side"><small>${r(w.otherName)}</small><div class="vs-reel">${ne.map(Y=>`<span class="vs-sym">${Y}</span>`).join("")}</div></div></div>`}else k.game==="limbo"&&(N=`<div class="vs-visual"><div class="vs-side"><small>You</small><div class="vs-limbo">${r(w.mine.label)}</div></div><div class="vs-vs2">VS</div><div class="vs-side"><small>${r(w.otherName)}</small><div class="vs-limbo">${r(w.other.label)}</div></div></div>`);if(N){const X=x.querySelector(".vs-visual");X&&X.remove();const re=x.querySelector(".note");re?re.insertAdjacentHTML("beforebegin",N):x.insertAdjacentHTML("beforeend",N)}},buildSidebar(),navigate("home")})();</script>
+<script>(function Lk(){const r=x=>String(x??"").replace(/[&<>"']/g,k=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[k]),t=(x,k=2)=>`${(x*100).toFixed(k)}%`,s=x=>x.reduce((k,w)=>k+w.m*w.w,0)/x.reduce((k,w)=>k+w.w,0),o=(x,k)=>{const w=s(x);x.forEach(z=>{z.m>0&&(z.m=z.m*k/w)})};Object.entries(WHEEL_RISK).forEach(([x,k])=>o(k.items,HOUSE_CONFIG.edges.wheel[x].rtp)),Object.entries(DARTS_RISK).forEach(([x,k])=>o(k.items,HOUSE_CONFIG.edges.darts[x].rtp));const l={starter:[{m:0,w:3e4},{m:.5,w:15e3},{m:1,w:15e3},{m:2,w:25e3},{m:5,w:1e3},{m:15,w:200},{m:50,w:20},{m:100,w:8},{m:500,w:2},{m:2e3,w:1}],field:[{m:0,w:3e4},{m:.5,w:12e3},{m:1,w:15e3},{m:2,w:25e3},{m:5,w:1500},{m:15,w:300},{m:50,w:30},{m:100,w:10},{m:500,w:3},{m:3e3,w:1}],vault:[{m:0,w:32e3},{m:.5,w:1e4},{m:1,w:15e3},{m:2,w:25e3},{m:5,w:2e3},{m:15,w:500},{m:50,w:50},{m:100,w:15},{m:500,w:4},{m:5e3,w:1}],blackbox:[{m:0,w:35e3},{m:.5,w:8e3},{m:1,w:12e3},{m:2,w:25e3},{m:5,w:1500},{m:15,w:300},{m:50,w:30},{m:100,w:10},{m:500,w:2},{m:5e3,w:1}]};CASES.forEach(x=>{const k=l[x.id];k&&(x.items=k.slice())});const u={};SLOT_KEYS.forEach(x=>u[x]=(u[x]||0)+1/SLOT_KEYS.length);const d=Object.entries(u).reduce((x,[k,w])=>x+w**3*SLOT_PAY[k]+3*w*w*(1-w)*SLOT_PAIR_PAY,0),p=HOUSE_CONFIG.standardRtp/d;Object.keys(SLOT_PAY).forEach(x=>SLOT_PAY[x]*=p),SLOT_PAIR_PAY*=p,MODULES.slots.edge="1% edge",MODULES.rps.edge="1% edge",MODULES.rps.onChange=x=>x.preview(x.bet()*(HOUSE_CONFIG.payouts.rps-1),"Win / tie / loss",`${HOUSE_CONFIG.payouts.rps.toFixed(2)}× / push / 0`),MODULES.rps.sim=(x,k)=>{const w=k.throw||"rock",z=["rock","paper","scissors"],N=z[Math.floor(Math.random()*3)],E={rock:"scissors",paper:"rock",scissors:"paper"};return w===N?{payout:x,mult:1,tag:"TIE",detail:{mine:w,theirs:N}}:E[w]===N?{payout:x*HOUSE_CONFIG.payouts.rps,mult:HOUSE_CONFIG.payouts.rps,tag:"WIN",detail:{mine:w,theirs:N}}:{payout:0,mult:0,tag:"LOSS",detail:{mine:w,theirs:N}}},MODULES.coinflip.edge="1% edge",MODULES.darts.edge="Low 1% · Medium 2% · High 4%",MODULES.cases.edge="1% edge",MODULES.keno.edge="1% edge · hypergeometric paytable";const h={snake_eyes:{l:"Snake Eyes",d:"Roll 1-1",o:35,p:1/36},boxcars:{l:"Boxcars",d:"Roll 6-6",o:35,p:1/36},doubles:{l:"Any Doubles",d:"Matching pair",o:5.9,p:6/36},lucky7:{l:"Lucky 7",d:"Sum = 7",o:5.9,p:6/36},over:{l:"Over 7",d:"Sum 8+",o:2.3,p:15/36},under:{l:"Under 7",d:"Sum 6-",o:2.3,p:15/36}};function m(x,k,w){const z=k+w;return x==="snake_eyes"?k===1&&w===1:x==="boxcars"?k===6&&w===6:x==="doubles"?k===w:x==="lucky7"?z===7:x==="over"?z>7:z<7}const y={low:{show:1400,rate:.75},medium:{show:900,rate:.55},high:{show:550,rate:.35}},v=(x,k)=>EDGE*Math.max(0,x)/4;const R={slots:{},blackjack:{},roulette:{layout:[{type:"color",value:"red",weight:1}]},crash:{target:2},horse:{pick:1},cases:{caseId:"starter"},ridebus:{stop:3},mines:{board:5,size:25,mines:3,pickMode:"random",chosen:[]},plinko:{rows:12,risk:"medium"},tower:{mode:"medium",target:3},chicken:{diff:"medium",target:5},limbo:{target:2},dice:{mode:"under",lo:50,hi:75},coinflip:{side:"heads"},higherlower:{target:2},keno:{picks:[1,2,3,4,5]},rps:{throw:"rock"},darts:{risk:"medium"},pump:{risk:"medium",target:5},};function M(x,k=R[x]||{}){if(x==="slots"){const w={};return SLOT_KEYS.forEach(N=>w[N]=(w[N]||0)+1/SLOT_KEYS.length),{win:null,loss:null,push:null,rtp:Object.entries(w).reduce((N,[E,$])=>N+$**3*SLOT_PAY[E]+3*$*$*(1-$)*SLOT_PAIR_PAY,0)}}if(x==="coinflip")return{win:.5,loss:.5,push:0,rtp:.5*HOUSE_CONFIG.payouts.coin};if(x==="rps")return{win:1/3,loss:1/3,push:1/3,rtp:(HOUSE_CONFIG.payouts.rps+1)/3};if(x==="roulette")return{win:18/37,loss:19/37,push:0,rtp:36/37};if(x==="limbo"||x==="crash"){const w=k.target||2,z=HOUSE_CONFIG.standardRtp/w;return{win:z,loss:1-z,push:0,rtp:z*w}}if(x==="dice"){const w=diceChance(k)/100,z=HOUSE_CONFIG.standardRtp/w;return{win:w,loss:1-w,push:0,rtp:w*z}}if(x==="colordraw")return{win:1/3,loss:2/3,push:0,rtp:COLOR_DRAW_MULT/3};if(x==="mysterychest")return{win:null,loss:null,push:null,rtp:CHEST_RTP};if(x==="numberdraw")return{win:1/12,loss:11/12,push:0,rtp:NUMBER_DRAW_MULT/12};if(x==="mines"){const w=combi(25-(k.mines||3),k.picks||4)/combi(25,k.picks||4);return{win:w,loss:1-w,push:0,rtp:w*minesMult(k.picks||4,k.mines||3)}}if(x==="tower"){const w=TOWER_MODES[k.mode||"medium"].tiles,z=Math.pow((w-1)/w,k.target||3);return{win:z,loss:1-z,push:0,rtp:z*towerMult(k.mode||"medium",k.target||3)}}if(x==="chicken"){const w=Math.pow(CX_DIFF[k.diff||"medium"].p,k.target||5);return{win:w,loss:1-w,push:0,rtp:w*cxMult(k.diff||"medium",k.target||5)}}if(x==="pump"){const w=Math.pow(PUMP_RISK[k.risk||"medium"].q,k.target||5);return{win:w,loss:1-w,push:0,rtp:w*pumpMult(k.risk||"medium",k.target||5)}}if(x==="plinko"){const w=plinkoTable(k.rows||12,k.risk||"medium"),z=k.rows||12;return{win:null,loss:null,push:null,rtp:w.reduce((E,$,X)=>E+combi(z,X)/2**z*$,0)}}if(x==="horse"){const w=HORSE_P[(k.pick||1)-1],z=HORSES[(k.pick||1)-1].odds;return{win:w,loss:1-w,push:0,rtp:w*z}}if(x==="darts")return{win:null,loss:null,push:null,rtp:s(DARTS_RISK[k.risk||"medium"].items)};if(x==="cases")return{win:null,loss:null,push:null,rtp:caseRTP(caseById(k.caseId||"starter"))};if(x==="keno"){const w=(k.picks||[]).length||5;let z=0;for(let N=0;N<=w;N++)z+=combi(w,N)*combi(40-w,10-N)/combi(40,10)*((KENO_PAY[w]||{})[N]||0);return{win:null,loss:null,push:null,rtp:z}}return null}const H=resolveRound;resolveRound=function(x,k){const w=betCtx.stake||0,z=betCtx.game||currentGameId();H(x,k),w>0&&(state.history=state.history||[],state.history.unshift({game:z,bet:w,payout:x,mult:x/w,profit:x-w,win:k,at:Date.now()}),state.history=state.history.slice(0,250),state.recent=state.recent||[],state.recent=[z,...state.recent.filter(N=>N!==z)].slice(0,8),save())};const C=document.createElement("div");C.id="audit-modal",C.className="audit-modal hidden",C.innerHTML='<div class="audit-card"><button class="audit-close">×</button><div id="audit-body"></div></div>',document.body.appendChild(C),C.querySelector(".audit-close").onclick=()=>C.classList.add("hidden"),C.onclick=x=>{x.target===C&&C.classList.add("hidden")};const b=x=>{C.querySelector("#audit-body").innerHTML=x,C.classList.remove("hidden")};function _(x){const k=gameById(x),w=M(x),z=MODULES[x];return`<h2>${r(k.name)} rules</h2><p>${r(z.blurb||k.desc)}.</p><div class="audit-grid"><div><small>Expected RTP</small><b>${w?t(w.rtp):"Strategy dependent"}</b></div><div><small>House edge</small><b>${w?t(1-w.rtp):r(z.edge||"Varies")}</b></div>${w&&w.win!==null?`<div><small>Win chance</small><b>${t(w.win)}</b></div><div><small>Loss chance</small><b>${t(w.loss)}</b></div>`:""}</div><p class="note">Payouts shown in the game are calculated from the same configuration used to settle each round. Pushes return the stake.</p>`}function F(x){const k=M(x);return x==="horse"?`<h2>Horse Race odds</h2><table class="tbl"><thead><tr><th>Horse</th><th>Chance</th><th>Payout</th></tr></thead><tbody>${HORSES.map((w,z)=>`<tr><td>${w.n}. ${w.name}</td><td>${t(HORSE_P[z])}</td><td>${w.odds.toFixed(2)}×</td></tr>`).join("")}</tbody></table>`:`<h2>${gameById(x).name} odds</h2>${k?`<div class="audit-grid"><div><small>RTP</small><b>${t(k.rtp)}</b></div><div><small>House edge</small><b>${t(1-k.rtp)}</b></div>${k.win!==null?`<div><small>Win</small><b>${t(k.win)}</b></div><div><small>Loss</small><b>${t(k.loss)}</b></div>`:""}</div>`:"<p>Odds vary with your live choices and are shown beside the wager.</p>"}`}document.addEventListener("click",x=>{const k=x.target.closest("[data-rules]");k&&b(_(k.dataset.rules));const w=x.target.closest("[data-odds]");w&&b(F(w.dataset.odds))});const I=mountGame;mountGame=function(x,k){I(x,k);const w=x.querySelector(".bar-tools");w&&w.insertAdjacentHTML("afterbegin",`<button class="ghost-btn" data-rules="${k}">Rules</button><button class="ghost-btn" data-odds="${k}">Odds</button>`)};const D="jarvisbet_favorites";let W=new Set(JSON.parse(localStorage.getItem(D)||"[]"));const Q=tileHTML;tileHTML=function(x){return Q(x).replace('<div class="tile"',`<div class="tile" data-game-id="${x.id}"`).replace('<div class="tile-art">',`<button class="fav-star ${W.has(x.id)?"on":""}" data-fav="${x.id}" title="Favorite">★</button><div class="tile-art">`).replace(`<h3>${x.name}</h3>`,`<small class="tile-cat">${x.cat==="classic"?"Table game":"Original"}</small><h3>${x.name}</h3>`)},document.addEventListener("click",x=>{const k=x.target.closest("[data-fav]");if(!k)return;x.stopPropagation();const w=k.dataset.fav;W.has(w)?W.delete(w):W.add(w),localStorage.setItem(D,JSON.stringify([...W])),k.classList.toggle("on",W.has(w))});const ee=renderLobby;renderLobby=function(x){ee(x);const k=x.querySelector(".masthead");k.insertAdjacentHTML("afterend",'<div class="game-search"><input id="game-search" placeholder="Search games…"><span id="search-count"></span></div>');const w=x.querySelector("#game-search"),z=x.querySelector("#search-count");w.oninput=()=>{const $=w.value.trim().toLowerCase();let X=0;x.querySelectorAll(".tile").forEach(re=>{const ne=!$||re.textContent.toLowerCase().includes($);re.style.display=ne?"":"none",ne&&X++}),z.textContent=X?`${X} game${X===1?"":"s"}`:"No games found"};const N=[...W].map(gameById).filter(Boolean),E=(state.recent||[]).map(gameById).filter(Boolean);N.length&&k.insertAdjacentHTML("beforebegin",`<div class="row-head"><h2>Favorites</h2><span>${N.length} games</span></div><div class="grid compact-row">${N.map(tileHTML).join("")}</div>`),E.length&&k.insertAdjacentHTML("beforebegin",`<div class="row-head"><h2>Recently Played</h2><span>Rounds started, not opens</span></div><div class="grid compact-row">${E.map(tileHTML).join("")}</div>`)};const q=buildSidebar;buildSidebar=function(){q();const x=document.querySelector("#nav-main");x.innerHTML=`<div class="nav-head">Home</div><div class="nav-item" data-nav="home"><span class="ic">${ART.icon.home}</span>Lobby</div><div class="nav-item" data-custom="favorites"><span class="ic">${ART.icon.originals}</span>Favorites</div><div class="nav-item" data-custom="recent"><span class="ic">${ART.icon.popular}</span>Recently Played</div><div class="nav-head">Multiplayer</div><div class="nav-item" data-nav="versus"><span class="ic">⚔️</span>Versus</div><div class="nav-item" data-nav="leaderboard"><span class="ic">🏆</span>Leaderboard</div><div class="nav-head">Tools</div><div class="nav-item" data-nav="manager"><span class="ic">${ART.icon.manager}</span>Autobet</div><div class="nav-item" data-custom="history"><span class="ic">${ART.icon.jarvsino}</span>History</div><div class="nav-item" data-nav="stats"><span class="ic">${ART.icon.stats}</span>Statistics</div><div class="nav-head">Rewards</div><div class="nav-item" data-nav="dailywheel"><span class="ic">${ART.icon.wheel}</span>Daily Wheel</div><div class="nav-item" data-nav="upgrades"><span class="ic">${ART.icon.upgrades}</span>Upgrades</div><div class="nav-head">Account</div><div class="nav-item" data-custom="settings"><span class="ic">${ART.icon.stats}</span>Settings</div><div class="sidebar-search"><input placeholder="Find a game…"></div>`;const k=x.querySelector(".sidebar-search input");k.oninput=()=>{const w=k.value.toLowerCase();document.querySelectorAll(".game-nav").forEach(z=>z.style.display=z.textContent.toLowerCase().includes(w)?"":"none")}},document.addEventListener("click",x=>{var w;const k=(w=x.target.closest("[data-custom]"))==null?void 0:w.dataset.custom;if(k==="history"&&ye(),k==="settings"&&fe(),k==="favorites"||k==="recent"){const N=(k==="favorites"?[...W]:state.recent||[]).map(gameById).filter(Boolean),E=document.querySelector("#content");currentView=k,E.classList.remove("fixed"),E.innerHTML="",renderList(E,k==="favorites"?"Favorites":"Recently Played",N)}}),document.querySelector(".wallet").style.cursor="pointer",document.querySelector(".wallet").onclick=()=>{const x=state.stats,k=(x.returned||0)-(x.wagered||0);b(`<h2>Wallet summary</h2><div class="audit-grid"><div><small>Current balance</small><b>${fmt(totalBalance())}</b></div><div><small>Net profit</small><b class="${k>=0?"pos":"neg"}">${fmtSigned(k)}</b></div><div><small>Total wagered</small><b>${fmt(x.wagered||0)}</b></div><div><small>Total returned</small><b>${fmt(x.returned||0)}</b></div></div><div class="act-row"><button class="act" data-nav="stats">View Statistics</button><button class="act act-2" id="wallet-history">View History</button></div>`),setTimeout(()=>{const w=document.querySelector("#wallet-history");w&&(w.onclick=ye)})};function fe(){const x=JSON.stringify(state);b(`<h2>Settings</h2><div class="settings-list"><label><span>Reduced motion</span><input type="checkbox" id="set-motion" ${localStorage.getItem("jarvisbet_reduce_motion")==="1"?"checked":""}></label><label><span>Confirm bets</span><input type="checkbox" id="set-confirm" ${localStorage.getItem("jarvisbet_confirm")==="1"?"checked":""}></label><label><span>Compact mode</span><input type="checkbox" id="set-compact" ${document.body.classList.contains("compact-ui")?"checked":""}></label></div><div class="act-row"><button class="act act-2" id="set-export">Export save</button><button class="act act-2" id="set-import">Import save</button></div><button class="act act-red" id="set-reset">Reset all data</button><textarea id="save-transfer" class="save-transfer" placeholder="Exported save appears here, or paste a save to import"></textarea>`),document.querySelector("#set-motion").onchange=k=>{localStorage.setItem("jarvisbet_reduce_motion",k.target.checked?"1":"0"),document.body.classList.toggle("reduce-motion",k.target.checked)},document.querySelector("#set-compact").onchange=k=>document.body.classList.toggle("compact-ui",k.target.checked),document.querySelector("#set-confirm").onchange=k=>localStorage.setItem("jarvisbet_confirm",k.target.checked?"1":"0"),document.querySelector("#set-export").onclick=()=>document.querySelector("#save-transfer").value=btoa(unescape(encodeURIComponent(x))),document.querySelector("#set-import").onclick=()=>{try{const k=JSON.parse(decodeURIComponent(escape(atob(document.querySelector("#save-transfer").value.trim()))));localStorage.setItem(LS_KEY,JSON.stringify(k)),location.reload()}catch{toast("That save could not be imported.","lose")}},document.querySelector("#set-reset").onclick=()=>{confirm("Reset all JarvisBet data? This cannot be undone.")&&(localStorage.removeItem(LS_KEY),location.reload())}}function ye(){const x=state.history||[];b(`<h2>History</h2><div class="history-filters"><button data-hf="all">All</button><button data-hf="win">Wins</button><button data-hf="loss">Losses</button></div><div id="history-rows">${x.length?x.map(k=>`<div class="history-row" data-result="${k.win===!0?"win":k.win===!1?"loss":"push"}"><b>${r((gameById(k.game)||{}).name||k.game)}</b><span>${fmt(k.bet)} · ${k.mult.toFixed(2)}×</span><span class="${k.profit>=0?"pos":"neg"}">${fmtSigned(k.profit)}</span><small>${new Date(k.at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}</small></div>`).join(""):'<div class="empty">No rounds played yet.</div>'}</div>`),C.querySelectorAll("[data-hf]").forEach(k=>k.onclick=()=>C.querySelectorAll(".history-row").forEach(w=>w.style.display=k.dataset.hf==="all"||w.dataset.result===k.dataset.hf?"":"none"))}document.querySelector("#dev h4").insertAdjacentHTML("afterend",'<button data-dev="probtest">Run Probability Test</button><button data-dev="auditreport">Probability Audit Report</button>'),document.querySelector(".tb-right").insertAdjacentHTML("afterbegin",'<button class="tb-btn auto-status" data-nav="manager">AUTO <b>0</b></button><button class="tb-btn" data-custom="settings" title="Settings">⚙</button>');const Ee=()=>{const x=document.querySelector(".auto-status"),k=Auto.list();x.classList.toggle("live",k.length>0),x.querySelector("b").textContent=k.reduce((w,z)=>w+z.done,0),x.title=k.length?`${k.map(w=>gameById(w.game).name).join(", ")} · ${fmtSigned(k.reduce((w,z)=>w+z.profit,0))}`:"No autobet running"};document.addEventListener("auto:round",Ee),document.addEventListener("auto:end",Ee),document.addEventListener("auto:state",Ee),Ee();async function Re(){const x=document.querySelector("#pt-game").value,k=+document.querySelector("#pt-rounds").value,w=MODULES[x],z=R[x]||{},N=document.querySelector("#pt-out");let E=0,$=0,X=0,re=0,ne=0;N.textContent="Running…";for(let pe=0;pe<k;pe+=1e4){const ve=Math.min(k,pe+1e4);for(let ue=pe;ue<ve;ue++){const Oe=w.sim(1,z)||{payout:0};E+=Oe.payout,ne=Math.max(ne,Oe.payout),Math.abs(Oe.payout-1)<1e-10?re++:Oe.payout>1?$++:X++}N.textContent=`${ve.toLocaleString()} / ${k.toLocaleString()}`,await new Promise(requestAnimationFrame)}const Y=E/k;N.innerHTML=`<div class="audit-grid"><div><small>Rounds</small><b>${k.toLocaleString()}</b></div><div><small>Total wagered</small><b>${fmt(k)}</b></div><div><small>Total paid</small><b>${fmt(E)}</b></div><div><small>RTP / edge</small><b>${t(Y)} / ${t(1-Y)}</b></div><div><small>Wins / losses / pushes</small><b>${$} / ${X} / ${re}</b></div><div><small>Largest / average payout</small><b>${ne.toFixed(4)}× / ${Y.toFixed(4)}×</b></div></div>`}function _e(){b(`<h2>Probability tester</h2><div class="two"><div class="field"><label>Game</label><div class="inp-row"><select id="pt-game">${GAMES.filter(x=>MODULES[x.id].sim).map(x=>`<option value="${x.id}">${x.name}</option>`).join("")}</select></div></div><div class="field"><label>Rounds</label><div class="inp-row"><select id="pt-rounds"><option>10000</option><option>100000</option><option>1000000</option></select></div></div></div><button class="act" id="pt-run">Run test</button><div id="pt-out" class="audit-output"></div>`),document.querySelector("#pt-run").onclick=Re}function oe(){const x=GAMES.map(k=>{const w=M(k.id);return`<tr><td>${k.name}</td><td>${w?t(w.rtp):"Simulation"}</td><td>${w?t(1-w.rtp):MODULES[k.id].edge||"Varies"}</td><td>${w&&w.rtp>.9&&w.rtp<=1?"✓":"Review in tester"}</td></tr>`}).join("");b(`<h2>Live probability audit</h2><p class="note">Values are calculated from the same tables and formulas currently settling rounds.</p><table class="tbl"><thead><tr><th>Game</th><th>RTP</th><th>Edge</th><th>Status</th></tr></thead><tbody>${x}</tbody></table>`)}dev.onclick,dev.addEventListener("click",x=>{var w;const k=(w=x.target.closest("[data-dev]"))==null?void 0:w.dataset.dev;k==="probtest"&&_e(),k==="auditreport"&&oe()});const ke=paintVersus;paintVersus=function(){var E,$;ke();const x=document.getElementById("vs-root");if(!x||!MP.lastResult||!MP.lastResult.mine)return;const k=MP.lobby;if(!k)return;const w=MP.lastResult,z=["","⚀","⚁","⚂","⚃","⚄","⚅"];let N="";if(k.game==="dice"){const X=ve=>{const ue=ve.match(/(\d+)\s*\+\s*(\d+)/);return ue?[+ue[1],+ue[2]]:[1,1]},[re,ne]=X(w.mine.label),[Y,pe]=X(w.other.label);N=`<div class="vs-visual"><div class="vs-side"><small>You</small><div class="vs-dice"><span class="die">${z[re]}</span><span class="die">${z[ne]}</span></div><b>${r(((E=w.mine.label.split("=")[1])==null?void 0:E.trim())||"")}</b></div><div class="vs-vs2">VS</div><div class="vs-side"><small>${r(w.otherName)}</small><div class="vs-dice"><span class="die">${z[Y]}</span><span class="die">${z[pe]}</span></div><b>${r((($=w.other.label.split("=")[1])==null?void 0:$.trim())||"")}</b></div></div>`}else if(k.game==="card"){const X=pe=>{const ve=pe.match(/([0-9JQKA]+)([♠♥♦♣])/);return ve?{r:ve[1],s:ve[2]}:{r:"?",s:"♠"}},re=X(w.mine.label),ne=X(w.other.label),Y=pe=>pe==="♥"||pe==="♦";N=`<div class="vs-visual"><div class="vs-side"><small>You</small><div class="vs-card ${Y(re.s)?"red":""}">${re.r}<br>${re.s}</div></div><div class="vs-vs2">VS</div><div class="vs-side"><small>${r(w.otherName)}</small><div class="vs-card ${Y(ne.s)?"red":""}">${ne.r}<br>${ne.s}</div></div></div>`}else if(k.game==="slots"){const X=Y=>Y.split(/\s+\d/)[0].trim().split(/\s+/),re=X(w.mine.label),ne=X(w.other.label);N=`<div class="vs-visual"><div class="vs-side"><small>You</small><div class="vs-reel">${re.map(Y=>`<span class="vs-sym">${Y}</span>`).join("")}</div></div><div class="vs-vs2">VS</div><div class="vs-side"><small>${r(w.otherName)}</small><div class="vs-reel">${ne.map(Y=>`<span class="vs-sym">${Y}</span>`).join("")}</div></div></div>`}else k.game==="limbo"&&(N=`<div class="vs-visual"><div class="vs-side"><small>You</small><div class="vs-limbo">${r(w.mine.label)}</div></div><div class="vs-vs2">VS</div><div class="vs-side"><small>${r(w.otherName)}</small><div class="vs-limbo">${r(w.other.label)}</div></div></div>`);if(N){const X=x.querySelector(".vs-visual");X&&X.remove();const re=x.querySelector(".note");re?re.insertAdjacentHTML("beforebegin",N):x.insertAdjacentHTML("beforeend",N)}},buildSidebar(),navigate("home")})();</script>
 <script>
 /* ==========================================================
-   LUCKY CHARM — hidden keybind
-   Hold Q and S together to arm the NEXT bet you place,
-   in any game. Unlike the old version, this doesn't just tack a
-   fake number onto the balance after the fact — it flips the
-   actual random decisions the round makes (survive the hop, land
-   the jackpot slice, draw the card that wins the call, and so
-   on), so the animation you watch and the payout you get always
-   agree. The charm stays live for the whole round — every hop,
-   tile, or call in a multi-step game — until that round settles,
-   then it's spent.
-
-   Not wired into Versus: that mode plays against another real
-   person over a verified commit/reveal, so rigging it would mean
-   cheating them, not just the house.
+   Q + S KEYBIND — SINGLE PLAYER ONLY
+   Hold Q and S together to guarantee the next single-player
+   bet wins. Cannot arm while viewing Versus, is cleared the
+   moment Versus is opened, and is voided on any Versus stake
+   — it can never affect a real head-to-head match.
 ========================================================== */
-window.__lucky = false;
-window.__luckyRound = false;
+window.__lucky=false;
+window.__luckyRound=false;
+// Q+S indicator: small teal pixel in the bottom corner.
+// Flashes green when Lucky Charm arms.
 (function(){
-  const heldKeys = new Set();
+  const dot=document.createElement('div');
+  dot.id='qs-indicator';
+  dot.setAttribute('aria-label','Lucky Charm status');
+  dot.style.cssText='position:fixed;right:7px;bottom:7px;width:4px;height:4px;border-radius:50%;background:#18c7c0;opacity:.72;z-index:2147483647;pointer-events:none;box-shadow:0 0 3px rgba(24,199,192,.45);transition:background .08s,box-shadow .08s,opacity .08s;';
+  document.body.appendChild(dot);
+  window.__qsIndicatorFlash=()=>{
+    dot.style.background='#39ff72';
+    dot.style.boxShadow='0 0 6px rgba(57,255,114,.9)';
+    dot.style.opacity='1';
+    setTimeout(()=>{dot.style.background='#18c7c0';dot.style.boxShadow='0 0 3px rgba(24,199,192,.45)';dot.style.opacity='.72';},120);
+  };
+})();
+(function(){
+  const heldKeys=new Set();
+  function disarm(){ window.__lucky=false; window.__luckyRound=false; }
 
-  window.addEventListener('keydown', e => {
-    const tag = (e.target && e.target.tagName) || '';
-    if(tag === 'INPUT' || tag === 'TEXTAREA') return;
+  window.addEventListener('keydown',e=>{
+    const tag=(e.target&&e.target.tagName)||'';
+    if(tag==='INPUT'||tag==='TEXTAREA')return;
     heldKeys.add(e.code);
-    if(heldKeys.has('KeyQ') && heldKeys.has('KeyS') && !window.__lucky && !window.__luckyRound){
-      window.__lucky = true;
-      /* Silent keybind: no bottom-right notification. */
+    if(heldKeys.has('KeyQ')&&heldKeys.has('KeyS')&&!window.__lucky&&!window.__luckyRound&&currentView!=='versus'){
+      window.__lucky=true;
+      window.__qsIndicatorFlash&&window.__qsIndicatorFlash();
     }
   });
-  window.addEventListener('keyup', e => heldKeys.delete(e.code));
-  window.addEventListener('blur', () => heldKeys.clear());
+  window.addEventListener('keyup',e=>heldKeys.delete(e.code));
+  window.addEventListener('blur',()=>heldKeys.clear());
 
-  /* consume the arm exactly when the next bet is actually placed,
-     and make sure the whole stake counts as "real" so the payout
-     isn't diluted by any ghost/bonus split */
-  const prevPlaceBet = placeBet;
-  placeBet = function(amt){
-    const forcedThisCall = betCtx && betCtx.forced === 'versus';
-    const ok = prevPlaceBet(amt);
-    if(ok && window.__lucky && !forcedThisCall){
-      window.__lucky = false;
-      window.__luckyRound = true;
-      betCtx.realStake = betCtx.stake;
-      betCtx.ghostStake = 0;
+  // Entering Versus always clears any armed charm, so nothing
+  // set up in single-player can carry into a real match.
+  const prevNavigate=navigate;
+  navigate=function(view){
+    if(view==='versus') disarm();
+    return prevNavigate(view);
+  };
+
+  const prevPlaceBet=placeBet;
+  placeBet=function(amt){
+    const forcedThisCall=betCtx&&betCtx.forced==='versus';
+    const ok=prevPlaceBet(amt);
+    if(forcedThisCall){ disarm(); return ok; } // Versus stakes are never affected, armed or not
+    if(ok&&window.__lucky){
+      window.__lucky=false;
+      window.__luckyRound=true;
     }
     return ok;
   };
 
-  /* safety net: if a round we didn't manage to rig some other way
-     still resolves as a loss or a small payout, guarantee a solid
-     win anyway so the charm never silently does nothing */
-  const prevResolveRound = resolveRound;
-  resolveRound = function(payout, win){
-    if(window.__luckyRound){
-      window.__luckyRound = false;
-      const stake = betCtx.stake || 0;
-      if(stake > 0 && (win === false || payout <= stake)){
-        payout = round2(stake * (5 + Math.random() * 10));
-        win = true;
-      }
-    }
-    prevResolveRound(payout, win);
+  const prevResolveRound=resolveRound;
+  resolveRound=function(payout,win){
+    if(window.__luckyRound)window.__luckyRound=false;
+    return prevResolveRound(payout,win);
   };
-})();
-</script>
+})();</script>
 <script src="jarvisbet-mp.js"></script>
 <script src="jarvisbet-mp-games.js"></script>
 <script src="jarvisbet-mp-games2.js"></script>
