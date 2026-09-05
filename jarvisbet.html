@@ -416,9 +416,10 @@ svg{display:block;}
   color:var(--text-2);font-size:13px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;
 }
 .pl-btn:hover{color:#fff;border-color:var(--accent-dim);}
-.pl-body{flex:1;min-height:0;position:relative;}
-.pl-body canvas{position:absolute;inset:0;width:100%;height:100%;}
-.pl-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--text-3);font-size:11.5px;text-align:center;padding:0 20px;}
+.pl-body{flex:1;min-height:0;position:relative;overflow-x:auto;overflow-y:hidden;}
+.pl-scroll{position:relative;height:100%;}
+.pl-scroll canvas{position:absolute;inset:0;width:100%;height:100%;}
+.pl-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--text-3);font-size:11.5px;text-align:center;padding:0 20px;pointer-events:none;}
 .pl-widget.min .pl-body,.pl-widget.min .pl-resize{display:none;}
 .pl-resize{
   position:absolute;right:0;bottom:0;width:16px;height:16px;cursor:nwse-resize;z-index:2;
@@ -427,6 +428,12 @@ svg{display:block;}
 }
 .pl-resize:hover{opacity:1;}
 @media (max-width:720px){ .pl-widget{left:10px;right:auto;top:70px;width:min(78vw,280px);} }
+
+/* ============ DOCK STOP-ALL BAR ============ */
+.dock-topbar{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--red);border-radius:var(--r);padding:7px 10px;box-shadow:0 8px 24px rgba(0,0,0,.45);}
+.dock-stopall{background:var(--red);border:1px solid #c23a3e;color:#fff;border-radius:var(--r-sm);font-size:11.5px;font-weight:700;padding:6px 10px;}
+.dock-stopall:hover{background:#c23a3e;}
+.dock-count{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-3);white-space:nowrap;}
 
 /* ============ CRASH ============ */
 .cr-wrap{width:100%;height:100%;display:flex;flex-direction:column;gap:8px;}
@@ -1086,7 +1093,11 @@ function awardJewels(gameId,mult){
   const jw=1+Math.floor(Math.log2(mult/t));
   state.jewels+=jw; state.stats.jewelsEarned+=jw;
   renderJewels();
-  toast(`${jw} Jarvis Jewel${jw>1?'s':''} from a ${mult>=100?Math.round(mult):mult.toFixed(1)}× hit`,'gem');
+  /* Jewels are still awarded during autobet, but the popup toast is skipped
+     so a fast-running autobet session doesn't spam the corner with a "you
+     won" notification for every hit. betCtx.forced is set while an autobet
+     round is being resolved (see Auto._tick). Manual play still gets the toast. */
+  if(!betCtx.forced) toast(`${jw} Jarvis Jewel${jw>1?'s':''} from a ${mult>=100?Math.round(mult):mult.toFixed(1)}× hit`,'gem');
 }
 function renderJewels(){ const el=document.getElementById('jw-amt'); if(el) el.textContent=state.jewels.toLocaleString(); }
 
@@ -1324,17 +1335,40 @@ function paintAuto(){
     } else if(dot) dot.remove();
   });
   const dock=document.getElementById('dock');
-  dock.innerHTML=Auto.list().map(s=>`
-    <div class="dock-card${s.status==='paused'?' paused':''}">
-      <div class="bar"></div>
-      <div class="dc-main">
-        <b>${gameById(s.game).name}</b>
-        <small>${s.done} bets · <span class="${s.profit>=0?'pos':'neg'}">${fmtSigned(s.profit)}</span> · next ${fmt(s.bet)}</small>
-      </div>
-      <button data-open="${s.game}">Open</button>
-      <button data-toggle="${s.sid}">${s.status==='paused'?'Resume':'Pause'}</button>
-      <button data-stopauto="${s.sid}">Stop</button>
-    </div>`).join('');
+  const list=Auto.list();
+  /* Incremental DOM updates instead of a full innerHTML replace every tick —
+     replacing the whole dock on every fast autobet interval could destroy a
+     button mid-click and eat the tap, which is why Stop sometimes did
+     nothing. Existing cards are now updated in place; only add/remove touch
+     the DOM. */
+  let topbar=dock.querySelector('.dock-topbar');
+  if(list.length){
+    if(!topbar){
+      topbar=document.createElement('div');
+      topbar.className='dock-topbar';
+      topbar.innerHTML='<button class="dock-stopall" id="dock-stopall">Stop All</button><span class="dock-count"></span>';
+      dock.prepend(topbar);
+      topbar.querySelector('#dock-stopall').onclick=()=>Auto.stopAll('stopped from dock');
+    }
+    topbar.querySelector('.dock-count').textContent=`${list.length} running`;
+  } else if(topbar){ topbar.remove(); }
+
+  const keep=new Set(list.map(s=>s.sid));
+  dock.querySelectorAll('.dock-card').forEach(el=>{ if(!keep.has(el.dataset.sid)) el.remove(); });
+  list.forEach(s=>{
+    let card=dock.querySelector(`.dock-card[data-sid="${s.sid}"]`);
+    if(!card){
+      card=document.createElement('div');
+      card.className='dock-card';
+      card.dataset.sid=s.sid;
+      card.innerHTML=`<div class="bar"></div><div class="dc-main"><b></b><small></small></div><button data-open="${s.game}">Open</button><button data-toggle="${s.sid}"></button><button data-stopauto="${s.sid}">Stop</button>`;
+      dock.appendChild(card);
+    }
+    card.classList.toggle('paused',s.status==='paused');
+    card.querySelector('b').textContent=gameById(s.game).name;
+    card.querySelector('small').innerHTML=`${s.done} bets · <span class="${s.profit>=0?'pos':'neg'}">${fmtSigned(s.profit)}</span> · next ${fmt(s.bet)}`;
+    card.querySelector('[data-toggle]').textContent=s.status==='paused'?'Resume':'Pause';
+  });
   if(currentView==='manager') renderManager(document.getElementById('content'));
 }
 document.getElementById('dock').addEventListener('click',e=>{
@@ -4701,7 +4735,11 @@ function renderManager(content){
   const totalRounds=list.reduce((a,s)=>a+s.done,0);
   content.innerHTML=`
     <div class="row-head"><h2>Autobet Manager</h2>
-      <span>${list.length} session${list.length===1?'':'s'} · ${totalRounds} bets · ${fmtSigned(totalProfit)}</span></div>
+      <div style="display:flex;align-items:center;gap:12px;margin-left:auto">
+        <span>${list.length} session${list.length===1?'':'s'} · ${totalRounds} bets · ${fmtSigned(totalProfit)}</span>
+        ${list.length?`<button class="act act-red" id="mg-stopall">Stop All</button>`:''}
+      </div>
+    </div>
     ${list.length?`
     <table class="tbl">
       <thead><tr><th>Game</th><th>Bet</th><th>Profit</th><th>Rounds</th><th>Status</th><th>Controls</th></tr></thead>
@@ -4741,6 +4779,8 @@ function renderManager(content){
   content.querySelectorAll('[data-mg-pause]').forEach(b=>b.onclick=()=>Auto.pause(b.dataset.mgPause));
   content.querySelectorAll('[data-mg-resume]').forEach(b=>b.onclick=()=>Auto.resume(b.dataset.mgResume));
   content.querySelectorAll('[data-mg-stop]').forEach(b=>b.onclick=()=>Auto.stop(b.dataset.mgStop,'stopped from manager'));
+  const stopAllBtn=content.querySelector('#mg-stopall');
+  if(stopAllBtn) stopAllBtn.onclick=()=>Auto.stopAll('stopped from manager');
 }
 
 /* ==========================================================
@@ -5552,10 +5592,12 @@ window.addEventListener('beforeunload',e=>{ if(Auto.any()){ e.preventDefault(); 
         <span class="pl-dot" id="pl-dot"></span>
         <span class="pl-title">Session P/L</span>
         <span class="pl-value" id="pl-value">+$0.00</span>
+        <button class="pl-btn" id="pl-zoomout" title="Zoom out">−</button>
+        <button class="pl-btn" id="pl-zoomin" title="Zoom in">+</button>
         <button class="pl-btn" id="pl-min" title="Minimize">–</button>
       </div>
       <div class="pl-body" id="pl-body">
-        <canvas id="pl-cv"></canvas>
+        <div class="pl-scroll" id="pl-scroll"><canvas id="pl-cv"></canvas></div>
         <div class="pl-empty" id="pl-empty">Play a round to start the chart</div>
       </div>
       <div class="pl-resize" id="pl-resize" title="Drag to resize"></div>
@@ -5564,13 +5606,21 @@ window.addEventListener('beforeunload',e=>{ if(Auto.any()){ e.preventDefault(); 
   const widget=document.getElementById('pl-widget');
   const head=document.getElementById('pl-head');
   const body=document.getElementById('pl-body');
+  const scrollInner=document.getElementById('pl-scroll');
   const cv=document.getElementById('pl-cv'), g=cv.getContext('2d');
   const valueEl=document.getElementById('pl-value'), dotEl=document.getElementById('pl-dot');
   const minBtn=document.getElementById('pl-min');
+  const zoomInBtn=document.getElementById('pl-zoomin');
+  const zoomOutBtn=document.getElementById('pl-zoomout');
   const resizeHandle=document.getElementById('pl-resize');
   const emptyEl=document.getElementById('pl-empty');
+  const UNIT=6;          /* px per history point at zoom level 1 */
+  const MIN_ZOOM=1, MAX_ZOOM=12;
 
   function loadNum(key,def){ const v=parseFloat(localStorage.getItem(key)); return isFinite(v)?v:def; }
+  let zoom=loadNum('jarvisbet_pl_zoom',1);
+  if(!(zoom>=MIN_ZOOM)) zoom=MIN_ZOOM;
+  if(zoom>MAX_ZOOM) zoom=MAX_ZOOM;
   let minimized=localStorage.getItem('jarvisbet_pl_min')==='1';
   const savedLeft=localStorage.getItem('jarvisbet_pl_left');
   const savedTop=localStorage.getItem('jarvisbet_pl_top');
@@ -5661,10 +5711,32 @@ window.addEventListener('beforeunload',e=>{ if(Auto.any()){ e.preventDefault(); 
   function sizeCanvas(){
     const r=body.getBoundingClientRect();
     const dpr=window.devicePixelRatio||1;
-    W=r.width; H=r.height;
+    H=r.height;
+    const need=Math.round((hist.length-1)*UNIT*zoom)+20;
+    W=Math.max(r.width,need);
+    scrollInner.style.width=W+'px';
     if(W<=0||H<=0) return;
     cv.width=W*dpr; cv.height=H*dpr; g.setTransform(dpr,0,0,dpr,0,0);
   }
+  function setZoom(newZoom){
+    newZoom=Math.max(MIN_ZOOM,Math.min(MAX_ZOOM,newZoom));
+    if(newZoom===zoom) return;
+    const oldWidth=scrollInner.scrollWidth||1;
+    const frac=(body.scrollLeft+body.clientWidth/2)/oldWidth;
+    zoom=newZoom;
+    sizeCanvas();
+    const newWidth=scrollInner.scrollWidth||1;
+    body.scrollLeft=Math.max(0,frac*newWidth-body.clientWidth/2);
+    paint();
+    try{localStorage.setItem('jarvisbet_pl_zoom',zoom);}catch(e){}
+  }
+  body.addEventListener('wheel',e=>{
+    if(minimized) return;
+    e.preventDefault();
+    setZoom(zoom*(e.deltaY<0?1.2:1/1.2));
+  },{passive:false});
+  zoomInBtn.addEventListener('click',e=>{ e.stopPropagation(); setZoom(zoom*1.4); });
+  zoomOutBtn.addEventListener('click',e=>{ e.stopPropagation(); setZoom(zoom/1.4); });
   function paint(){
     if(minimized||W<=0||H<=0||hist.length<2) return;
     g.clearRect(0,0,W,H);
@@ -5711,8 +5783,11 @@ window.addEventListener('beforeunload',e=>{ if(Auto.any()){ e.preventDefault(); 
     const v=round2(totalBalance()-baseline);
     const last=hist[hist.length-1];
     if(!last||last.v!==v){
+      const wasAtEnd=body.scrollLeft+body.clientWidth>=(scrollInner.scrollWidth-4);
       hist.push({t:Date.now(),v});
       if(hist.length>MAX_POINTS) hist.shift();
+      sizeCanvas();
+      if(wasAtEnd) body.scrollLeft=scrollInner.scrollWidth;
     }
     if(hist.length>=2) emptyEl.style.display='none';
     updateHeader();
