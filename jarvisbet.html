@@ -1179,18 +1179,19 @@ const gameById=id=>GAMES.find(g=>g.id===id);
 /* ==========================================================
    UPGRADES
 ========================================================== */
-const SPEEDS=[5000,4000,3000,2000,1000,500];
+const SPEEDS=[5000,4000,3000,2000,1000,500,200,100];
+const SLOT_CAPS=[1,2,3,5,8,11,15];
 const WHEEL_HOURS=[24,12,6,2];
 const UPGRADES={
   wheelspeed:{name:'Daily wheel cooldown',max:3,costs:[8,20,42],
     desc:'Shortens the wait between free wheel spins.',
     detail:l=>`One spin every ${WHEEL_HOURS[l]} hours`},
-  speed:{name:'Autobet tempo',max:5,costs:[4,8,15,26,44],
-    desc:'Unlocks quicker autobet intervals. Level 0 runs one bet every 5 seconds; the last level opens up 0.5 seconds.',
+  speed:{name:'Autobet tempo',max:7,costs:[4,8,15,26,44,70,110],
+    desc:'Unlocks quicker autobet intervals. Level 0 runs one bet every 5 seconds; the last level opens up 0.1 seconds.',
     detail:l=>`Fastest interval: ${(SPEEDS[l]/1000).toFixed(SPEEDS[l]<1000?1:0)}s`},
-  slots:{name:'Extra autobet slots',max:3,costs:[18,45,80],
-    desc:'Run more than one autobet on the same game — handy for two different stop rules side by side.',
-    detail:l=>`${1+l} session${l?'s':''} per game`},
+  slots:{name:'Extra autobet slots',max:6,costs:[18,45,80,150,250,400],
+    desc:'Run more than one autobet on the same game at once. Top level allows up to 15 running side by side.',
+    detail:l=>`${SLOT_CAPS[l]} session${SLOT_CAPS[l]===1?'':'s'} per game`},
   caseburst:{name:'Case burst opener',max:1,costs:[36],
     desc:'Unlocks the Open 5 button in Case Opening.',
     detail:l=>l?'Open five cases at once':'Single-case opening'},
@@ -1202,7 +1203,7 @@ const UPGRADES={
     detail:l=>`+${[0,15,30][l]}% on wheel prizes`}
 };
 const upLevel=k=>state.upgrades[k]||0;
-const maxSessionsPerGame=()=>1+upLevel('slots');
+const maxSessionsPerGame=()=>SLOT_CAPS[upLevel('slots')];
 const allowedSpeeds=()=>SPEEDS.slice(0,upLevel('speed')+1).reverse();  /* slowest first */
 const defaultSpeed=()=>5000;
 
@@ -2524,7 +2525,7 @@ MODULES.mines={
       /* Lucky Charm: every selected/autobet tile is safe. */
       chosen=Array.from({length:size},(_,i)=>i).filter(i=>!mines.includes(i)).slice(0,maxPicks);
     } else if(o.pickMode==='mine'&&o.chosen&&o.chosen.length){
-      chosen=o.chosen.filter(i=>i<size&&!mines.includes(i));
+      chosen=o.chosen.filter(i=>i<size);
     } else {
       const rest=Array.from({length:size},(_,i)=>i); chosen=[]; while(chosen.length<maxPicks) chosen.push(rest.splice(Math.floor(Math.random()*rest.length),1)[0]);
     }
@@ -2827,7 +2828,7 @@ MODULES.tower={
     const t=TOWER_MODES[mode].tiles;
     for(let f=0;f<target;f++) if(Math.random()<1/t) return {payout:0,mult:0,tag:'✕',detail:f};
     const m=towerMult(mode,target);
-    return {payout:bet*m,mult:m,tag:m.toFixed(2)+'×',detail:target,pushes};
+    return {payout:bet*m,mult:m,tag:m.toFixed(2)+'×',detail:target};
   }
 };
 
@@ -3063,7 +3064,7 @@ MODULES.chicken={
     const diff=o.diff||'easy', target=Math.min(CX_DIFF[diff].lanes,o.target||5);
     for(let i=0;i<target;i++) if(Math.random()>=CX_DIFF[diff].p) return {payout:0,mult:0,tag:'HIT',detail:i+1};
     const m=cxMult(diff,target);
-    return {payout:bet*m,mult:m,tag:m.toFixed(2)+'×',detail:target,pushes};
+    return {payout:bet*m,mult:m,tag:m.toFixed(2)+'×',detail:target};
   }
 };
 
@@ -4050,17 +4051,19 @@ MODULES.horse={
    the strip eases to a stop under the needle.
 ========================================================== */
 const CASES=[
-  /* Balanced case odds: roughly 47% duds, 20-25% at 1.5x, and a healthy
-     amount of 0.5x/low returns. Mythic weights are preserved exactly. */
+  /* Rebalanced case odds:
+     - 0x is still common, but not overwhelmingly common.
+     - 0.5x remains a frequent consolation hit.
+     - 1.5x+ hits are substantially rarer than before.
+     - Large jackpots are kept possible, but made genuinely rare. */
   {id:'starter',name:'Starter Crate',c:'#4a9fd8',
-   items:[{m:0,w:47000},{m:0.2,w:4000},{m:0.5,w:15000},{m:1.5,w:22000},{m:2,w:6000},{m:5,w:4000},{m:15,w:1500},{m:60,w:300},{m:250,w:100},{m:2000,w:100}]},
+     items:[{m:0,w:560000},{m:0.2,w:80000},{m:0.5,w:190000},{m:1,w:65000},{m:1.5,w:55000},{m:2,w:22000},{m:5,w:9000},{m:15,w:1900},{m:60,w:190},{m:250,w:19},{m:2000,w:2}]},
   {id:'field',name:'Field Case',c:'#37d67a',
-   items:[{m:0,w:47000},{m:0.3,w:6000},{m:0.8,w:9000},{m:1.5,w:22000},{m:3,w:7000},{m:9,w:5000},{m:30,w:2500},{m:120,w:1000},{m:700,w:420},{m:5000,w:80}]},
+     items:[{m:0,w:510000},{m:0.5,w:205000},{m:1.5,w:140000},{m:3,w:60000},{m:9,w:37000},{m:30,w:22000},{m:120,w:8500},{m:700,w:1900},{m:5000,w:200}]},
   {id:'vault',name:'Vault Case',c:'#f0b429',
-   items:[{m:0,w:47000},{m:0.4,w:10900},{m:1,w:3000},{m:1.5,w:22000},{m:2.5,w:8000},{m:6,w:5000},{m:20,w:2500},{m:80,w:1400},{m:400,w:100},{m:2500,w:50},{m:10000,w:50}]},
+     items:[{m:0,w:480000},{m:0.5,w:205000},{m:1,w:75000},{m:1.5,w:125000},{m:2.5,w:52000},{m:6,w:27000},{m:20,w:11000},{m:80,w:4200},{m:400,w:820},{m:2500,w:185},{m:10000,w:20}]},
   {id:'blackbox',name:'Black Box',c:'#8b7fd4',
-   items:[{m:0,w:47000},{m:0.5,w:16000},{m:1.5,w:22000},{m:4,w:7000},{m:12,w:4000},{m:45,w:2000},{m:200,w:1500},{m:1200,w:350},{m:6000,w:120},{m:25000,w:30}]
-  }
+     items:[{m:0,w:460000},{m:0.5,w:200000},{m:1.5,w:160000},{m:4,w:56000},{m:12,w:38000},{m:45,w:15500},{m:200,w:8200},{m:1200,w:2500},{m:6000,w:900},{m:25000,w:200}]}
 ];
 const caseById=id=>CASES.find(c=>c.id===id)||CASES[0];
 function caseRTP(c){
