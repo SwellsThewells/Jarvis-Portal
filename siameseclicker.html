@@ -7,8 +7,8 @@
     
     <link rel="icon" type="image/png" href="ecc268d7-06ed-40cb-8294-4bd7479bc3d0.png">
     
-    <meta property="og:title" content="Siamese Agency Mole East Clicker">
-    <meta property="og:description" content="Click Siameses pussy ass.">
+    <meta property="og:title" content="Siamese Agency Shadow District Clicker">
+    <meta property="og:description" content="Click the Siamese.">
     <meta property="og:image" content="IMG_3017.jpg">
     <meta name="twitter:card" content="summary_large_image">
 
@@ -211,7 +211,7 @@
         muted: false, gems: 0, jarvisCoins: 0, musicStarted: false, pointMultiplier: 100n, gemsMultiplier: 1, 
         hasOversallsOpal: false, hasExtraLife: false, flappyRecord: 0, dashRecord: 0,
         jarvisMultiplier: 1, 
-        dingleberry: { b: false, s: false, g: false, d: false }
+        collectible: { b: false, s: false, g: false, d: false }
     };
     
     let ashcroftPurchases = { dylan: 0 };
@@ -230,7 +230,7 @@
     function parseGame(json) { return JSON.parse(json, (key, value) => { if (typeof value === 'string' && /^-?\d+n$/.test(value)) return BigInt(value.slice(0, -1)); return value; }); }
 
     function exportData() { const json = stringifyGame({game, ashcroftPurchases}); navigator.clipboard.writeText(toBraille(json)); alert("BRAILLE DATA COPIED"); }
-    function importData() { const raw = prompt("PASTE BRAILLE DATA:"); if(!raw) return; try { const decoded = fromBraille(raw.trim()); const parsed = parseGame(decoded); if (!parsed.game.dingleberry) parsed.game.dingleberry = { b: false, s: false, g: false, d: false }; Object.assign(game, parsed.game); Object.assign(ashcroftPurchases, parsed.ashcroftPurchases); render(); alert("DATA IMPORTED"); } catch(e) { alert("INVALID BRAILLE DATA"); } }
+    function importData() { const raw = prompt("PASTE BRAILLE DATA:"); if(!raw) return; try { const decoded = fromBraille(raw.trim()); const parsed = parseGame(decoded); if (!parsed.game.collectible) parsed.game.collectible = { b: false, s: false, g: false, d: false }; Object.assign(game, parsed.game); Object.assign(ashcroftPurchases, parsed.ashcroftPurchases); render(); alert("DATA IMPORTED"); } catch(e) { alert("INVALID BRAILLE DATA"); } }
     function saveToLocal() { const json = stringifyGame({game, ashcroftPurchases}); localStorage.setItem('siameseSave', json); }
     function loadFromLocal() { const saved = localStorage.getItem('siameseSave'); if (saved) { try { const parsed = parseGame(saved); Object.assign(game, parsed.game); Object.assign(ashcroftPurchases, parsed.ashcroftPurchases); } catch(e) { console.error("Autosave Corrupted"); } } }
 
@@ -239,7 +239,7 @@
     function triggerFlash() { const flash = document.getElementById('dylan-flash'); flash.style.display = 'flex'; setTimeout(() => { flash.style.display = 'none'; }, 1500); }
     function getRebirthCost() { return 10n ** (100n * (game.rebirths + 1n)); }
     function getMegaRebirthCost() { return 10n ** (1000n * (game.megaRebirths + 1n)); }
-    function changePage(dir) { game.page = (game.page + dir + 4) % 4; document.getElementById('page-title').innerText = ["UPGRADES", "JARVIS BOTS", "ASHCROFTS JEWELS", "DYLANS DINGLEBERRIES"][game.page]; render(); }
+    function changePage(dir) { game.page = (game.page + dir + 4) % 4; document.getElementById('page-title').innerText = ["UPGRADES", "JARVIS BOTS", "ASHCROFTS JEWELS", "DYLAN RELICS"][game.page]; render(); }
 
     function render() {
         const rebirthMulti = 2n ** game.rebirths;
@@ -301,13 +301,13 @@
     }
 
     function renderDingleberries() {
-        createDingleberryCard("Bronze Jarvis Coin", "bronzejarvis.png", 5, "5x Jarvis Coins, +50% Points", () => { game.jarvisCoins -= 5; game.jarvisMultiplier *= 5; game.pointMultiplier = BigInt(Math.floor(Number(game.pointMultiplier) * 1.5)); game.dingleberry.b = true; render(); }, game.jarvisCoins < 5 || game.dingleberry.b, game.dingleberry.b);
-        createDingleberryCard("Silver Jarvis Coin", "silverjarvis.png", 25, "2x Gems, 2x Jarvis, 2x Points", () => { game.jarvisCoins -= 25; game.gemsMultiplier *= 2; game.jarvisMultiplier *= 2; game.pointMultiplier *= 2n; game.dingleberry.s = true; render(); }, game.jarvisCoins < 25 || game.dingleberry.s, game.dingleberry.s);
-        createDingleberryCard("Gold Jarvis Coin", "goldjarvis.png", 500, "10x Jarvis Coins, +150% Points", () => { game.jarvisCoins -= 500; game.jarvisMultiplier *= 10; game.pointMultiplier = BigInt(Math.floor(Number(game.pointMultiplier) * 2.5)); game.dingleberry.g = true; render(); }, game.jarvisCoins < 500 || game.dingleberry.g, game.dingleberry.g);
-        createDingleberryCard("Diamond Jarvis Coin", "diamondjarvis.png", 50000, "100x Jarvis Coins, 5x Points, 3x Gems", () => { game.jarvisCoins -= 50000; game.jarvisMultiplier *= 100; game.pointMultiplier *= 5n; game.gemsMultiplier *= 3; game.dingleberry.d = true; render(); }, game.jarvisCoins < 50000 || game.dingleberry.d, game.dingleberry.d);
+        createSiameseCard("Bronze Jarvis Coin", "bronzejarvis.png", 5, "5x Jarvis Coins, +50% Points", () => { game.jarvisCoins -= 5; game.jarvisMultiplier *= 5; game.pointMultiplier = BigInt(Math.floor(Number(game.pointMultiplier) * 1.5)); game.collectible.b = true; render(); }, game.jarvisCoins < 5 || game.collectible.b, game.collectible.b);
+        createSiameseCard("Silver Jarvis Coin", "silverjarvis.png", 25, "2x Gems, 2x Jarvis, 2x Points", () => { game.jarvisCoins -= 25; game.gemsMultiplier *= 2; game.jarvisMultiplier *= 2; game.pointMultiplier *= 2n; game.collectible.s = true; render(); }, game.jarvisCoins < 25 || game.collectible.s, game.collectible.s);
+        createSiameseCard("Gold Jarvis Coin", "goldjarvis.png", 500, "10x Jarvis Coins, +150% Points", () => { game.jarvisCoins -= 500; game.jarvisMultiplier *= 10; game.pointMultiplier = BigInt(Math.floor(Number(game.pointMultiplier) * 2.5)); game.collectible.g = true; render(); }, game.jarvisCoins < 500 || game.collectible.g, game.collectible.g);
+        createSiameseCard("Diamond Jarvis Coin", "diamondjarvis.png", 50000, "100x Jarvis Coins, 5x Points, 3x Gems", () => { game.jarvisCoins -= 50000; game.jarvisMultiplier *= 100; game.pointMultiplier *= 5n; game.gemsMultiplier *= 3; game.collectible.d = true; render(); }, game.jarvisCoins < 50000 || game.collectible.d, game.collectible.d);
     }
 
-    function createDingleberryCard(name, src, cost, desc, onClick, isLocked, isBought) {
+    function createSiameseCard(name, src, cost, desc, onClick, isLocked, isBought) {
         const card = document.createElement('div'); card.className = `upgrade-card ${isLocked ? 'locked' : ''}`;
         let costText = isBought ? "SOLD OUT" : `${format(BigInt(cost))} Jarvis Coins`;
         card.innerHTML = `<img src="${src}" class="upgrade-icon" onerror="this.src='OIP.webp'"><div style="flex:1"><span class="u-name">${name}</span><span class="u-cost">${costText}</span><span style="display:block; font-size:0.75rem; color:#666; margin-top:4px; font-weight:700;">${desc}</span></div>`;
@@ -315,12 +315,12 @@
     }
 
     function rebirth() { const rCost = getRebirthCost(); if(game.points >= rCost) { game.points = 0n; game.clickPower = 1n; game.pps = 0n; game.agencyIdx = 0; game.jarvisIdx = 0; game.rebirths++; render(); } }
-    function megaRebirth() { const mCost = getMegaRebirthCost(); if(game.points >= mCost) { game.points = 0n; game.clickPower = 1n; game.pps = 0n; game.rebirths = 0n; game.agencyIdx = 0; game.jarvisIdx = 0; game.gems = 0; game.jarvisCoins = 0; game.pointMultiplier = 100n; game.gemsMultiplier = 1; game.jarvisMultiplier = 1; game.hasOversallsOpal = false; game.hasExtraLife = false; game.dingleberry = { b: false, s: false, g: false, d: false }; ashcroftPurchases = { dylan: 0 }; game.megaRebirths++; render(); alert("MEGA REBIRTH COMPLETE."); } }
+    function megaRebirth() { const mCost = getMegaRebirthCost(); if(game.points >= mCost) { game.points = 0n; game.clickPower = 1n; game.pps = 0n; game.rebirths = 0n; game.agencyIdx = 0; game.jarvisIdx = 0; game.gems = 0; game.jarvisCoins = 0; game.pointMultiplier = 100n; game.gemsMultiplier = 1; game.jarvisMultiplier = 1; game.hasOversallsOpal = false; game.hasExtraLife = false; game.collectible = { b: false, s: false, g: false, d: false }; ashcroftPurchases = { dylan: 0 }; game.megaRebirths++; render(); alert("MEGA REBIRTH COMPLETE."); } }
 
     const suffixes = ["", "k", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc", "Ud", "Dd", "Td", "Qad", "Qid", "Sxd", "Spd", "Ocd", "Nod", "Vg"];
     function format(n) { if (n < 1000n) return n.toString(); let s = n.toString(); let unitIdx = Math.floor((s.length - 1) / 3); if (unitIdx >= suffixes.length) return s[0] + "." + s.substring(1,3) + "e" + (s.length - 1); let digits = s.length % 3 || 3; return s.substring(0, digits) + "." + s.substring(digits, digits + 2) + suffixes[unitIdx]; }
     function createCard(name, src, cost, onClick) { const card = document.createElement('div'); card.className = `upgrade-card ${game.points < cost ? 'locked' : ''}`; card.innerHTML = `<img src="${src}" class="upgrade-icon" onerror="this.src='OIP.webp'"><div style="flex:1"><span class="u-name">${name}</span><span class="u-cost">${format(cost)} Points</span></div>`; if (game.points >= cost) card.onclick = onClick; document.getElementById('upgrades-list').appendChild(card); }
-    let lockedNames = []; function getLockedName(index) { while (lockedNames.length <= index) { const keywords = [["MrBrecken", "Mole East", "pussy ass"], ["Link", "Clicker", "Update"], ["East", "Siamese", "Agency"]]; lockedNames.push(`Agency ${keywords[0][Math.floor(Math.random()*3)]} ${keywords[1][Math.floor(Math.random()*3)]} ${keywords[2][Math.floor(Math.random()*3)]} #${lockedNames.length + 1}`); } return lockedNames[index]; }
+    let lockedNames = []; function getLockedName(index) { while (lockedNames.length <= index) { const keywords = [["MrBrecken", "Shadow District", "Shadow District"], ["Link", "Clicker", "Update"], ["East", "Siamese", "Agency"]]; lockedNames.push(`Agency ${keywords[0][Math.floor(Math.random()*3)]} ${keywords[1][Math.floor(Math.random()*3)]} ${keywords[2][Math.floor(Math.random()*3)]} #${lockedNames.length + 1}`); } return lockedNames[index]; }
 
     function triggerMainClick(x, y) {
         if(!game.musicStarted) { document.getElementById('main-music').play(); game.musicStarted = true; }
